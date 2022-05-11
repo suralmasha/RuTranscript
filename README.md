@@ -1,6 +1,6 @@
 # RuTranscript
 
-This package was created in order to make a phonetic transcription of the Russian text. The library is based on the literary norm of phonetic transcription for the Russian language and uses symbols of the [International Phonetic Alphabet] (https://en.wikipedia.org/wiki/International_Phonetic_Alphabet). Transcription takes into account the allocation of allophones. The resulting library can be used in automatic speech recognition and synthesis tasks.
+This package was created in order to make a phonetic transcription of the Russian text. The library is based on the literary norm of phonetic transcription for the Russian language and uses symbols of the International Phonetic Alphabet. Transcription takes into account the allocation of allophones. The resulting library can be used in automatic speech recognition and synthesis tasks.
 
 # Example of usage
 ## Downloading
