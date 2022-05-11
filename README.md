@@ -9,10 +9,21 @@ This package was created in order to make a phonetic transcription of the Russia
 ```
 
 ## How to get a transcription
+Put your text in the appropriate variable ((in the example - `text`)).
 ```
 >>>text = 'Как получить транскрипцию?'
->>>accented_text_if_have = ''
+>>>data = TextPreprocessing(text)
+```
+You can also highlight the accents in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `accented_text_if_have`).
+**Important!** The number of words in these two texts must match.
+
+```
+>>>text = 'Как получить транскрипцию?'
+>>>accented_text_if_have = 'Как получи+ть транскрипцию?'
 >>>data = TextPreprocessing(text, accented_text_if_have)
+```
+Then follow the instructions:
+```
 >>>data.full_tokenization()
 >>>data.stemming()
 >>>data.lemmatization()
@@ -20,5 +31,5 @@ This package was created in order to make a phonetic transcription of the Russia
 >>>transcriber = RuTranscript(data)
 >>>transcriber.full_transcription()
 >>>transcriber.transcription
-['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɪ', '+ʲ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jʷ', 'ᵿ']
+['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɪ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jʷ', 'ᵿ']
 ```
