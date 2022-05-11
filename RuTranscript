@@ -92,12 +92,15 @@ class RuTranscript():
     new_word = stress_rnn.put_stress(word, stress_symbol='+', accuracy_threshold=0.75, replace_similar_symbols=True)
     return new_word
 
-  def _accent_replacing(self):
+  def _accent_replacing(self, sova=False):
     new_text = []
     for i, word in enumerate(self.accented_tokens):
       new_word = ''
       if '+' in word:
-        new_word = word[:word.index('+')] + word[word.index('+') + 1: word.index('+') + 2] + '+' + word[word.index('+') + 2:]
+        if sova == True:
+          new_word = word[:word.index('+')] + word[word.index('+') + 1: word.index('+') + 2] + '+' + word[word.index('+') + 2:]
+        else:
+          new_word = word
       else:
         new_word = self._accent_placing(word)
 
@@ -251,7 +254,8 @@ class RuTranscript():
           sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
           sound_1.analize()
           if sound_1.palatalization == 'soft' and 'lab' not in sound_1.place\
-          and sound_0.palatalization[0] != 'a':
+          and sound_0.palatalization[0] != 'a'\
+          and self.translited_word[i] not in '+ -':
             self.translited_word[i] = self.translited_word[i] + 'ʲ'
   
   def _voicing(self):
@@ -369,7 +373,7 @@ class RuTranscript():
       if phon == 'a':
         if i != len(self.translited_word) - 1 and i != 0:
 
-          if self.translited_word[i + 1] == '+':
+          if self.translited_word[i + 1] == '+':  # ударный (not last, not first)
             if sound.hissing == 'hissing':
               self.translited_word[i] = 'ɐ.'
             elif 'soft' in sound.palatalization:
@@ -380,7 +384,7 @@ class RuTranscript():
             else:
               self.translited_word[i] = 'æ'
 
-          elif self.translited_word[i + 1] == '-':
+          elif self.translited_word[i + 1] == '-':  # первый предударный (not last, not first)
             if sound.hissing == 'hissing':
               self.translited_word[i] = 'ᵻ'
             elif 'hard' in sound.palatalization:
@@ -388,13 +392,13 @@ class RuTranscript():
             else:
               self.translited_word[i] = 'ɪ'
 
-          else:
+          else:  # заударные/второй предударный (not last, not first)
             if sound.hissing == 'hissing' or 'hard' in sound.palatalization:
               self.translited_word[i] = 'ə'
             else:
               self.translited_word[i] = 'ɪ.'
 
-        elif i == len(self.translited_word) - 1:
+        elif i == len(self.translited_word) - 1:   # заударные (last)
           if sound.hissing == 'hissing':
             self.translited_word[i] = 'ə'
           elif 'hard' in sound.palatalization:
@@ -403,9 +407,9 @@ class RuTranscript():
             self.translited_word[i] = 'æ.'
 
         else:
-          if self.translited_word[i + 1] == '-':
+          if self.translited_word[i + 1] == '-':  # первый предударный (first)
             self.translited_word[i] = 'ɐ'
-          elif self.translited_word[i + 1] != '+':
+          elif self.translited_word[i + 1] != '+':  # заударные/второй предударный (first)
             self.translited_word[i] = 'ə'
 
   def _vowel_o(self):
@@ -431,7 +435,7 @@ class RuTranscript():
             else:
               self.translited_word[i] = 'ɪ'
 
-          else:
+          else:  # заударные/второй предударный (not last, not first)
             if sound.hissing == 'hissing' or 'hard' in sound.palatalization:
               self.translited_word[i] = 'ə'
             else:
@@ -458,7 +462,7 @@ class RuTranscript():
       if phon == 'e':
         if i < len(self.translited_word) - 1 and i != 0:
         
-          if self.translited_word[i + 1] == '+' and sound.hissing == 'hissing':
+          if self.translited_word[i + 1] == '+' and sound.hissing == 'hissing':  # ударный (not last, not first)
             self.translited_word[i] = 'ᵻ'
           elif 'hard' in sound.palatalization:
             self.translited_word[i] = 'ɛ'
@@ -479,7 +483,7 @@ class RuTranscript():
             else:
               self.translited_word[i] = 'ɪ.'
 
-        elif i == len(self.translited_word) - 1:
+        elif i == len(self.translited_word) - 1:   # заударные (last)
           if sound.hissing == 'hissing':
             self.translited_word[i] = 'ə'
           elif 'hard' in sound.palatalization:
@@ -506,13 +510,13 @@ class RuTranscript():
             if 'soft' in sound.palatalization:
               self.translited_word[i] = 'ʉ'
 
-          else:
+          else:  # первый/второй предударный/заударные не посл.
             if 'hard' in sound.palatalization:
               self.translited_word[i] = 'ʊ'
             else:
               self.translited_word[i] = 'ᵿ'
 
-        else:
+        else:  # первый/второй предударный/заударные посл.
           if 'hard' in sound.palatalization:
             self.translited_word[i] = 'ʊ'
           else:
@@ -525,7 +529,7 @@ class RuTranscript():
       if phon == 'i':
         if i == 0 and self.translited_word[i + 1] != '+':
           self.translited_word[i] = 'ɪ'
-        elif i == len(self.translited_word) - 1:
+        elif i == len(self.translited_word) - 1:  # и последний (не может быть ударным)
           if sound.hissing == 'hissing' and self.translited_word[i - 1] != 't͡ɕ':
             self.translited_word[i] = 'ɨ'
           else:
@@ -583,7 +587,7 @@ class RuTranscript():
             break
 
           elif sound_0.round == 'velarize'\
-          and 'soft' not in sound_1.palatalization and 'ˠ' not in self.translited_word[i - 1]:
+          and 'soft' not in sound_1.palatalization and 'ˠ' not in self.translited_word[i - 1]:  # в русском нет слов, начинающихся с ы
             self.translited_word[i - 1] = self.translited_word[i - 1] + 'ˠ'
             if i != len(self.translited_word) - 2:
               self._labia_velar()
