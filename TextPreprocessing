@@ -1,3 +1,26 @@
+import re
+
+!pip install --upgrade spacy
+!python3.7 -m spacy download ru_core_news_sm
+import spacy
+
+import nltk
+from nltk import Tree
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem.snowball import SnowballStemmer
+from string import punctuation
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger_ru')
+nlp = spacy.load('ru_core_news_sm')
+
+!git clone https://github.com/seriyps/ru_number_to_text
+
+import ru_number_to_text
+from ru_number_to_text.num2t4ru import num2text
+
+!pip install pymorphy2
+import pymorphy2
+
 class TextPreprocessing():
   def __init__(self, text: str, accented_text=''):
     if not accented_text:
