@@ -7,6 +7,7 @@ This package was created in order to make a phonetic transcription of the Russia
 !git clone https://github.com/suralmasha/RuTranscript
 
 ## How to get a transcription
+```
 >>>text = 'Как получить транскрипцию?'
 >>>accented_text_if_have = ''
 >>>data = TextPreprocessing(text, accented_text_if_have)
@@ -18,3 +19,4 @@ This package was created in order to make a phonetic transcription of the Russia
 >>>transcriber.full_transcription()
 >>>transcriber.transcription
 \['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɪ', '+ʲ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jʷ', 'ᵿ']
+```
