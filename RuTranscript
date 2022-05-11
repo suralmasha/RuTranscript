@@ -29,6 +29,8 @@ import epitran
 
 epi = epitran.Epitran('rus-Cyrl')
 
+from Sounds import Sounds
+from TextPreprocessing import TextPreprocessing
 import alphabet
 import sorted
 import paired_c
