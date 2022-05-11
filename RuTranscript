@@ -1,3 +1,41 @@
+import nltk
+import re
+import csv
+
+!pip install --upgrade spacy
+!python3.7 -m spacy download ru_core_news_sm
+import spacy
+
+from nltk import Tree
+nltk.download('averaged_perceptron_tagger_ru')
+nlp = spacy.load('ru_core_news_sm')
+
+from alphabet import alphabet
+from sorted_al import sorted_al
+from paired_c import paired_c
+
+new_sor = sorted_al.split('\n')
+sor_list = []
+for x in new_sor:
+  sor_list.append(x.split(', '))
+
+sorted_phon = {}
+for x in sor_list:
+  for y in x:
+    if '=' in y:
+      index = y.index('=')
+      sorted_phon[y[:index - 1]] = [y[index + 2:]] + x[1:]
+
+paired_c_new = paired_c.split(', ')
+paired = {}
+for i, x in enumerate(paired_c_new):
+  if '(' in x:
+    paired[x[1:]] = paired_c_new[i + 1][:-1]
+
+starterpack = 'a b bʲ v vʲ ɡ ɡʲ d dʲ e ʒ z zʲ i j k kʲ l lʲ m mʲ n nʲ o p pʲ r rʲ s sʲ t tʲ u f fʲ x xʲ t͡s t͡ɕ ʂ ɕː ɨ d͡ʒ'.split(' ')  # epi phonemes 
+
+rus_v = 'а е ё и о у э ю я ы'.split(' ')  # russian vowels
+
 def to_nltk_tree(node):
   if node.n_lefts + node.n_rights > 0:
     return Tree(node, [to_nltk_tree(child) for child in node.children])
