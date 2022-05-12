@@ -2,31 +2,28 @@ import nltk
 import re
 import csv
 
-!pip install --upgrade spacy
-!python3.7 -m spacy download ru_core_news_sm
+pip install --upgrade spacy
+python3.7 -m spacy download ru_core_news_sm
 import spacy
 
 from nltk import Tree
 nltk.download('averaged_perceptron_tagger_ru')
 nlp = spacy.load('ru_core_news_sm')
 
-!git clone https://github.com/sovaai/sova-tts-tps.git
-!pip install loguru
-!pip install unidecode
+git clone https://github.com/sovaai/sova-tts-tps.git
+pip install loguru
+pip install unidecode
 
-cd sova-tts-tps
 from tps import Handler
 handler = Handler.from_charset("ru", silent=True)
 
-!pip3 install git+https://github.com/Desklop/StressRNN
-!pip install stressrnn-0.2.*.whl
+pip3 install git+https://github.com/Desklop/StressRNN
+pip install stressrnn-0.2.*.whl
 from stressrnn import StressRNN
-
 stress_rnn = StressRNN()
 
-!pip install epitran
+pip install epitran
 import epitran
-
 epi = epitran.Epitran('rus-Cyrl')
 
 from Sounds import Sounds
