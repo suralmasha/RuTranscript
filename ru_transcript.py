@@ -117,8 +117,6 @@ class RuTranscript:
             for token in dep:
                 if isinstance(token, nltk.tree.Tree):
                     self._clitics(token, n)
-                    a_text = res[0]
-                    n = res[1]
                 else:
                     if token.pos_ in functors_pos and token.text not in adverb_adp:
                         if '+' in a_text[token.i + n]:
