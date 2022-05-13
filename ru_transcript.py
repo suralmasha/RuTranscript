@@ -58,8 +58,8 @@ def make_dependency_tree(text):
         return dependency_tree
 
 
-class RuTranscript():
-    def __init__(self, data: TextPreprocessing):
+class RuTranscript:
+    def __init__(self, data):
         self.tokens = data.tokens
         self.accented_tokens = data.accented_tokens
         self.tokens_len = data.tokens_len
