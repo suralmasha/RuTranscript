@@ -1,8 +1,3 @@
-pip install --upgrade spacy
-python3.7 -m spacy download ru_core_news_sm
-git clone https://github.com/seriyps/ru_number_to_text
-pip install pymorphy2
-
 import spacy
 import re
 import nltk
