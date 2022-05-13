@@ -5,20 +5,25 @@ import spacy
 from nltk import Tree
 from stressrnn import StressRNN
 import epitran
-from Sounds import Sounds
-from TextPreprocessing import TextPreprocessing
-import alphabet
-import sorted
-import paired_c
+from Sounds.py import Sounds
+from TextPreprocessing.py import TextPreprocessing
+
+with open('alphabet.txt', 'r') as f:
+  alphabet = f.read()
+
+with open('sorted_allophones.txt', 'r') as f:
+  sorted_allophones = f.read()
+
+with open('paired_consonants.txt', 'r') as f:
+  paired_c = f.read()
 
 nltk.download('averaged_perceptron_tagger_ru')
 nlp = spacy.load('ru_core_news_sm')
 stress_rnn = StressRNN()
 epi = epitran.Epitran('rus-Cyrl')
 
-new_sor = sorted.split('\n')
 sor_list = []
-for x in new_sor:
+for x in sorted_allophones.split('\n'):
   sor_list.append(x.split(', '))
 
 sorted_phon = {}
@@ -28,7 +33,7 @@ for x in sor_list:
       index = y.index('=')
       sorted_phon[y[:index - 1]] = [y[index + 2:]] + x[1:]
 
-paired_c_new = paired_c.split(', ')
+paired_c_new = paired_consonants.split(', ')
 paired = {}
 for i, x in enumerate(paired_c_new):
   if '(' in x:
