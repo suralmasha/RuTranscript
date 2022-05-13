@@ -36,3 +36,4 @@ Then follow the instructions:
 >>> transcriber.transcription
 ['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɪ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jʷ', 'ᵿ']
 ```
+You can also find an example of using the framework in the "RuTranscript example" file
