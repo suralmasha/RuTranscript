@@ -5,8 +5,7 @@ import spacy
 from nltk import Tree
 from stressrnn import StressRNN
 import epitran
-from Sounds.py import Sounds
-from TextPreprocessing.py import TextPreprocessing
+import Sounds
 
 with open('alphabet.txt', 'r') as f:
   alphabet = f.read()
@@ -238,9 +237,9 @@ class RuTranscript():
       for i in range(len(self.translited_word) - 1):
         if ['i', '+', 'z', 'm'] not in self.translited_word\
         and 'ʲ' not in self.translited_word[i]:
-          sound_0 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i])
+          sound_0 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i])
           sound_0.analize()
-          sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
+          sound_1 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
           sound_1.analize()
           if sound_1.palatalization == 'soft' and 'lab' not in sound_1.place\
           and sound_0.palatalization[0] != 'a'\
@@ -248,14 +247,14 @@ class RuTranscript():
             self.translited_word[i] = self.translited_word[i] + 'ʲ'
   
   def _voicing(self):
-    sound_last = Sounds(alphabet, sorted_phon, paired, self.translited_word[-1])
+    sound_last = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[-1])
     sound_last.analize()
     if sound_last.voice == 'voiced' and sound_last.pair:
       self.translited_word[-1] = sound_last.pair
     for i in range(len(self.translited_word) - 2):
-      sound_0 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i])
+      sound_0 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i])
       sound_0.analize()
-      sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
+      sound_1 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
       sound_1.analize()
       if sound_1.voice == 'voiced' and self.translited_word[i + 1] != 'j'\
       and 'son' not in sound_1.manner and 'v' not in self.translited_word[i + 1] and sound_0.pair:
@@ -269,7 +268,7 @@ class RuTranscript():
       if el in self.translited_word:
         n -= 1
     for i, let in enumerate(self.word):
-      sound_n = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + n - 1])
+      sound_n = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + n - 1])
       sound_n.analize()
       if let == 'е' or let == 'ё' or let == 'ю' or let == 'я':
         if i != 0:
@@ -320,7 +319,7 @@ class RuTranscript():
 
   def _nasal_m(self):
     for i, phon in enumerate(self.translited_word[:-1]):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
       sound.analize()
       if phon == 'm' and sound.place == 'labial, labiodental':
         self.translited_word[i] = 'ɱ'
@@ -333,7 +332,7 @@ class RuTranscript():
         if i == len(self.translited_word) - 1:
           self.translited_word[i] = 'r̥'
         else:
-          sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
+          sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
           sound.analize()
           if sound.voice == 'voiceless':
             self.translited_word[i] = 'r̥'
@@ -343,7 +342,7 @@ class RuTranscript():
 
   def _vosed_ts(self):
     for i, phon in enumerate(self.translited_word[:-1]):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
       sound.analize()
       if phon == 't͡s' and sound.voice == 'voiced':
         self.translited_word[i] = 'd̻͡z̪'
@@ -356,7 +355,7 @@ class RuTranscript():
     
   def _vowel_a(self):
     for i, phon in enumerate(self.translited_word):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound.analize()
       if phon == 'a':
         if i != len(self.translited_word) - 1 and i != 0:
@@ -402,7 +401,7 @@ class RuTranscript():
 
   def _vowel_o(self):
     for i, phon in enumerate(self.translited_word):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound.analize()
       if phon == 'o':
         if i != len(self.translited_word) - 1 and i != 0:
@@ -445,7 +444,7 @@ class RuTranscript():
 
   def _vowel_e(self):
     for i, phon in enumerate(self.translited_word):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound.analize()
       if phon == 'e':
         if i < len(self.translited_word) - 1 and i != 0:
@@ -489,7 +488,7 @@ class RuTranscript():
 
   def _vowel_u(self):
     for i, phon in enumerate(self.translited_word):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound.analize()
       if phon == 'u':
         if i != len(self.translited_word) - 1:
@@ -512,7 +511,7 @@ class RuTranscript():
     
   def _vowel_i(self):
     for i, phon in enumerate(self.translited_word):
-      sound = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound.analize()
       if phon == 'i':
         if i == 0 and self.translited_word[i + 1] != '+':
@@ -530,18 +529,18 @@ class RuTranscript():
 
   def _vowel_ii(self):
     for i, phon in enumerate(self.translited_word):
-      sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound_1 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound_1.analize()
       if phon == 'ɨ':
         if i < len(self.translited_word) - 1:
           if self.translited_word[i + 1] == '+':  # ударный
             if len(self.translited_word) > 4:
-              sound_2 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 2])
+              sound_2 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 2])
               sound_2.analize()
               if self.translited_word[i - 1] == 'l' 'lab' in sound_2.place:
                 self.translited_word[i] = 'ɯ̟ɨ̟'
             if i < len(self.translited_word) - 2:
-              sound_3= Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 2])
+              sound_3= Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 2])
               sound_3.analize()
               if sound_1.place == 'lingual, dental'\
               and sound_3.place == 'lingual, velar'\
@@ -563,9 +562,9 @@ class RuTranscript():
   
   def _labia_velar(self):
     for i, phon in enumerate(self.translited_word):
-      sound_0 = Sounds(alphabet, sorted_phon, paired, phon)
+      sound_0 = Sounds.Sounds(alphabet, sorted_phon, paired, phon)
       sound_0.analize()
-      sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
+      sound_1 = Sounds.Sounds(alphabet, sorted_phon, paired, self.translited_word[i - 1])
       sound_1.analize()
       if sound_0.round == 'round' and i != 0:
         if sound_1.phon == 'C' and 'ʷ' not in self.translited_word[i - 1]:
