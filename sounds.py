@@ -3,7 +3,7 @@ def get_key(d, value):
     if v == value:
       return k
 
-class Sounds():
+class Sounds:
   def __init__(self, alphabet:str, sorted_phonems: dict, paired_consonants:dict, sound: str):
     self.alphabet = alphabet.split(', ')
     self._sorted_phonems = sorted_phonems
