@@ -14,7 +14,7 @@ with open('RuTranscript/sorted_allophones.txt', 'r') as f:
     sorted_allophones = f.read()
 
 with open('RuTranscript/paired_consonants.txt', 'r') as f:
-    paired_c = f.read()
+    paired_consonants = f.read()
 
 nltk.download('averaged_perceptron_tagger_ru')
 nlp = spacy.load('ru_core_news_sm')
