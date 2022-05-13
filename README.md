@@ -17,6 +17,7 @@ Put your text in the appropriate variable ((in the example - `text`)).
 >>> data = TextPreprocessing(text)
 ```
 You can also highlight the accents in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `accented_text_if_have`).
+
 **Important!** The number of words in these two texts must match.
 
 ```
