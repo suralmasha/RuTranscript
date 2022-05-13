@@ -1,12 +1,3 @@
-git clone https://github.com/sovaai/sova-tts-tps.git
-pip install loguru
-pip install unidecode
-pip install --upgrade spacy
-python3.7 -m spacy download ru_core_news_sm
-pip3 install git+https://github.com/Desklop/StressRNN
-pip install stressrnn-0.2.*.whl
-pip install epitran
-
 import nltk
 import re
 import csv
