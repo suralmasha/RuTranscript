@@ -5,7 +5,7 @@ import spacy
 from nltk import Tree
 from stressrnn import StressRNN
 import epitran
-from sounds_m import Sounds
+from RuTranscript.sounds_m import Sounds
 
 with open('Data/alphabet.txt', 'r') as f:
     alphabet = f.read()
