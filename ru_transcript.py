@@ -247,8 +247,7 @@ class RuTranscript:
                     sound_1 = Sounds(alphabet, sorted_phon, paired, self.translited_word[i + 1])
                     sound_1.analize()
                     if sound_1.palatalization == 'soft' and 'lab' not in sound_1.place \
-                            and sound_0.palatalization[0] != 'a' \
-                            and self.translited_word[i] not in '+ -':
+                            and sound_0.palatalization[0] != 'a' and sound_0.phon == 'C':
                         self.translited_word[i] = self.translited_word[i] + 'ʲ'
 
     def _voicing(self):
