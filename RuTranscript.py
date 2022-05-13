@@ -3,7 +3,6 @@ import re
 import csv
 import spacy
 from nltk import Tree
-from tps import Handler
 from stressrnn import StressRNN
 import epitran
 from Sounds import Sounds
@@ -14,7 +13,6 @@ import paired_c
 
 nltk.download('averaged_perceptron_tagger_ru')
 nlp = spacy.load('ru_core_news_sm')
-handler = Handler.from_charset("ru", silent=True)
 stress_rnn = StressRNN()
 epi = epitran.Epitran('rus-Cyrl')
 
