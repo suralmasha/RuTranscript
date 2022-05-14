@@ -11,7 +11,7 @@ This package was created in order to make a phonetic transcription of the Russia
 ```
 
 ## How to get a transcription
-Put your text in the appropriate variable ((in the example - `text`)).
+Put your text in the appropriate variable (in the example - `text`).
 ```
 >>> text = 'Как получить транскрипцию?'
 >>> data = TextPreprocessing(text)
