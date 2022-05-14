@@ -6,8 +6,8 @@ This package was created in order to make a phonetic transcription of the Russia
 ## Downloading
 ```
 >>> git clone https://github.com/suralmasha/RuTranscript
->>> from RuTranscript.ru_transcript import RuTranscript
->>> from RuTranscript.text_preprocessing import TextPreprocessing
+>>> from RuTranscript.src.ru_transcript import RuTranscript
+>>> from RuTranscript.src.text_preprocessing import TextPreprocessing
 ```
 
 ## How to get a transcription
