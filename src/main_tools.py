@@ -15,6 +15,7 @@ class TextNormalizationTokenization:
     def __init__(self, text, a_text):
         self.text = text
         self.a_text = a_text
+        self.pause_dict = {}  # {section_index: pause_type}
         self.sections = []
         self.a_sections = []
         self.sections_len = 0
@@ -27,6 +28,18 @@ class TextNormalizationTokenization:
         """
         Splits text by punctuation (not including ' and ").
         """
+        long_pause = ['.', '?', '!']
+        short_pause = [',', ':', ';', '(', ')']
+
+        index = 0
+        for word in self.text.split():
+            if any(symbol in long_pause for symbol in word):
+                self.pause_dict[index] = '||'
+                index += 1
+            elif any(symbol in short_pause for symbol in word):
+                self.pause_dict[index] = '|'
+                index += 1
+
         sections = re.split(r'[.?!,:;()]', self.text)
         sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
         sections = [re.sub(r'\s$', '', w) for w in sections if w != '']

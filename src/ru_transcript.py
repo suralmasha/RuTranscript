@@ -32,6 +32,7 @@ class RuTranscript:
         norm_tok.my_num2text()
 
         self.sections_len = norm_tok.sections_len
+        self.pause_dict = norm_tok.pause_dict
         self.a_tokens = norm_tok.a_tokens_normal
         self.tokens = norm_tok.tokens_normal
         self.phrasal_words_indexes = []
@@ -198,5 +199,24 @@ class RuTranscript:
             # ---- Labialization and velarization ----
             self.allophones[section_num] = labia_velar(self.allophones[section_num])
 
-            # ---- Result ----
-            self.transcription.extend(self.allophones[section_num])
+        # ---- Result allophones ----
+        allophones_joined = []
+        for section in self.allophones:
+            allophones_joined.extend(section)
+
+        self.allophones = allophones_joined
+
+        # ---- Result transcription (with pauses) ----
+        if len(self.pause_dict) == self.sections_len:
+            for section_num in range(self.sections_len):
+                self.transcription.extend(self.allophones[section_num] + [self.pause_dict[section_num]])
+
+        elif len(self.pause_dict) == self.sections_len - 1:  # no punctuation in the end
+            for section_num in range(self.sections_len - 1):
+                self.transcription.extend(self.allophones[section_num] + [self.pause_dict[section_num]])
+            self.transcription.extend(self.allophones[-1])
+
+        elif not self.pause_dict:  # no punctuation at all
+            self.transcription = self.allophones[0]
+
+        self.transcription = ' '.join(self.transcription)
