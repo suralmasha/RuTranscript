@@ -28,7 +28,7 @@ class TextNormalizationTokenization:
         """
         Splits text by punctuation (not including ' and ").
         """
-        long_pause = ['.', '?', '!']
+        long_pause = ['.', '?', '!', '…']
         short_pause = [',', ':', ';', '(', ')']
 
         index = 0
@@ -40,12 +40,12 @@ class TextNormalizationTokenization:
                 self.pause_dict[index] = '|'
                 index += 1
 
-        sections = re.split(r'[.?!,:;()]', self.text)
+        sections = re.split(r'[.?!,:;()…]', self.text)
         sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
         sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
         self.sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
 
-        a_sections = re.split(r'[.?!,:;()]', self.a_text)
+        a_sections = re.split(r'[.?!,:;()…]', self.a_text)
         a_sections = [re.sub(r'\s+', ' ', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
         self.a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']

@@ -527,9 +527,11 @@ def labia_velar(segment: list):
                 and (allophones[previous_phon]['phon'] == 'C') \
                 and (allophones[current_phon]['round'] == 'round') \
                 and ('ʷ' not in previous_phon):
-            if ('ᶣ' not in previous_phon) \
-                    and ('ʲ' in previous_phon or allophones[previous_phon]['palatalization'] == 'asoft'):
-                segment[i - 1] = previous_phon + 'ᶣ'
+            if 'ᶣ' not in previous_phon:
+                if 'ʲ' in previous_phon:
+                    segment[i - 1] = previous_phon[:-1] + 'ᶣ'
+                elif allophones[previous_phon]['palatalization'] == 'asoft':
+                    segment[i - 1] = previous_phon + 'ᶣ'
             else:
                 segment[i - 1] = previous_phon + 'ʷ'
 
