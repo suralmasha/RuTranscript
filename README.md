@@ -15,7 +15,7 @@ Put your text in the appropriate variable (in the example - `text`). Pass it to 
 
 ```
 >>> text = 'Как получить транскрипцию?'
->>> ru_transcript = RuTranscript(text, accented_text_if_have)
+>>> ru_transcript = RuTranscript(text)
 >>> ru_transcript.transcribe()
 ```
 You can also highlight the accents in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `accented_text_if_have`). If you want to put an accent mark before a stressed vowel, specify it using the parameter `accent_place='before'`.
