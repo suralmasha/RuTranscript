@@ -12,7 +12,7 @@ from .allophones_tools import nasal_m, silent_r, voiced_ts, fix_jotised, assimil
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm')
 
-irregular_exceptions_df = pd.read_excel('irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
+irregular_exceptions_df = pd.read_excel('RuTranscript/src/irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
 irregular_exceptions = {row['original word']: row['pronunciation'] for _, row in irregular_exceptions_df.iterrows()}
 irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exceptions],
                                       irregular_exceptions.values()))
@@ -20,13 +20,15 @@ irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exc
 
 class RuTranscript:
     def __init__(self, text, a_text=None, accent_place='after'):
-        if a_text is None:
+        if a_text is not None:
+            self.a_text = a_text
+        else:
             self.a_text = text
 
         self.text = text
         self.accent_place = accent_place
 
-        norm_tok = TextNormalizationTokenization(text, a_text)
+        norm_tok = TextNormalizationTokenization(self.text, self.a_text)
         norm_tok.section_split()
         norm_tok.tokenize()
         norm_tok.my_num2text()
@@ -161,6 +163,10 @@ class RuTranscript:
             self.letters_list.append(list('_'.join(self.a_tokens[section_num])))
 
             # ---- Continue LPC-4. Common rules ----
+            for allophone_index, allophone in enumerate(self.phonemes_list[section_num]):
+                if (allophone == 't͡s') and self.phonemes_list[section_num][allophone_index + 1] == 's':
+                    del self.phonemes_list[section_num][allophone_index + 1]
+
             self.phonemes_list[section_num] = fix_jotised(self.phonemes_list[section_num],
                                                           self.letters_list[section_num])
             self.phonemes_list[section_num] = assimilative_palatalization(self.tokens[section_num],
@@ -199,13 +205,6 @@ class RuTranscript:
             # ---- Labialization and velarization ----
             self.allophones[section_num] = labia_velar(self.allophones[section_num])
 
-        # ---- Result allophones ----
-        allophones_joined = []
-        for section in self.allophones:
-            allophones_joined.extend(section)
-
-        self.allophones = allophones_joined
-
         # ---- Result transcription (with pauses) ----
         if len(self.pause_dict) == self.sections_len:
             for section_num in range(self.sections_len):
@@ -219,4 +218,11 @@ class RuTranscript:
         elif not self.pause_dict:  # no punctuation at all
             self.transcription = self.allophones[0]
 
-        self.transcription = ' '.join(self.transcription)
+        self.transcription = ' '.join([x for x in self.transcription if x not in ['+', '-', '_']])
+
+        # ---- Result allophones ----
+        allophones_joined = []
+        for section in self.allophones:
+            allophones_joined.extend(section)
+
+        self.allophones = [x for x in allophones_joined if x not in ['+', '-', '_']]
