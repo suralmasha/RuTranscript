@@ -1,0 +1,10 @@
+*.pyc
+*.egg-info
+__pycache__/
+.vscode/
+env_*/
+
+dist/
+build/
+
+odict*.zip
