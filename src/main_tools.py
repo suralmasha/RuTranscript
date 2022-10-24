@@ -4,8 +4,8 @@ import spacy
 import nltk
 from nltk import Tree
 
-from ru_number_to_text.num2t4ru import num2text
-from StressRNN.stressrnn.stressrnn import StressRNN
+from .ru_number_to_text.num2t4ru import num2text
+from .StressRNN.stressrnn.stressrnn import StressRNN
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger_ru')

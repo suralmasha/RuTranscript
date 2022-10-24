@@ -1,6 +1,6 @@
 import spacy
 
-from sounds import allophones, rus_v
+from .sounds import allophones, rus_v
 
 nlp = spacy.load('ru_core_news_sm')
 
@@ -133,7 +133,6 @@ def fix_jotised(phonemes_list_section, letters_list_section):
     return phonemes_list_section
 
 
-# ---- В РАМКАХ СЕГМЕНТА ----
 def assimilative_palatalization(tokens_section, phonemes_list_section):
     token_index = 0
     token = tokens_section[token_index]

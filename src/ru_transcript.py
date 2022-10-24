@@ -4,9 +4,9 @@ import spacy
 import epitran
 from nltk.stem.snowball import SnowballStemmer
 
-from main_tools import TextNormalizationTokenization, Stresses, find_clitics, extract_phrasal_words
-from sounds import epi_starterpack, allophones
-from allophones_tools import nasal_m, silent_r, voiced_ts, fix_jotised, assimilative_palatalization, long_consonants, \
+from .main_tools import TextNormalizationTokenization, Stresses, find_clitics, extract_phrasal_words
+from .sounds import epi_starterpack, allophones
+from .allophones_tools import nasal_m, silent_r, voiced_ts, fix_jotised, assimilative_palatalization, long_consonants, \
     vowel_a, vowel_o, vowel_u, vowel_e, vowel_i, vowel_ii, labia_velar
 
 snowball = SnowballStemmer('russian')
