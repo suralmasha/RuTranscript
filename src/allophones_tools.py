@@ -1,3 +1,7 @@
+import spacy
+
+from .sounds import allophones, rus_v
+
 nlp = spacy.load('ru_core_news_sm')
 
 
