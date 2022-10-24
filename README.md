@@ -42,13 +42,13 @@ You can get a full transcription with pauses by using attribute `transcription`.
 
 ```
 >>> print(ru_transcript.transcription)
-'k a k p ə lʷ ʊ t͡ɕ ɪ tʲ t r ɐ n s kʲ rʲ i p t͡s ə j ᵿ ||'
+k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s kʲ rʲ i p t͡s ə jᶣ ᵿ ||
 ```
 
 Or you can get a list of allophones (without pauses) by using attribute `allophones`.
 
 ```
 >>> print(ru_transcript.allophones)
-['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɪ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jʷ', 'ᵿ']
+['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jᶣ', 'ᵿ']
 ```
 You can also find an example of using the framework in the "RuTranscript_example.ipynb" file.
