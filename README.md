@@ -2,6 +2,8 @@
 
 This package was created in order to make a phonetic transcription of the Russian text. The library is based on the literary norm of phonetic transcription for the Russian language and uses symbols of the International Phonetic Alphabet. Transcription takes into account the allocation of allophones. The resulting library can be used in automatic speech recognition and synthesis tasks.
 
+At the moment, there is no functional for division into syllables in this framework, due to its variability. Therefore, allophones that depend on the place in the syllable (for example, *j* at the beginning of the syllable - *ʝ*) are allocated only in cases where the beginning of the syllable coincides with the beginning of the word or the end of the syllable coincides with the end of the word.
+
 # Example of usage
 ## Downloading
 ```
@@ -18,6 +20,7 @@ Put your text in the appropriate variable (in the example - `text`). Pass it to 
 >>> ru_transcript = RuTranscript(text)
 >>> ru_transcript.transcribe()
 ```
+
 You can also highlight the accents in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `accented_text_if_have`). If you want to put an accent mark before a stressed vowel, specify it using the parameter `accent_place='before'`.
 
 **Important!** The number of words in these two texts must match.
@@ -37,6 +40,8 @@ or
 >>> ru_transcript = RuTranscript(text, accented_text_if_have, accent_place='before')
 >>> ru_transcript.transcribe()
 ```
+
+>**ATTENTION** At the moment, automatic stress placement is disabled (except monosyllabic words and words with *ё*). Therefore, it is **mandatory** to add text with accents placed.
 
 You can get a full transcription with pauses by using attribute `transcription`. Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), punctuation marks inside a sentence are indicated by short pauses (`'|'`).
 
