@@ -6,13 +6,13 @@ from nltk.stem.snowball import SnowballStemmer
 
 from .main_tools import TextNormalizationTokenization, Stresses, find_clitics, extract_phrasal_words
 from .sounds import epi_starterpack, allophones
-from .allophones_tools import nasal_m, silent_r, voiced_ts, fix_jotised, assimilative_palatalization, long_consonants, \
-    vowel_a, vowel_o, vowel_u, vowel_e, vowel_i, vowel_ii, labia_velar
+from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
+    long_consonants, vowels, labia_velar
 
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm')
 
-irregular_exceptions_df = pd.read_excel('RuTranscript/src/irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
+irregular_exceptions_df = pd.read_excel(r'C:\Users\Саша\PycharmProjects\RuTranscript\RuTranscript\src\irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
 irregular_exceptions = {row['original word']: row['pronunciation'] for _, row in irregular_exceptions_df.iterrows()}
 irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exceptions],
                                       irregular_exceptions.values()))
@@ -91,7 +91,7 @@ class RuTranscript:
                     self.a_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
 
                 # 'что' --> 'што'
-                while 'что' in token:
+                while 'что' in self.a_tokens[section_num][i]:
                     self.a_tokens[section_num][i] = token.replace('что', 'што')
 
                 # verb endings 'тся ться'
@@ -137,10 +137,20 @@ class RuTranscript:
             # ---- LPC-4. Common rules ----
             # fricative g
             for i, token in enumerate(self.transliterated_tokens[section_num]):
-                nlp_token = nlp(self.tokens[section_num][i])[0]
+                try:
+                    next_token = self.transliterated_tokens[section_num][i + 1]
+                except IndexError:
+                    next_token = ''
+
+                token_let = self.tokens[section_num][i]
+                nlp_token = nlp(token_let)[0]
                 lemma = nlp_token.lemma_
-                if lemma in 'ага ого господь господи'.split(' '):
+                if lemma in 'ага ого угу господь господи бог'.split(' '):
                     self.transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
+                elif (token_let in 'ах эх ох ух'.split(' ')) \
+                        and (allophones[next_token[0]]['phon'] == 'C') \
+                        and (allophones[next_token[0]]['voice'] == 'voiced'):
+                    self.transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
 
             # ---- Join phonemes ----
             section_phonemes_list = []
@@ -159,22 +169,26 @@ class RuTranscript:
             section_phonemes_list[:] = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
             self.phonemes_list.append(section_phonemes_list)
 
+            for allophone_index, allophone in enumerate(self.phonemes_list[section_num]):
+                if ((allophone == 't͡s') and self.phonemes_list[section_num][allophone_index + 1] == 's') \
+                        or ((allophone == 'd͡ʒ') and self.phonemes_list[section_num][allophone_index + 1] == 'ʒ'):
+                    del self.phonemes_list[section_num][allophone_index + 1]
+
             # ---- Join letters ----
             self.letters_list.append(list('_'.join(self.a_tokens[section_num])))
 
             # ---- Continue LPC-4. Common rules ----
-            for allophone_index, allophone in enumerate(self.phonemes_list[section_num]):
-                if (allophone == 't͡s') and self.phonemes_list[section_num][allophone_index + 1] == 's':
-                    del self.phonemes_list[section_num][allophone_index + 1]
 
             self.phonemes_list[section_num] = fix_jotised(self.phonemes_list[section_num],
                                                           self.letters_list[section_num])
+            self.phonemes_list[section_num] = shch(self.phonemes_list[section_num])
+            self.phonemes_list[section_num] = long_ge(self.phonemes_list[section_num])
             self.phonemes_list[section_num] = assimilative_palatalization(self.tokens[section_num],
                                                                           self.phonemes_list[section_num])
             self.phonemes_list[section_num] = long_consonants(self.phonemes_list[section_num])
 
             # ---- Allophones ----
-            self.allophones[section_num] = nasal_m(self.phonemes_list[section_num])
+            self.allophones[section_num] = nasal_m_n(self.phonemes_list[section_num])
             self.allophones[section_num] = silent_r(self.allophones[section_num])
             self.allophones[section_num] = voiced_ts(self.allophones[section_num])
 
@@ -195,12 +209,7 @@ class RuTranscript:
                         n += 1
 
             #  ---- Vowels ----
-            self.allophones[section_num] = vowel_a(self.phrasal_words[section_num])
-            self.allophones[section_num] = vowel_o(self.allophones[section_num])
-            self.allophones[section_num] = vowel_e(self.allophones[section_num])
-            self.allophones[section_num] = vowel_u(self.allophones[section_num])
-            self.allophones[section_num] = vowel_i(self.allophones[section_num])
-            self.allophones[section_num] = vowel_ii(self.allophones[section_num])
+            self.allophones[section_num] = vowels(self.phrasal_words[section_num])
 
             # ---- Labialization and velarization ----
             self.allophones[section_num] = labia_velar(self.allophones[section_num])

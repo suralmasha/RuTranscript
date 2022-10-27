@@ -4,8 +4,9 @@ import spacy
 import nltk
 from nltk import Tree
 
+from .sounds import rus_v
 from .ru_number_to_text.num2t4ru import num2text
-from .StressRNN.stressrnn.stressrnn import StressRNN
+# from .StressRNN.stressrnn.stressrnn import StressRNN
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger_ru')
@@ -56,14 +57,18 @@ class TextNormalizationTokenization:
         """
         Splits text into tokens.
         """
+        punctuation = r',.\|/;:()*&^%$#@![]{}"-'
+
         for section_num in range(self.sections_len):
-            tokens = [w.lower() for w in self.sections[section_num].split()]
-            tokens = [re.sub(r"[^\wу́\-\+\|]", '', w) for w in tokens if w != '']
+            tokens = self.sections[section_num].lower()
+            tokens = tokens.split()
+            tokens = [w.strip(punctuation) for w in tokens]
             tokens = [re.sub(r"у́", 'у', w) for w in tokens if w != '']
             self.tokens.append(tokens)
 
-            a_tokens = [w.lower() for w in self.sections[section_num].split()]
-            a_tokens = [re.sub(r"[^\wу́\-\+\|]", '', w) for w in a_tokens if w != '']
+            a_tokens = self.a_sections[section_num].lower()
+            a_tokens = a_tokens.split()
+            a_tokens = [w.strip(punctuation) for w in a_tokens]
             a_tokens = [re.sub(r"у́", 'у', w) for w in a_tokens if w != '']
             self.a_tokens.append(a_tokens)
 
@@ -97,7 +102,7 @@ class Stresses:
         self.dependency_tree = None
 
         self.nlp = spacy.load('ru_core_news_sm')
-        self.stress_rnn = StressRNN()
+        # self.stress_rnn = StressRNN()
 
     def place_accent(self, token):
         """
@@ -105,7 +110,21 @@ class Stresses:
         Args:
           token (str): token without an accent.
         """
-        return self.stress_rnn.put_stress(token, accuracy_threshold=0.75)
+        token_list = list(token)
+        vowels = []
+        for i, let in enumerate(token):
+            if let == 'ё':
+                token_list.insert(i + 1, '+')
+            elif let in rus_v:
+                vowels.append(i)
+
+        if vowels and len(vowels) == 1:
+            token_list.insert(vowels[0] + 1, '+')
+            return ''.join(token_list)
+        else:
+            raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
+                             "Add stresses yourselves.")
+        #    return self.stress_rnn.put_stress(token, accuracy_threshold=0.75)
 
     @staticmethod
     def replace_accent(token):
