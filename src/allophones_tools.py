@@ -5,19 +5,61 @@ from .sounds import allophones, rus_v
 nlp = spacy.load('ru_core_news_sm')
 
 
-def nasal_m(section: list):
+def shch(section: list):
+    for i, current_phon in enumerate(section[:-1]):
+        try:
+            next_phon = section[i + 1]
+        except IndexError:
+            next_phon = ''
+        try:
+            two_current = section[i:i + 2]
+        except IndexError:
+            two_current = ''
+
+        if (current_phon == 'ʒ') \
+                and (allophones[next_phon]['phon'] == 'C') and (allophones[next_phon]['voice'] == 'voiceless') \
+                or (two_current in [['s', 't͡ɕ'], ['z', 't͡ɕ'], ['ʒ', 't͡ɕ']]):
+            section[i] = 'ɕː'
+            del section[i + 1]
+
+    return section
+
+
+def long_ge(section: list):
+    for i, current_phon in enumerate(section[:-1]):
+        try:
+            next_phon = section[i + 1]
+        except IndexError:
+            next_phon = ''
+        try:
+            two_current = section[i:i + 2]
+        except IndexError:
+            two_current = ''
+
+        if (current_phon == next_phon == 'ʒ') \
+                or (two_current == ['z', 'ʒ']):
+            section[i] = 'ʑː'
+            del section[i + 1]
+        elif (current_phon == 'ɕː') \
+                and (allophones[next_phon]['phon'] == 'C') and (allophones[next_phon]['voice'] == 'voiced'):
+            section[i] = 'ʑː'
+
+    return section
+
+
+def nasal_m_n(section: list):
     for i, current_phon in enumerate(section[:-1]):
         try:
             next_phon = section[i + 1]
         except IndexError:
             next_phon = ''
 
-        if (current_phon == 'm') \
+        if (current_phon == 'm' or current_phon == 'n') \
                 and (allophones[next_phon]['phon'] == 'C') \
                 and (allophones[next_phon]['place'] == 'labial, labiodental'):
             section[i] = 'ɱ'
 
-        elif (current_phon == 'mʲ') \
+        elif (current_phon == 'mʲ' or current_phon == 'nʲ') \
                 and (allophones[next_phon]['phon'] == 'C') \
                 and (allophones[next_phon]['place'] == 'labial, labiodental'):
             section[i] = 'ɱʲ'
@@ -71,9 +113,9 @@ def fix_jotised(phonemes_list_section, letters_list_section):
         if (let == 'д') and (next_let == 'ж'):
             del letters_list_to_iterate[i + 1]
             letters_list_to_iterate[i] = 'дж'
-        elif next_let == 'ь':
+        elif next_let in ['ь', 'ъ']:
             del letters_list_to_iterate[i + 1]
-            letters_list_to_iterate[i] = letters_list_to_iterate[i] + 'ь'
+            letters_list_to_iterate[i] = letters_list_to_iterate[i] + next_let
 
     n = 0
     for i, current_phon in enumerate(phonemes_list_to_iterate):
@@ -95,13 +137,20 @@ def fix_jotised(phonemes_list_section, letters_list_section):
         except IndexError:
             previous_phon = ''
         try:
+            next_let = letters_list_to_iterate[i + 1]
+        except IndexError:
+            next_let = ''
+        try:
             after_next_let = letters_list_to_iterate[i + 2]
         except IndexError:
             after_next_let = ''
 
-        if current_let in 'ё е я ю'.split():
-            if (previous_let[-1] in ['ь', 'ъ']) \
-                    and (previous_phon != 'j'):
+        if (current_let == 'о') and (previous_let[-1] == 'ь') and (next_let == '+'):
+            phonemes_list_section.insert(i + n, 'j')
+            n += 1
+
+        elif current_let in 'ё е я ю'.split():
+            if previous_let[-1] in ['ь', 'ъ']:
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
 
@@ -120,7 +169,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
                 n += 1
 
         elif current_let == 'и':
-            if (previous_let[-1] in ['ь', 'ъ']) and (previous_phon != 'j'):
+            if previous_let[-1] in ['ь', 'ъ']:
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
 
@@ -130,10 +179,15 @@ def fix_jotised(phonemes_list_section, letters_list_section):
                     and (allophones[previous_phon]['palatalization'] != 'asoft'):
                 phonemes_list_section[i + n - 1] = previous_phon + 'ʲ'
 
+    if phonemes_list_section[0] == 'j':
+        phonemes_list_section[0] = 'ʝ'
+
     return phonemes_list_section
 
 
 def assimilative_palatalization(tokens_section, phonemes_list_section):
+    exceptions = 'сосиска злить после ёлка день транскрипция'.split()
+
     token_index = 0
     token = tokens_section[token_index]
     nlp_token = nlp(token)[0]
@@ -146,7 +200,7 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
             nlp_token = nlp(token)[0]
             lemma = nlp_token.lemma_
 
-        if (lemma not in 'сосиска злить после ёлка день'.split(' ')) and ('i+zm' not in token):
+        if (lemma not in exceptions) and ('i+zm' not in token):
             try:
                 if allophones[phonemes_list_section[i + 1]]['phon'] != 'symb':
                     next_phon = phonemes_list_section[i + 1]
@@ -202,7 +256,7 @@ def long_consonants(phonemes_list_section):
         except IndexError:
             next_phon = ''
 
-        if (current_phon[0] in 'bpfkstrlmngdz') and (current_phon == next_phon):
+        if (current_phon[0] in 'ʂ̺bpfkstrlmngdz') and (current_phon == next_phon):
             del phonemes_list_section[i + n]
             del phonemes_list_section[i + n]
             phonemes_list_section.insert(i + n, current_phon + 'ː')
@@ -211,7 +265,7 @@ def long_consonants(phonemes_list_section):
     return phonemes_list_section
 
 
-def vowel_a(segment: list):
+def vowels(segment: list):
     for i, current_phon in enumerate(segment):
         try:
             next_phon = segment[i + 1]
@@ -225,6 +279,10 @@ def vowel_a(segment: list):
             previous_phon = segment[i - 1]
         except IndexError:
             previous_phon = ''
+        try:
+            after_previous_phon = segment[i - 2]
+        except IndexError:
+            after_previous_phon = ''
 
         if current_phon == 'a':
             if (i != len(segment) - 1) and (next_phon != '_') \
@@ -238,6 +296,9 @@ def vowel_a(segment: list):
                             and ('hard' in allophones[previous_phon]['palatalization']) \
                             and (after_next_phon == 'l'):
                         segment[i] = 'ɑ'
+                    elif (allophones[previous_phon]['phon'] == 'C') \
+                            and ('hard' in allophones[previous_phon]['palatalization']):
+                        segment[i] = 'a'
                     else:
                         segment[i] = 'æ'
 
@@ -275,21 +336,7 @@ def vowel_a(segment: list):
                 elif next_phon != '+':
                     segment[i] = 'ə'  # заударные / второй предударный (first)
 
-    return segment
-
-
-def vowel_o(segment: list):
-    for i, current_phon in enumerate(segment):
-        try:
-            next_phon = segment[i + 1]
-        except IndexError:
-            next_phon = ''
-        try:
-            previous_phon = segment[i - 1]
-        except IndexError:
-            previous_phon = ''
-
-        if current_phon == 'o':
+        elif current_phon == 'o':
             if (i != len(segment) - 1) and (next_phon != '_') \
                     and (i != 0) and (previous_phon != '_'):  # not last, not first
 
@@ -297,10 +344,9 @@ def vowel_o(segment: list):
                     if allophones[previous_phon]['phon'] == 'C' \
                             and (allophones[previous_phon]['hissing'] == 'hissing'):
                         segment[i] = 'ɐ.'
-                    elif (allophones[previous_phon]['phon'] == 'C') \
-                            and ('soft' in allophones[previous_phon]['palatalization']):
-                        segment[i] = 'ɵ'
-                    else:
+                    elif (allophones[previous_phon]['phon'] == 'C'
+                          and 'soft' in allophones[previous_phon]['palatalization'])\
+                            or (allophones[previous_phon]['phon'] == 'V'):
                         segment[i] = 'ɵ'
 
                 elif next_phon == '-':  # первый предударный (not last, not first)
@@ -337,21 +383,7 @@ def vowel_o(segment: list):
                 elif next_phon != '+':
                     segment[i] = 'ə'  # заударные / второй предударный (first)
 
-    return segment
-
-
-def vowel_e(segment: list):
-    for i, current_phon in enumerate(segment):
-        try:
-            next_phon = segment[i + 1]
-        except IndexError:
-            next_phon = ''
-        try:
-            previous_phon = segment[i - 1]
-        except IndexError:
-            previous_phon = ''
-
-        if current_phon == 'e':
+        elif current_phon == 'e':
             if (i != len(segment) - 1) and (next_phon != '_') \
                     and (i != 0) and (previous_phon != '_'):  # not last, not first
 
@@ -400,21 +432,7 @@ def vowel_e(segment: list):
                 else:
                     segment[i] = 'ɪ.'  # заударные / второй предударный (first)
 
-    return segment
-
-
-def vowel_u(segment: list):
-    for i, current_phon in enumerate(segment):
-        try:
-            next_phon = segment[i + 1]
-        except IndexError:
-            next_phon = ''
-        try:
-            previous_phon = segment[i - 1]
-        except IndexError:
-            previous_phon = ''
-
-        if current_phon == 'u':
+        elif current_phon == 'u':
             if (i != len(segment) - 1) or (next_phon != '_'):  # not last
 
                 if next_phon == '+':  # ударный (not last)
@@ -436,70 +454,26 @@ def vowel_u(segment: list):
                 else:
                     segment[i] = 'ᵿ'
 
-    return segment
-
-
-def vowel_i(segment: list):
-    for i, current_phon in enumerate(segment):
-        try:
-            next_phon = segment[i + 1]
-        except IndexError:
-            next_phon = ''
-        try:
-            previous_phon = segment[i - 1]
-        except IndexError:
-            previous_phon = ''
-
-        if (current_phon == 'i') and (allophones[previous_phon]['phon'] == 'C'):
-            if (i == 0) and (previous_phon == '_') \
-                    and (next_phon != '+'):  # ударный (first)
-                segment[i] = 'ɪ'
-            elif (i == len(segment) - 1) or (next_phon == '_'):  # last (не может быть ударным)
-                if allophones[previous_phon]['hissing'] == 'hissing':
-                    segment[i] = 'ɨ'
-                else:
-                    segment[i] = 'ɪ'
-            elif allophones[previous_phon]['hissing'] == 'hissing':
+        elif (current_phon == 'i') and (allophones[previous_phon]['phon'] == 'C'):
+            if allophones[previous_phon]['hissing'] == 'hissing':  # после шипящей
                 segment[i] = 'ɨ'
-            elif next_phon != '+':
+            elif next_phon != '+':  # безударный
                 segment[i] = 'ɪ'
 
-    return segment
-
-
-def vowel_ii(segment: list):
-    for i, current_phon in enumerate(segment):
-        try:
-            next_phon = segment[i + 1]
-        except IndexError:
-            next_phon = ''
-        try:
-            sec_next_phon = segment[i + 2]
-        except IndexError:
-            sec_next_phon = ''
-        try:
-            previous_phon = segment[i - 1]
-        except IndexError:
-            previous_phon = ''
-        try:
-            sec_previous_phon = segment[i - 2]
-        except IndexError:
-            sec_previous_phon = ''
-
-        if (current_phon == 'ɨ') and (allophones[previous_phon]['phon'] == 'C'):
+        elif (current_phon == 'ɨ') and (allophones[previous_phon]['phon'] == 'C'):
             if (i != len(segment) - 1) or (next_phon != '_'):  # not last
 
                 if next_phon == '+':  # ударный (not last)
                     if (previous_phon == 'l') \
                             and (len(segment) > 4) \
-                            and (allophones[sec_previous_phon]['phon'] == 'C') \
-                            and ('lab' in allophones[sec_previous_phon]['place']):
+                            and (allophones[after_previous_phon]['phon'] == 'C') \
+                            and ('lab' in allophones[after_previous_phon]['place']):
                         segment[i] = 'ɯ̟ɨ̟'
-                    elif (allophones[sec_next_phon]['phon'] == 'C') \
+                    elif (allophones[after_next_phon]['phon'] == 'C') \
                             and ((allophones[previous_phon]['place'] == 'lingual, dental'
-                                  and allophones[sec_next_phon]['place'] == 'lingual, velar')
+                                  and allophones[after_next_phon]['place'] == 'lingual, velar')
                                  or (allophones[previous_phon]['place'] == 'lingual, palatinоdental'
-                                     and allophones[sec_next_phon]['place'] == 'lingual, velar')):
+                                     and allophones[after_next_phon]['place'] == 'lingual, velar')):
                         segment[i] = 'ɨ̟'
 
                 elif allophones[previous_phon]['hissing'] == 'hissing':  # предударный / заунарный (not last)
@@ -526,14 +500,22 @@ def labia_velar(segment: list):
                 and (i != 0) and (previous_phon != '_') \
                 and (allophones[previous_phon]['phon'] == 'C') \
                 and (allophones[current_phon]['round'] == 'round') \
-                and ('ʷ' not in previous_phon):
-            if 'ᶣ' not in previous_phon:
-                if 'ʲ' in previous_phon:
-                    segment[i - 1] = previous_phon[:-1] + 'ᶣ'
-                elif allophones[previous_phon]['palatalization'] == 'asoft':
-                    segment[i - 1] = previous_phon + 'ᶣ'
+                and ('ʷ' not in previous_phon) and ('ᶣ' not in previous_phon):
+            if 'ʲ' in previous_phon:
+                segment[i - 1] = previous_phon[:-1] + 'ᶣ'
+                if i != len(segment) - 2:
+                    segment = labia_velar(segment)
+                    break
+            elif allophones[previous_phon]['palatalization'] == 'asoft':
+                segment[i - 1] = previous_phon + 'ᶣ'
+                if i != len(segment) - 2:
+                    segment = labia_velar(segment)
+                    break
             else:
                 segment[i - 1] = previous_phon + 'ʷ'
+                if i != len(segment) - 2:
+                    segment = labia_velar(segment)
+                    break
 
         elif (allophones[current_phon]['phon'] == 'V') \
                 and (i != 0) and (previous_phon != '_') \
@@ -542,5 +524,8 @@ def labia_velar(segment: list):
                 and ('soft' not in allophones[previous_phon]['palatalization']) \
                 and ('ˠ' not in previous_phon):  # в русском нет слов, начинающихся с ы
             segment[i - 1] = previous_phon + 'ˠ'
+            if i != len(segment) - 2:
+                segment = labia_velar(segment)
+                break
 
     return segment

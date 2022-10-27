@@ -1,0 +1,28 @@
+import unittest
+
+from RuTranscript.src.ru_transcript import RuTranscript
+
+
+class TestConsonants(unittest.TestCase):
+
+    def test_one_syllable(self):
+        testing_text = 'нос'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('nʷ o s', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['nʷ', 'o', 's'], ru_transcript.allophones)
+
+    def test_yo(self):
+        testing_text = 'ёлка'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('ʝ ɪ l k æ.', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['ʝ', 'ɪ', 'l', 'k', 'æ.'], ru_transcript.allophones)
+
+
+if __name__ == '__main__':
+    unittest.main()
