@@ -12,7 +12,7 @@ from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm')
 
-irregular_exceptions_df = pd.read_excel(r'C:\Users\Саша\PycharmProjects\RuTranscript\RuTranscript\src\irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
+irregular_exceptions_df = pd.read_excel('./irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
 irregular_exceptions = {row['original word']: row['pronunciation'] for _, row in irregular_exceptions_df.iterrows()}
 irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exceptions],
                                       irregular_exceptions.values()))
