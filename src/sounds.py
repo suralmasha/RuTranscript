@@ -3,17 +3,17 @@ epi_starterpack = 'a b bʲ v vʲ ɡ ɡʲ d dʲ e ʒ z zʲ i j k kʲ l lʲ m mʲ 
 ru_starterpack = 'ё й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю'.split()
 rus_v = 'а е ё и о у э ю я ы'.split(' ')  # russian vowels
 
-with open('./alphabet.txt', 'r', encoding='utf-8') as f:
+with open('../alphabet.txt', 'r', encoding='utf-8') as f:
     alphabet = f.read().split(', ')
 
-with open('./sorted_allophones.txt', 'r', encoding='utf-8') as f:
+with open('../sorted_allophones.txt', 'r', encoding='utf-8') as f:
     sorted_phonemes_txt = [line.replace('\n', '') for i, line in enumerate(f.readlines())]
     sorted_phonemes = {}
     for group in sorted_phonemes_txt:
         group_name, phonemes = group.split(' = ')
         sorted_phonemes[group_name] = phonemes.split(', ')
 
-with open('./paired_consonants.txt', 'r', encoding='utf-8') as f:
+with open('../paired_consonants.txt', 'r', encoding='utf-8') as f:
     paired_c_txt = f.read().replace(')', ')_').split('_, ')
     paired_c = {}
     for pair in paired_c_txt:
