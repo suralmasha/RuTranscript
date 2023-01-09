@@ -1,4 +1,5 @@
 import pandas as pd
+from os.path import join, dirname, abspath
 
 import spacy
 import epitran
@@ -12,10 +13,15 @@ from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm')
 
-irregular_exceptions_df = pd.read_excel('../irregular_exceptions.xlsx', engine='openpyxl', usecols=[0, 1])
+ROOT_DIR = dirname(abspath(__file__))
+irregular_exceptions_df = pd.read_excel(join(ROOT_DIR, 'irregular_exceptions.xlsx'), engine='openpyxl', usecols=[0, 1])
 irregular_exceptions = {row['original word']: row['pronunciation'] for _, row in irregular_exceptions_df.iterrows()}
 irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exceptions],
                                       irregular_exceptions.values()))
+
+
+def get_allophone_info(allophone):
+    return allophones[allophone]
 
 
 class RuTranscript:
@@ -129,7 +135,7 @@ class RuTranscript:
             for i, token in enumerate(self.a_tokens[section_num]):
                 transliterated_token = epi.transliterate(token)
                 for key, value in non_ipa_symbols.items():
-                    if key in token:
+                    if key in transliterated_token:
                         transliterated_token = transliterated_token.replace(key, value)
 
                 self.transliterated_tokens[section_num][i] = transliterated_token
@@ -162,7 +168,9 @@ class RuTranscript:
                         while (transliterated_tokens_joined[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ']) \
                                 and (n > 0):
                             n -= 1
-                    section_phonemes_list.append(transliterated_tokens_joined[i:i + n])
+                        section_phonemes_list.append(transliterated_tokens_joined[i:i + n])
+                    elif symb in epi_starterpack + ['||', 'γ']:
+                        section_phonemes_list.append(symb)
                 else:
                     section_phonemes_list.append(symb)
 

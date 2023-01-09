@@ -19,9 +19,9 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('ʝ ɪ l k æ.', ru_transcript.transcription)
+        self.assertEqual('ʝᶣ ɵ l k ʌ', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['ʝ', 'ɪ', 'l', 'k', 'æ.'], ru_transcript.allophones)
+        self.assertEqual(['ʝᶣ', 'ɵ', 'l', 'k', 'ʌ'], ru_transcript.allophones)
 
 
 if __name__ == '__main__':

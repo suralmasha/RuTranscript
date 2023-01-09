@@ -490,10 +490,11 @@ def vowels(segment: list):
 
 
 def labia_velar(segment: list):
+    result_segment = []
     for i, current_phon in enumerate(segment):
-        try:
+        if i != 0:
             previous_phon = segment[i - 1]
-        except IndexError:
+        else:
             previous_phon = ''
 
         if (allophones[current_phon]['phon'] == 'V') \
@@ -502,20 +503,23 @@ def labia_velar(segment: list):
                 and (allophones[current_phon]['round'] == 'round') \
                 and ('ʷ' not in previous_phon) and ('ᶣ' not in previous_phon):
             if 'ʲ' in previous_phon:
-                segment[i - 1] = previous_phon[:-1] + 'ᶣ'
-                if i != len(segment) - 2:
-                    segment = labia_velar(segment)
-                    break
+                new = previous_phon.replace('ʲ', '') + 'ᶣ'
+                if new in allophones.keys():
+                    del result_segment[-1]
+                    result_segment.append(new)
+                    result_segment.append(current_phon)
             elif allophones[previous_phon]['palatalization'] == 'asoft':
-                segment[i - 1] = previous_phon + 'ᶣ'
-                if i != len(segment) - 2:
-                    segment = labia_velar(segment)
-                    break
+                new = previous_phon + 'ᶣ'
+                if new in allophones.keys():
+                    del result_segment[-1]
+                    result_segment.append(new)
+                    result_segment.append(current_phon)
             else:
-                segment[i - 1] = previous_phon + 'ʷ'
-                if i != len(segment) - 2:
-                    segment = labia_velar(segment)
-                    break
+                new = previous_phon + 'ʷ'
+                if new in allophones.keys():
+                    del result_segment[-1]
+                    result_segment.append(new)
+                    result_segment.append(current_phon)
 
         elif (allophones[current_phon]['phon'] == 'V') \
                 and (i != 0) and (previous_phon != '_') \
@@ -523,9 +527,13 @@ def labia_velar(segment: list):
                 and (allophones[current_phon]['round'] == 'velarize') \
                 and ('soft' not in allophones[previous_phon]['palatalization']) \
                 and ('ˠ' not in previous_phon):  # в русском нет слов, начинающихся с ы
-            segment[i - 1] = previous_phon + 'ˠ'
-            if i != len(segment) - 2:
-                segment = labia_velar(segment)
-                break
+            new = previous_phon + 'ˠ'
+            if new in allophones.keys():
+                del result_segment[-1]
+                result_segment.append(new)
+                result_segment.append(current_phon)
 
-    return segment
+        else:
+            result_segment.append(current_phon)
+
+    return result_segment

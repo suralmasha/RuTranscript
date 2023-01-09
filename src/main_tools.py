@@ -8,8 +8,8 @@ from .sounds import rus_v
 from .ru_number_to_text.num2t4ru import num2text
 # from .StressRNN.stressrnn.stressrnn import StressRNN
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger_ru')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger_ru')
 
 
 class TextNormalizationTokenization:
@@ -115,11 +115,14 @@ class Stresses:
         for i, let in enumerate(token):
             if let == 'ё':
                 token_list.insert(i + 1, '+')
+                return ''.join(token_list)
             elif let in rus_v:
                 vowels.append(i)
 
         if vowels and len(vowels) == 1:
             token_list.insert(vowels[0] + 1, '+')
+            return ''.join(token_list)
+        elif not vowels:
             return ''.join(token_list)
         else:
             raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
