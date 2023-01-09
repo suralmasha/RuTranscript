@@ -224,27 +224,30 @@ def extract_phrasal_words(phonemes, indexes):
     n = 0
 
     for tuple_indexes in indexes:
-        main_word_index = tuple_indexes[0]
-        main_word = tokens_list[main_word_index]
+        try:
+            main_word_index = tuple_indexes[0]
+            main_word = tokens_list[main_word_index]
 
-        if tuple_indexes[1] > main_word_index:
-            proclitic_index = tuple_indexes[1]
-        else:
-            enclitic_index = tuple_indexes[1]
+            if tuple_indexes[1] > main_word_index:
+                proclitic_index = tuple_indexes[1]
+            else:
+                enclitic_index = tuple_indexes[1]
 
-        if proclitic_index is not None:
-            proclitic = [x for x in tokens_list[proclitic_index] if x != '+']
-            phrasal_words.remove(tokens_list[proclitic_index])
-            phrasal_words.remove(main_word)
-            phrasal_words.insert(proclitic_index + n, main_word + proclitic)
-            n -= 1
+            if proclitic_index is not None:
+                proclitic = [x for x in tokens_list[proclitic_index] if x != '+']
+                phrasal_words.remove(tokens_list[proclitic_index])
+                phrasal_words.remove(main_word)
+                phrasal_words.insert(proclitic_index + n, main_word + proclitic)
+                n -= 1
 
-        if enclitic_index is not None:
-            enclitic = [x for x in tokens_list[enclitic_index] if x != '+']
-            phrasal_words.remove(tokens_list[enclitic_index])
-            phrasal_words.remove(main_word)
-            phrasal_words.insert(enclitic_index + n, enclitic + main_word)
-            n -= 1
+            if enclitic_index is not None:
+                enclitic = [x for x in tokens_list[enclitic_index] if x != '+']
+                phrasal_words.remove(tokens_list[enclitic_index])
+                phrasal_words.remove(main_word)
+                phrasal_words.insert(enclitic_index + n, enclitic + main_word)
+                n -= 1
+        except TypeError:
+            continue
 
     phrasal_words_result = []
     for token in phrasal_words:
