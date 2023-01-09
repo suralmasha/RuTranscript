@@ -246,7 +246,7 @@ def extract_phrasal_words(phonemes, indexes):
                 phrasal_words.remove(main_word)
                 phrasal_words.insert(enclitic_index + n, enclitic + main_word)
                 n -= 1
-        except TypeError:
+        except:
             continue
 
     phrasal_words_result = []
