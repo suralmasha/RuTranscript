@@ -27,11 +27,11 @@ def get_allophone_info(allophone):
 class RuTranscript:
     def __init__(self, text, a_text=None, accent_place='after'):
         if a_text is not None:
-            self.a_text = a_text
+            self.a_text = a_text.replace('-', ' ')
         else:
-            self.a_text = text
+            self.a_text = text.replace('-', ' ')
 
-        self.text = text
+        self.text = text.replace('-', ' ')
         self.accent_place = accent_place
 
         norm_tok = TextNormalizationTokenization(self.text, self.a_text)
@@ -243,3 +243,9 @@ class RuTranscript:
             allophones_joined.extend(section)
 
         self.allophones = [x for x in allophones_joined if x not in ['+', '-', '_']]
+
+        # ---- Result phonemes ----
+        phonemes_joined = []
+        for section in self.phonemes_list:
+            phonemes_joined.extend(section)
+        self.phonemes = [x for x in phonemes_joined if x not in ['+', '-', '_']]
