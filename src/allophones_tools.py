@@ -248,17 +248,19 @@ def long_consonants(phonemes_list_section):
     n = 0
     phonemes_list_to_iterate = phonemes_list_section[:]
     for i, current_phon in enumerate(phonemes_list_to_iterate):
+        add_symb = False
         try:
             if allophones[phonemes_list_to_iterate[i + 1]]['phon'] != 'symb':
                 next_phon = phonemes_list_to_iterate[i + 1]
             else:
                 next_phon = phonemes_list_to_iterate[i + 2]
+                add_symb = True
         except IndexError:
             next_phon = ''
 
         if (current_phon[0] in 'ʂ̺bpfkstrlmngdz') and (current_phon == next_phon):
             del phonemes_list_section[i + n]
-            del phonemes_list_section[i + n]
+            del phonemes_list_section[i + n + add_symb]
             phonemes_list_section.insert(i + n, current_phon + 'ː')
             n -= 1
 

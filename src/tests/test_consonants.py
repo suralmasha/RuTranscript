@@ -215,6 +215,16 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['ʝ', 'æ'], ru_transcript.allophones)
 
+    def test_long_consonant_junction_of_words(self):  # долгий согласный на стыке слов
+        testing_text = 'вот так'
+        testing_a_text = 'вот так'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('v ɐ tː a k', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['v', 'ɐ', 'tː', 'a', 'k'], ru_transcript.allophones)
+
 
 if __name__ == '__main__':
     unittest.main()
