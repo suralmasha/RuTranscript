@@ -107,6 +107,10 @@ class RuTranscript:
                     elif token[-4:] == 'ться':
                         self._a_tokens[section_num][i] = token[:-4] + 'ца'
 
+                # noun endings 'ия ие ию'
+                if token[-2:] in ['ия', 'ие', 'ию']:
+                    self._a_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
+
                 # unpronounceable consonants
                 for sub in second_silent:
                     if sub in token:
@@ -186,7 +190,6 @@ class RuTranscript:
             self._letters_list.append(list('_'.join(self._a_tokens[section_num])))
 
             # ---- Continue LPC-4. Common rules ----
-
             self._phonemes_list[section_num] = fix_jotised(self._phonemes_list[section_num],
                                                            self._letters_list[section_num])
             self._phonemes_list[section_num] = shch(self._phonemes_list[section_num])

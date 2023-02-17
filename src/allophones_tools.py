@@ -119,22 +119,22 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
     n = 0
     for i, current_phon in enumerate(phonemes_list_to_iterate):
+        sub_symb = False
+        if allophones[current_phon]['phon'] == 'symb':
+            continue
         if current_phon == 'j' and letters_list_to_iterate[i] != 'й':
             letters_list_to_iterate.insert(i, 'й')
         current_let = letters_list_to_iterate[i]
         try:
             if allophones[phonemes_list_to_iterate[i - 1]]['phon'] != 'symb':
                 previous_let = letters_list_to_iterate[i - 1]
-            else:
-                previous_let = letters_list_to_iterate[i - 2]
-        except IndexError:
-            previous_let = ''
-        try:
-            if allophones[phonemes_list_to_iterate[i - 1]]['phon'] != 'symb':
                 previous_phon = phonemes_list_to_iterate[i - 1]
             else:
+                previous_let = letters_list_to_iterate[i - 2]
                 previous_phon = phonemes_list_to_iterate[i - 2]
+                sub_symb = True
         except IndexError:
+            previous_let = ''
             previous_phon = ''
         try:
             next_let = letters_list_to_iterate[i + 1]
@@ -151,6 +151,8 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
         elif current_let in 'ё е я ю'.split():
             if previous_let[-1] in ['ь', 'ъ']:
+                if 'ʲ' not in previous_phon:
+                    phonemes_list_section[i + n - 1 - sub_symb] = previous_phon + 'ʲ'
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
 
@@ -162,14 +164,17 @@ def fix_jotised(phonemes_list_section, letters_list_section):
                     and (allophones[previous_phon]['phon'] == 'C') \
                     and ('ʲ' not in previous_phon) \
                     and ('a' not in allophones[previous_phon]['palatalization'][0]):
-                phonemes_list_section[i + n - 1] = previous_phon + 'ʲ'
+                phonemes_list_section[i + n - 1 - sub_symb] = previous_phon + 'ʲ'
 
             elif (after_next_let == '+') and (previous_phon != 'j'):
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
 
         elif current_let == 'и':
-            if previous_let[-1] in ['ь', 'ъ']:
+            if sub_symb and phonemes_list_to_iterate[i - 1] == '_':
+                phonemes_list_section[i + n] = 'ɨ'
+
+            elif previous_let[-1] in ['ь', 'ъ']:
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
 
@@ -177,7 +182,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
                     and ('ʲ' not in previous_phon) \
                     and (allophones[previous_phon]['palatalization'] != 'ahard') \
                     and (allophones[previous_phon]['palatalization'] != 'asoft'):
-                phonemes_list_section[i + n - 1] = previous_phon + 'ʲ'
+                phonemes_list_section[i + n - 1 - sub_symb] = previous_phon + 'ʲ'
 
     if phonemes_list_section[0] == 'j':
         phonemes_list_section[0] = 'ʝ'
@@ -186,7 +191,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
 
 def assimilative_palatalization(tokens_section, phonemes_list_section):
-    exceptions = 'сосиска злить после ёлка день транскрипция'.split()
+    exceptions = 'сосиска злить после ёлка день транскрипция джаз'.split()
 
     token_index = 0
     token = tokens_section[token_index]
