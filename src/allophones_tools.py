@@ -16,9 +16,12 @@ def shch(section: list):
         except IndexError:
             two_current = ''
 
-        if (current_phon == 'ʒ') \
-                and (allophones[next_phon]['phon'] == 'C') and (allophones[next_phon]['voice'] == 'voiceless') \
-                or (two_current in [['s', 't͡ɕ'], ['z', 't͡ɕ'], ['ʒ', 't͡ɕ']]):
+        if (
+                (current_phon == 'ʒ')
+                and (allophones[next_phon]['phon'] == 'C')
+                and (allophones[next_phon]['voice'] == 'voiceless' and next_phon != 's'))\
+                or (two_current in [['s', 't͡ɕ'], ['z', 't͡ɕ'], ['ʒ', 't͡ɕ']]
+        ):
             section[i] = 'ɕː'
             del section[i + 1]
 
