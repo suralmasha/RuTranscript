@@ -44,7 +44,9 @@ def long_ge(section: list):
             section[i] = 'ʑː'
             del section[i + 1]
         elif (current_phon == 'ɕː') \
-                and (allophones[next_phon]['phon'] == 'C') and (allophones[next_phon]['voice'] == 'voiced'):
+                and (allophones[next_phon]['phon'] == 'C')\
+                and (allophones[next_phon]['voice'] == 'voiced')\
+                and ('nasal' not in allophones[next_phon]['manner']):
             section[i] = 'ʑː'
 
     return section
@@ -154,7 +156,9 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
         elif current_let in 'ё е я ю'.split():
             if previous_let[-1] in ['ь', 'ъ']:
-                if 'ʲ' not in previous_phon:
+                if (allophones[previous_phon]['phon'] == 'C')\
+                        and ('ʲ' not in previous_phon)\
+                        and (allophones[previous_phon]['palatalization'][0] != 'a'):
                     phonemes_list_section[i + n - 1 - sub_symb] = previous_phon + 'ʲ'
                 phonemes_list_section.insert(i + n, 'j')
                 n += 1
@@ -174,7 +178,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
                 n += 1
 
         elif current_let == 'и':
-            if sub_symb and phonemes_list_to_iterate[i - 1] == '_':
+            if sub_symb and (phonemes_list_to_iterate[i - 1] == '_') and (allophones[previous_phon]['phon'] == 'C'):
                 phonemes_list_section[i + n] = 'ɨ'
 
             elif previous_let[-1] in ['ь', 'ъ']:
@@ -183,8 +187,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
             elif (allophones[previous_phon]['phon'] == 'C') \
                     and ('ʲ' not in previous_phon) \
-                    and (allophones[previous_phon]['palatalization'] != 'ahard') \
-                    and (allophones[previous_phon]['palatalization'] != 'asoft'):
+                    and (allophones[previous_phon]['palatalization'][0] != 'a'):
                 phonemes_list_section[i + n - 1 - sub_symb] = previous_phon + 'ʲ'
 
     if phonemes_list_section[0] == 'j':
@@ -194,7 +197,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
 
 def assimilative_palatalization(tokens_section, phonemes_list_section):
-    exceptions = 'сосиска злить после ёлка день транскрипция джаз'.split()
+    exceptions = 'сосиска злить после ёлка день транскрипция джаз неуклюжий'.split()
 
     token_index = 0
     token = tokens_section[token_index]
@@ -210,10 +213,11 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
 
         if (lemma not in exceptions) and ('i+zm' not in token):
             try:
-                if allophones[phonemes_list_section[i + 1]]['phon'] != 'symb':
-                    next_phon = phonemes_list_section[i + 1]
-                else:
-                    next_phon = phonemes_list_section[i + 2]
+                n = 1
+                next_phon = phonemes_list_section[i + n]
+                while allophones[next_phon]['phon'] == 'symb':
+                    n += 1
+                    next_phon = phonemes_list_section[i + n]
             except IndexError:
                 next_phon = ''
 
@@ -238,8 +242,12 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
                     and (allophones[next_phon]['place'] == 'lingual, velar'):
                 continue
 
-            # не смягчение звука [р] перед мягкими согласными (а[рт’]и́ст)
-            elif current_phon == 'r':
+            # не смягчение звуков [р], [г] перед мягкими согласными (а[рт’]и́ст, а[гн’]ия)
+            elif current_phon in ['r', 'ɡ']:
+                continue
+
+            # не смягчение звука [т] перед [р] ([тр’]и́)
+            elif (current_phon == 't') and (next_phon == 'rʲ'):
                 continue
 
             elif (allophones[current_phon]['phon'] == 'C') \
@@ -443,7 +451,7 @@ def vowels(segment: list):
                     segment[i] = 'ɪ.'  # заударные / второй предударный (first)
 
         elif current_phon == 'u':
-            if (i != len(segment) - 1) or (next_phon != '_'):  # not last
+            if (i != len(segment) - 1) and (next_phon != '_'):  # not last
 
                 if next_phon == '+':  # ударный (not last)
                     if (allophones[previous_phon]['phon'] == 'C') \
@@ -471,7 +479,7 @@ def vowels(segment: list):
                 segment[i] = 'ɪ'
 
         elif (current_phon == 'ɨ') and (allophones[previous_phon]['phon'] == 'C'):
-            if (i != len(segment) - 1) or (next_phon != '_'):  # not last
+            if (i != len(segment) - 1) and (next_phon != '_'):  # not last
 
                 if next_phon == '+':  # ударный (not last)
                     if (previous_phon == 'l') \

@@ -41,12 +41,12 @@ class TextNormalizationTokenization:
                 self.pause_dict[index] = '|'
                 index += 1
 
-        sections = re.split(r'[.?!,:;()-—…]', self.text)
+        sections = re.split(r'[.?!,:;()—…]', self.text)
         sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
         sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
         self.sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
 
-        a_sections = re.split(r'[.?!,:;()-—…]', self.a_text)
+        a_sections = re.split(r'[.?!,:;()—…]', self.a_text)
         a_sections = [re.sub(r'\s+', ' ', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
         self.a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
@@ -237,7 +237,10 @@ def extract_phrasal_words(phonemes, indexes):
                 proclitic = [x for x in tokens_list[proclitic_index] if x != '+']
                 phrasal_words.remove(tokens_list[proclitic_index])
                 phrasal_words.remove(main_word)
-                phrasal_words.insert(proclitic_index + n, main_word + proclitic)
+                if proclitic_index == 1:
+                    phrasal_words.insert(0, main_word + proclitic)
+                else:
+                    phrasal_words.insert(proclitic_index + n, main_word + proclitic)
                 n -= 1
 
             if enclitic_index is not None:

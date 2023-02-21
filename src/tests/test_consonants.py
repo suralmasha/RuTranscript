@@ -81,9 +81,9 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('d͡ʒᶣ ʉ n ɡʲ lʲ ɪ', ru_transcript.transcription)
+        self.assertEqual('d͡ʒᶣ ʉ n ɡ lʲ ɪ', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['d͡ʒᶣ', 'ʉ', 'n', 'ɡʲ', 'lʲ', 'ɪ'], ru_transcript.allophones)
+        self.assertEqual(['d͡ʒᶣ', 'ʉ', 'n', 'ɡ', 'lʲ', 'ɪ'], ru_transcript.allophones)
 
     def test_shch_1(self):  # 'щ'
         testing_text = 'щегол'
@@ -171,9 +171,9 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('ə bʲ j ɪ vʲ lʲ e nʲ ɪ j æ.', ru_transcript.transcription)
+        self.assertEqual('ə bʲ j ɪ vʲ lʲ e nʲ j æ.', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['ə', 'bʲ', 'j', 'ɪ', 'vʲ', 'lʲ', 'e', 'nʲ', 'ɪ', 'j', 'æ.'], ru_transcript.allophones)
+        self.assertEqual(['ə', 'bʲ', 'j', 'ɪ', 'vʲ', 'lʲ', 'e', 'nʲ', 'j', 'æ.'], ru_transcript.allophones)
 
     def test_j_3(self):  # йотированный гласный между двумя гласными
         testing_text = 'заяц'

@@ -108,8 +108,11 @@ class RuTranscript:
                         self._a_tokens[section_num][i] = token[:-4] + 'ца'
 
                 # noun endings 'ия ие ию'
-                if token[-2:] in ['ия', 'ие', 'ию']:
-                    self._a_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
+                if token[-2:] in ['ия', 'ие', 'ию'] and token[-3] not in ['ц', 'щ']:
+                    if token[-3] not in ['ж', 'ш']:
+                        self._a_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
+                    else:
+                        self._a_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
 
                 # unpronounceable consonants
                 for sub in second_silent:
