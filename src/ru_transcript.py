@@ -39,10 +39,10 @@ class RuTranscript:
         norm_tok.section_split_and_tokenize()
         norm_tok.my_num2text()
 
-        self._sections_len = norm_tok.sections_len
         self._pause_dict = get_punctuation_dict(self._text)
         self._a_tokens = norm_tok.a_tokens_normal
         self._tokens = norm_tok.tokens_normal
+        self._sections_len = len(self._tokens)
         self._phrasal_words_indexes = []
         self._transliterated_tokens = [[]] * self._sections_len
         self._phonemes_list = []

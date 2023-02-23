@@ -1,5 +1,4 @@
 import re
-import string
 
 import spacy
 import nltk
@@ -36,8 +35,6 @@ class TextNormalizationTokenization:
     def __init__(self, text, a_text):
         self.text = text
         self.a_text = a_text
-        self.pause_dict = {}  # {section_index: pause_type}
-        self.sections_len = 0
         self.tokens = []
         self.a_tokens = []
         self.tokens_normal = []
@@ -56,7 +53,6 @@ class TextNormalizationTokenization:
         a_sections = [re.sub(r'\s+', ' ', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
-        self.sections_len = len(sections)
 
         self.tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in sections]
         self.a_tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in a_sections]
@@ -122,7 +118,7 @@ class Stresses:
             return ''.join(token_list)
         else:
             raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-                             "Add stresses yourselves.")
+                             f"Add stresses yourselves.\nThere is no stress for the word {token}")
         #    return self.stress_rnn.put_stress(token, accuracy_threshold=0.75)
 
     @staticmethod
@@ -132,13 +128,12 @@ class Stresses:
         Args:
           token (str): token which needs to be refactored.
         """
-        token_split = list(token)
-        plus_index = token_split.index('+')
-
-        new_token_split = token_split[:]
+        plus_index = token.find('+')
+        if plus_index == -1:
+            return token
+        new_token_split = list(token)
         new_token_split.remove('+')
-        new_token_split.insert(plus_index + 1, token_split.pop(plus_index))
-
+        new_token_split.insert(plus_index + 1, token[plus_index])
         return ''.join(new_token_split)
 
     def to_nltk_tree(self, node):
@@ -160,6 +155,9 @@ class Stresses:
         return self.dependency_tree
 
 
+adverb_adp = {'после', 'кругом', 'мимо', 'около', 'вокруг', 'напротив', 'поперёк'}
+
+
 def find_clitics(dep, text, indexes=None):
     """
     Finds proclitics and enclitics in text by using dependency trees.
@@ -169,12 +167,11 @@ def find_clitics(dep, text, indexes=None):
       indexes (list[tuple]): list of tuples with indexes of a main and a dependent words.
     """
     if indexes is None:
-        indexes = []
+        indexes = set()
     functors_pos = {'CCONJ', 'PART', 'ADP'}
-    adverb_adp = ['после', 'кругом', 'мимо', 'около',
-                  'вокруг', 'напротив', 'поперёк']
+    str_dep = str(dep)
 
-    if len(str(dep).split(' ')) > 1:
+    if len(str_dep.split(' ')) > 1:
         for token in dep:
             if isinstance(token, nltk.tree.Tree):
                 indexes = find_clitics(token, text, indexes)
@@ -183,16 +180,15 @@ def find_clitics(dep, text, indexes=None):
                 clitic_index = token.i
                 main_word_index = None
 
-                if (token.i < len(text) - 1) and (text[token.i + 1] in str(dep)) \
+                if (token.i < len(text) - 1) and (text[token.i + 1] in str_dep) \
                         and (text[token.i + 1][0] not in 'еёюяи'):  # proclitic
                     main_word_index = token.i + 1
 
-                elif (token.i > 0) and (text[token.i - 1] in str(dep)):  # enclitic
+                elif (token.i > 0) and (text[token.i - 1] in str_dep):  # enclitic
                     main_word_index = token.i - 1
 
-                tuple_indexes = tuple([main_word_index, clitic_index])
-                if tuple_indexes not in indexes:
-                    indexes.append(tuple_indexes)
+                if main_word_index is not None:
+                    indexes.add((main_word_index, clitic_index))
 
     return indexes
 
