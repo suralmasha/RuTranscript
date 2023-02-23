@@ -67,7 +67,7 @@ for key in allophones.keys():
     elif key in sorted_phonemes['total_c']:
         allophones[key] = {'phon': 'C', 'place': '', 'manner': '',
                            'palatalization': '', 'voice': '',
-                           'pair': None, 'hissing': None}
+                           'pair': None, 'hissing': None, 'sonorous': None}
         # place
         if key in sorted_phonemes['bilabial_c']:
             allophones[key]['place'] = 'labial, bilabial'
@@ -114,6 +114,9 @@ for key in allophones.keys():
             allophones[key]['voice'] = 'voiceless'
             if key in paired_c.values():
                 allophones[key]['pair'] = [k for k, v in paired_c.items() if v == key][0]
+        # sonorous sounds
+        if key in sorted_phonemes['sonorous_c']:
+            allophones[key]['sonorous'] = 'sonorous'
         # hissing sounds
         if key in sorted_phonemes['ship_c']:
             allophones[key]['hissing'] = 'hissing'
