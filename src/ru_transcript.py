@@ -5,7 +5,8 @@ import spacy
 import epitran
 from nltk.stem.snowball import SnowballStemmer
 
-from .main_tools import TextNormalizationTokenization, Stresses, find_clitics, extract_phrasal_words
+from .main_tools import get_punctuation_dict, TextNormalizationTokenization, Stresses, find_clitics, \
+    extract_phrasal_words
 from .sounds import epi_starterpack, allophones
 from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
     long_consonants, vowels, labia_velar
@@ -35,12 +36,11 @@ class RuTranscript:
         self._accent_place = accent_place
 
         norm_tok = TextNormalizationTokenization(self._text, self._a_text)
-        norm_tok.section_split()
-        norm_tok.tokenize()
+        norm_tok.section_split_and_tokenize()
         norm_tok.my_num2text()
 
         self._sections_len = norm_tok.sections_len
-        self._pause_dict = norm_tok.pause_dict
+        self._pause_dict = get_punctuation_dict(self._text)
         self._a_tokens = norm_tok.a_tokens_normal
         self._tokens = norm_tok.tokens_normal
         self._phrasal_words_indexes = []
@@ -229,19 +229,17 @@ class RuTranscript:
             self.allophones[section_num] = labia_velar(self.allophones[section_num])
 
         # ---- Result transcription (with pauses) ----
-        if len(self._pause_dict) == self._sections_len:
-            for section_num in range(self._sections_len):
-                self.transcription.extend(self.allophones[section_num] + [self._pause_dict[section_num]])
+        allophones_working = self.allophones.copy()
+        for i, key in enumerate(self._pause_dict):
+            allophones_working.insert(i + key, self._pause_dict[key])
 
-        elif len(self._pause_dict) == self._sections_len - 1:  # no punctuation in the end
-            for section_num in range(self._sections_len - 1):
-                self.transcription.extend(self.allophones[section_num] + [self._pause_dict[section_num]])
-            self.transcription.extend(self.allophones[-1])
-
-        elif not self._pause_dict:  # no punctuation at all
-            self.transcription = self.allophones[0]
-
-        self.transcription = ' '.join([x for x in self.transcription if x not in ['+', '-', '_']])
+        self.transcription = ' '.join(
+            [' '.join(
+                [x for x in section if x not in ['+', '-', '_']])
+             if section != '||'
+             else section
+             for section in allophones_working]
+        )
 
         # ---- Result allophones ----
         allophones_joined = []

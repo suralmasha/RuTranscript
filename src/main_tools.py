@@ -1,8 +1,10 @@
 import re
+import string
 
 import spacy
 import nltk
 from nltk import Tree
+from functools import lru_cache
 
 from .sounds import rus_v
 from .ru_number_to_text.num2t4ru import num2text
@@ -12,89 +14,83 @@ from .ru_number_to_text.num2t4ru import num2text
 # nltk.download('averaged_perceptron_tagger_ru')
 
 
+def get_punctuation_dict(text):
+    """
+    Returns a dictionary with the indices of punctuation marks as keys and the corresponding
+    punctuation symbol (either '|' or '||') as values.
+    """
+    punctuation = r'.,:;()\-–—\|\?\!…'
+    pause_dict = {}
+
+    i = 1
+    for char in text:
+        if char in punctuation:
+            pause_type = '||' if char in '.?!…' else '|'
+            pause_dict[i] = pause_type
+            i += 1
+
+    return pause_dict
+
+
 class TextNormalizationTokenization:
     def __init__(self, text, a_text):
         self.text = text
         self.a_text = a_text
         self.pause_dict = {}  # {section_index: pause_type}
-        self.sections = []
-        self.a_sections = []
         self.sections_len = 0
         self.tokens = []
         self.a_tokens = []
         self.tokens_normal = []
         self.a_tokens_normal = []
 
-    def section_split(self):
+    def section_split_and_tokenize(self):
         """
-        Splits text by punctuation (not including ' and ").
+        Splits text by punctuation (not including ' and ") and than tokenize it.
         """
-        long_pause = ['.', '?', '!', '…']
-        short_pause = [',', ':', ';', '(', ')', '-', '—']
-
-        index = 0
-        for word in self.text.split():
-            if any(symbol in long_pause for symbol in word):
-                self.pause_dict[index] = '||'
-                index += 1
-            elif any(symbol in short_pause for symbol in word):
-                self.pause_dict[index] = '|'
-                index += 1
-
         sections = re.split(r'[.?!,:;()—…]', self.text)
         sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
         sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
-        self.sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
+        sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
 
         a_sections = re.split(r'[.?!,:;()—…]', self.a_text)
         a_sections = [re.sub(r'\s+', ' ', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
-        self.a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
+        a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
+        self.sections_len = len(sections)
 
-        self.sections_len = len(self.sections)
+        self.tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in sections]
+        self.a_tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in a_sections]
 
-    def tokenize(self):
-        """
-        Splits text into tokens.
-        """
-        punctuation = r',.\|/;:()*&^%$#@![]{}"-'
-
-        for section_num in range(self.sections_len):
-            tokens = self.sections[section_num].lower()
-            tokens = tokens.split()
-            tokens = [w.strip(punctuation) for w in tokens]
-            tokens = [re.sub(r"у́", 'у', w) for w in tokens if w != '']
-            self.tokens.append(tokens)
-
-            a_tokens = self.a_sections[section_num].lower()
-            a_tokens = a_tokens.split()
-            a_tokens = [w.strip(punctuation) for w in a_tokens]
-            a_tokens = [re.sub(r"у́", 'у', w) for w in a_tokens if w != '']
-            self.a_tokens.append(a_tokens)
-
+    @lru_cache(maxsize=None)
     def my_num2text(self):
         """
         Turns digits to words.
         """
-        self.tokens_normal = self.tokens
-        self.a_tokens_normal = self.a_tokens
+        tokens_normal = []
+        a_tokens_normal = []
+        cache = {}
 
-        for section_num in range(self.sections_len):
-            n = 0
-            for i, word in enumerate(self.tokens[section_num]):
+        for section_tokens, a_section_tokens in zip(self.tokens, self.a_tokens):
+            section_normal = []
+            a_section_normal = []
+            for word, a_word in zip(section_tokens, a_section_tokens):
                 if word.isnumeric():
-                    if len(word) == 1:
-                        self.tokens_normal[section_num][i + n] = num2text(int(word))
-                        self.a_tokens_normal[section_num][i + n] = num2text(int(self.a_tokens[section_num][i]))
-                    else:
-                        add = num2text(int(word)).split(' ')
-                        self.tokens_normal[section_num] = self.tokens[section_num][:i + n] + add + self.tokens[
-                                                                                                       section_num][
-                                                                                                   i + n + 1:]
-                        self.a_tokens_normal[section_num] = self.a_tokens[section_num][:i + n] + add + self.a_tokens[
-                                                                                                           section_num][
-                                                                                                       i + n + 1:]
-                        n += len(add) - 1
+                    if word not in cache:
+                        cache[word] = num2text(int(word))
+                    word_normal = cache[word]
+                    section_normal.extend(word_normal.split(' '))
+                    if a_word not in cache:
+                        cache[a_word] = num2text(int(a_word))
+                    a_word_normal = cache[a_word]
+                    a_section_normal.extend(a_word_normal.split(' '))
+                else:
+                    section_normal.append(word)
+                    a_section_normal.append(a_word)
+            tokens_normal.append(section_normal)
+            a_tokens_normal.append(a_section_normal)
+
+        self.tokens_normal = tokens_normal
+        self.a_tokens_normal = a_tokens_normal
 
 
 class Stresses:
