@@ -1,13 +1,13 @@
 import re
+from functools import lru_cache
 
 import spacy
 import nltk
 from nltk import Tree
-from functools import lru_cache
+from num2t4ru import num2text
+from stressrnn import StressRNN
 
 from .sounds import rus_v
-from .ru_number_to_text.num2t4ru import num2text
-# from .StressRNN.stressrnn.stressrnn import StressRNN
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
@@ -54,8 +54,10 @@ class TextNormalizationTokenization:
         a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
         a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
 
-        self.tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in sections]
-        self.a_tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()] for section in a_sections]
+        self.tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()]
+                       for section in sections]
+        self.a_tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()]
+                         for section in a_sections]
 
     @lru_cache(maxsize=None)
     def my_num2text(self):
@@ -89,12 +91,13 @@ class TextNormalizationTokenization:
         self.a_tokens_normal = a_tokens_normal
 
 
+stress_rnn = StressRNN()
+
+
 class Stresses:
     def __init__(self):
         self.dependency_tree = None
-
         self.nlp = spacy.load('ru_core_news_sm')
-        # self.stress_rnn = StressRNN()
 
     def place_accent(self, token):
         """
@@ -117,9 +120,9 @@ class Stresses:
         elif not vowels:
             return ''.join(token_list)
         else:
-            raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-                             f"Add stresses yourselves.\nThere is no stress for the word {token}")
-        #    return self.stress_rnn.put_stress(token, accuracy_threshold=0.75)
+        #    raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
+        #                     f"Add stresses yourselves.\nThere is no stress for the word {token}")
+            return stress_rnn.put_stress(token, accuracy_threshold=0.0)
 
     @staticmethod
     def replace_accent(token):

@@ -36,16 +36,15 @@ class TestPhrases(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('i nʲ ɪ k ɐ ɡ d a | nʲ ɪ v j ɪ dʲ i n ə j s a m ə j ᵿ bʷ o ɡ ə j s a m ə j f ə n t ɐ sʲ tʲ '
-                         'i t͡ɕ ə s k ə j pʲ ɪ. tʲ ɪ r bʷ u r ʒ s k ə j k ɐ m p a nʲ ɪ i | mʲ ɪ nʲ æ nʲ ɪ. ɪ. bʲ j ɪ '
-                         'vʲ lʲ æ lʲ ɪ ɡʲ e nʲ ɪ j ɪ. m ||', ru_transcript.transcription)
+                         'i t͡ɕ ə s k ə j pʲ ɪ. tʲ ɪ r bʷ u r ʒ s k ə j k ɐ m p a nʲ ɪ i | mʲ ɪ nʲ æ nʲ ɪ. ə bʲ j ɪ '
+                         'v lʲ æ lʲ ɪ ɡʲ e nʲ ɪ j ɪ. m ||', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['i', 'nʲ', 'ɪ', 'k', 'ɐ', 'ɡ', 'd', 'a', 'nʲ', 'ɪ', 'v', 'j', 'ɪ', 'dʲ', 'i', 'n', 'ə', 'j',
                           's', 'a', 'm', 'ə', 'j', 'ᵿ', 'bʷ', 'o', 'ɡ', 'ə', 'j', 's', 'a', 'm', 'ə', 'j', 'f', 'ə',
                           'n', 't', 'ɐ', 'sʲ', 'tʲ', 'i', 't͡ɕ', 'ə', 's', 'k', 'ə', 'j', 'pʲ', 'ɪ.', 'tʲ', 'ɪ', 'r',
                           'bʷ', 'u', 'r', 'ʒ', 's', 'k', 'ə', 'j', 'k', 'ɐ', 'm', 'p', 'a', 'nʲ', 'ɪ', 'i', 'mʲ', 'ɪ',
-                          'nʲ', 'æ', 'nʲ', 'ɪ.', 'ɪ.', 'bʲ', 'j', 'ɪ', 'vʲ', 'lʲ', 'æ', 'lʲ', 'ɪ', 'ɡʲ', 'e', 'nʲ',
-                          'ɪ', 'j', 'ɪ.', 'm'],
-                         ru_transcript.allophones)
+                          'nʲ', 'æ', 'nʲ', 'ɪ.', 'ə', 'bʲ', 'j', 'ɪ', 'v', 'lʲ', 'æ', 'lʲ', 'ɪ', 'ɡʲ', 'e', 'nʲ',
+                          'ɪ', 'j', 'ɪ.', 'm'], ru_transcript.allophones)
 
     def test_2(self):
         testing_text = 'Но против Агнии Францевны, у меня было сильное оружие — вежливость.'
@@ -59,8 +58,7 @@ class TestPhrases(unittest.TestCase):
         self.assertEqual(['n', 'ɐ', 'p', 'rʷ', 'o', 'tʲ', 'ɪ', 'v', 'a', 'ɡ', 'nʲ', 'ɪ', 'i', 'f', 'r', 'a', 'n',
                           't͡s', 'ə', 'v', 'nˠ', 'ᵻ', 'ᵿ', 'mʲ', 'ɪ', 'nʲ', 'æ', 'bˠ', 'ɨ', 'l', 'ʌ', 'sʲ', 'i', 'lʲ',
                           'n', 'ə', 'j', 'æ.', 'ɐ', 'rʷ', 'u', 'ʒ', 'j', 'æ.', 'vʲ', 'e', 'ʒ', 'lʲ', 'ɪ', 'v', 'ə',
-                          'sʲ', 'tʲ'],
-                         ru_transcript.allophones)
+                          'sʲ', 'tʲ'], ru_transcript.allophones)
 
     def test_3(self):
         testing_text = 'Что апперцепция у Бальзака неорганична.'
@@ -68,11 +66,11 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('ʂ tʷ o ə p pʲ ɪ r̥ t͡sˠ ᵻ p t͡sˠ ɨ j æ. ᵿ b ɐ lʲ z a k ʌ nʲ ɪ. ɪ. r ɡ ɐ nʲ i t͡ɕ n ʌ ||',
+        self.assertEqual('ʂ tʷ o ə p pʲ ɪ r̥ t͡sˠ ᵻ p t͡sˠ ɨ j æ. ᵿ b ɐ lʲ z a k ʌ nʲ ɪ. ə r ɡ ɐ nʲ i t͡ɕ n ʌ ||',
                          ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['ʂ', 'tʷ', 'o', 'ə', 'p', 'pʲ', 'ɪ', 'r̥', 't͡sˠ', 'ᵻ', 'p', 't͡sˠ', 'ɨ', 'j', 'æ.', 'ᵿ', 'b',
-                          'ɐ', 'lʲ', 'z', 'a', 'k', 'ʌ', 'nʲ', 'ɪ.', 'ɪ.', 'r', 'ɡ', 'ɐ', 'nʲ', 'i', 't͡ɕ', 'n', 'ʌ'],
+                          'ɐ', 'lʲ', 'z', 'a', 'k', 'ʌ', 'nʲ', 'ɪ.', 'ə', 'r', 'ɡ', 'ɐ', 'nʲ', 'i', 't͡ɕ', 'n', 'ʌ'],
                          ru_transcript.allophones)
 
     def test_4(self):
@@ -140,8 +138,19 @@ class TestPhrases(unittest.TestCase):
                           'vʲ', 'ɪ', 'ɕː', 'nˠ', 'ᵻ', 'j', 'æ.', 'ɪ.', 'p', 'ɐ', 'tʲ', 'i', 'rʷ', 'ʊ', 'jᶣ', 'ᵿ', 'ɕː',
                           'ɨ', 'j', 'æ.', 'p', 'ɐ', 'd', 'rʷ', 'o', 'b', 'n', 'ə', 'sʲ', 'tʲ', 'ɪ', 'l', 'a', 'ɡʲ',
                           'ɪ.', 'r', 'n', 'ɐ', 'j', 'ʒˠ', 'ɨ', 'zʲ', 'nʲ', 'ɪ', 'ʝ', 'æ', 'k', 'a', 'k', 'ɡ', 'ə', 'v',
-                          'ɐ', 'rʲ', 'i', 't͡s', 'ə', 'ə', 'pʷ', 'ʊ', 'sʲ', 'tʲ', 'i', 'l'],
-                         ru_transcript.allophones)
+                          'ɐ', 'rʲ', 'i', 't͡s', 'ə', 'ə', 'pʷ', 'ʊ', 'sʲ', 'tʲ', 'i', 'l'], ru_transcript.allophones)
+
+    def test_jo(self):
+        testing_text = 'елка для ее ежика перышка подвел конек мед.'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('ʝᶣ ɵ l k ʌ d lʲ æ j ɪ jᶣ ɵ jᶣ ɵ ʒˠ ɨ k ʌ pᶣ ɵ rˠ ᵻ ʂ k ʌ p ɐ d vᶣ ɵ l k ɐ nᶣ ɵ kʲ '
+                         'mᶣ ɵ d ||', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['ʝᶣ', 'ɵ', 'l', 'k', 'ʌ', 'd', 'lʲ', 'æ', 'j', 'ɪ', 'jᶣ', 'ɵ', 'jᶣ', 'ɵ', 'ʒˠ', 'ɨ', 'k', 'ʌ',
+                          'pᶣ', 'ɵ', 'rˠ', 'ᵻ', 'ʂ', 'k', 'ʌ', 'p', 'ɐ', 'd', 'vᶣ', 'ɵ', 'l', 'k', 'ɐ', 'nᶣ', 'ɵ', 'kʲ',
+                          'mᶣ', 'ɵ', 'd'], ru_transcript.allophones)
 
 
 if __name__ == '__main__':

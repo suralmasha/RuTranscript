@@ -2,7 +2,7 @@ import spacy
 
 from .sounds import allophones, rus_v
 
-nlp = spacy.load('ru_core_news_sm')
+nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
 
 
 def shch(section: list):
@@ -216,12 +216,17 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
                 while next_allophone['phon'] == 'symb':
                     n += 1
                     next_phon = phonemes_list_section[i + n]
+                    next_allophone = allophones[next_phon]
             except IndexError:
                 next_phon = ''
                 next_allophone = allophones[next_phon]
 
+            # не смягчение перед [л] (для, глина, длинный, блин, злиться, влить, тлеть)
+            if 'l' in next_phon:
+                continue
+
             # доминирует не смягчение зубных перед мягкими губно-зубными ([д’в’]е́рь - [дв’]е́рь)
-            if (current_allophone['phon'] == 'C') and (current_allophone['place'] == 'lingual, dental') \
+            elif (current_allophone['phon'] == 'C') and (current_allophone['place'] == 'lingual, dental') \
                     and (next_allophone['phon'] == 'C') and (next_allophone['place'] == 'labial, labiodental'):
                 continue
 
@@ -241,8 +246,12 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
             elif current_phon in {'r', 'ɡ'}:
                 continue
 
-            # не смягчение звука [т] перед [р] ([тр’]и́)
+            # не смягчение звука [т] перед [р] ([тр’]и́, тряска)
             elif (current_phon == 't') and (next_phon == 'rʲ'):
+                continue
+
+            # не смягчение звука [к] перед [р] (транскрипция)
+            elif (current_phon == 'k') and (next_phon == 'rʲ'):
                 continue
 
             elif (current_allophone['phon'] == 'C') and (current_allophone['palatalization'][0] != 'a') \
@@ -322,12 +331,12 @@ def vowels(segment: list):
                         segment[i] = 'ɪ'
 
                 else:  # заударные / второй предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') \
-                            and ((previous_allophone['hissing'] == 'hissing')
-                                 or ('hard' in previous_allophone['palatalization'])):
-                        segment[i] = 'ə'
-                    else:
-                        segment[i] = 'ɪ.'
+                    # if (previous_allophone['phon'] == 'C') \
+                    #        and ((previous_allophone['hissing'] == 'hissing')
+                    #             or ('hard' in previous_allophone['palatalization'])):
+                    segment[i] = 'ə'
+                    # else:
+                    #    segment[i] = 'ɪ.'
 
             elif (i == len(segment) - 1) or (next_phon == '_'):   # заударные (last)
                 if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
@@ -363,12 +372,12 @@ def vowels(segment: list):
                         segment[i] = 'ɪ'
 
                 else:  # заударные/второй предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') \
-                            and ((previous_allophone['hissing'] == 'hissing')
-                                 or ('hard' in previous_allophone['palatalization'])):
-                        segment[i] = 'ə'
-                    else:
-                        segment[i] = 'ɪ.'
+                    # if (previous_allophone['phon'] == 'C') \
+                    #        and ((previous_allophone['hissing'] == 'hissing')
+                    #             or ('hard' in previous_allophone['palatalization'])):
+                    segment[i] = 'ə'
+                    # else:
+                    #    segment[i] = 'ɪ.'
 
             elif (i == len(segment) - 1) or (next_phon == '_'):  # заударные (last)
                 if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):

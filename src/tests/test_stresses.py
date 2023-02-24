@@ -23,6 +23,16 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['ʝᶣ', 'ɵ', 'l', 'k', 'ʌ'], ru_transcript.allophones)
 
+    def test_readme_transcription(self):
+        testing_text = 'Как получить транскрипцию?'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s k rʲ i p t͡sˠ ɨ jᶣ ᵿ ||', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
+                          'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ'], ru_transcript.allophones)
+
 
 if __name__ == '__main__':
     unittest.main()

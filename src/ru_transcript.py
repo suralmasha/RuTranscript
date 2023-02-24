@@ -4,6 +4,8 @@ import spacy
 import epitran
 from openpyxl import load_workbook
 from nltk.stem.snowball import SnowballStemmer
+from tps import find, download
+from tps import modules as md
 
 from .main_tools import get_punctuation_dict, TextNormalizationTokenization, Stresses, find_clitics, \
     extract_phrasal_words
@@ -12,7 +14,7 @@ from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix
     long_consonants, vowels, labia_velar
 
 snowball = SnowballStemmer('russian')
-nlp = spacy.load('ru_core_news_sm')
+nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
 
 ROOT_DIR = dirname(abspath(__file__))
 wb = load_workbook(join(ROOT_DIR, 'irregular_exceptions.xlsx'))
@@ -26,9 +28,44 @@ first_silent = 'лнц дц вств'.split()
 hissing_rd = {'сш': 'шш', 'зш': 'шш', 'сж': 'жж', 'сч': 'щ'}
 non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː'}
 
+try:
+    yo_dict = find("yo.dict", raise_exception=True)
+except FileNotFoundError:
+    yo_dict = download("yo.dict")
+
+try:
+    e_dict = find("e.dict", raise_exception=True)
+except FileNotFoundError:
+    e_dict = download("e.dict")
+
+e_replacer = md.Replacer([e_dict, "plane"])
+yo_replacer = md.Replacer([yo_dict, "plane"])
+stress = Stresses()
+
 
 def get_allophone_info(allophone):
     return allophones[allophone]
+
+
+def apply_differences(words):
+    differences = {}
+    for i, (char1, char2) in enumerate(zip(words[0], words[1].replace('+', ''))):
+        if char1 != char2:
+            differences[i + 1] = char2
+
+    original_word, changed_word = words
+    new_word = []
+    n = 0
+    for i, char in enumerate(changed_word):
+        if char == '+':
+            n += 1
+            continue
+        elif i + n + 1 in differences:
+            new_word.append(differences[i + n + 1])
+        else:
+            new_word.append(char)
+
+    return ''.join(new_word)
 
 
 class RuTranscript:
@@ -59,12 +96,23 @@ class RuTranscript:
         self.phonemes = []
 
     def transcribe(self):
-        # ---- Accenting ----
-        stress = Stresses()
+        # ---- TPS ----
         for section_num in range(self._sections_len):
+            default_section = self._tokens[section_num]
+            self._tokens[section_num] = [e_replacer(token).replace('+', '') for token in self._tokens[section_num]]
+            self._tokens[section_num] = [yo_replacer(token).replace('+', '') for token in self._tokens[section_num]]
+
+            if self._tokens[section_num] != default_section:
+                self._a_tokens[section_num] = [
+                    apply_differences([default_section[i], self._tokens[section_num][i]])
+                    for i in range(len(default_section))
+                ]
+
+            # ---- Accenting ----
             self._a_tokens[section_num] = [
                 stress.replace_accent(token) if ('+' in token) and (self._accent_place == 'before')  # need to replace
-                else stress.place_accent(token) if '+' not in token else token  # use StressRNN
+                else stress.place_accent(token) if ('+' not in token)  # use StressRNN
+                else token
                 for token in self._a_tokens[section_num]]
 
             # ---- Phrasal words extraction ----
