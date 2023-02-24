@@ -1,8 +1,8 @@
-import pandas as pd
 from os.path import join, dirname, abspath
 
 import spacy
 import epitran
+from openpyxl import load_workbook
 from nltk.stem.snowball import SnowballStemmer
 
 from .main_tools import get_punctuation_dict, TextNormalizationTokenization, Stresses, find_clitics, \
@@ -15,10 +15,16 @@ snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm')
 
 ROOT_DIR = dirname(abspath(__file__))
-irregular_exceptions_df = pd.read_excel(join(ROOT_DIR, 'irregular_exceptions.xlsx'), engine='openpyxl', usecols=[0, 1])
-irregular_exceptions = {row['original word']: row['pronunciation'] for _, row in irregular_exceptions_df.iterrows()}
-irregular_exceptions_stems = dict(zip([snowball.stem(ex) for ex in irregular_exceptions],
-                                      irregular_exceptions.values()))
+wb = load_workbook(join(ROOT_DIR, 'irregular_exceptions.xlsx'))
+sheet = wb.active
+irregular_exceptions = {sheet[f'A{i}'].value: sheet[f'B{i}'].value for i in range(2, sheet.max_row + 1)}
+irregular_exceptions_stems = {snowball.stem(ex): pron for ex, pron in irregular_exceptions.items()}
+
+epi = epitran.Epitran('rus-Cyrl')
+second_silent = 'стн стл здн рдн нтск ндск лвств'.split()
+first_silent = 'лнц дц вств'.split()
+hissing_rd = {'сш': 'шш', 'зш': 'шш', 'сж': 'жж', 'сч': 'щ'}
+non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː'}
 
 
 def get_allophone_info(allophone):
@@ -50,22 +56,16 @@ class RuTranscript:
         self._phrasal_words = [[]] * self._sections_len
         self.allophones = [[]] * self._sections_len
         self.transcription = []
+        self.phonemes = []
 
     def transcribe(self):
-        second_silent = 'стн стл здн рдн нтск ндск лвств'.split()
-        first_silent = 'лнц дц вств'.split()
-        hissing_rd = {'сш': 'шш', 'зш': 'шш', 'сж': 'жж', 'сч': 'щ'}
-        epi = epitran.Epitran('rus-Cyrl')
-        non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː'}
-
         # ---- Accenting ----
         stress = Stresses()
         for section_num in range(self._sections_len):
-            for token_i, token in enumerate(self._a_tokens[section_num]):
-                if ('+' in token) and (self._accent_place == 'before'):  # need to replace
-                    self._a_tokens[section_num][token_i] = stress.replace_accent(token)
-                elif '+' not in token:  # use StressRNN
-                    self._a_tokens[section_num][token_i] = stress.place_accent(token)
+            self._a_tokens[section_num] = [
+                stress.replace_accent(token) if ('+' in token) and (self._accent_place == 'before')  # need to replace
+                else stress.place_accent(token) if '+' not in token else token  # use StressRNN
+                for token in self._a_tokens[section_num]]
 
             # ---- Phrasal words extraction ----
             dep = stress.make_dependency_tree(' '.join(self._tokens[section_num]))
@@ -84,9 +84,7 @@ class RuTranscript:
 
                     self._tokens[section_num][i] = new_token
                     accent_index = self._a_tokens[section_num][i].index('+')
-                    new_token_split = list(new_token)
-                    new_token_split.insert(accent_index, '+')
-                    self._a_tokens[section_num][i] = ''.join(new_token_split)
+                    self._a_tokens[section_num][i] = new_token[:accent_index] + '+' + new_token[accent_index:]
 
             # ---- LPC-2. Regular exceptions ----
             for i, token in enumerate(self._a_tokens[section_num]):
@@ -97,55 +95,44 @@ class RuTranscript:
                     self._a_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
 
                 # 'что' --> 'што'
-                while 'что' in self._a_tokens[section_num][i]:
+                if 'что' in self._a_tokens[section_num][i]:
                     self._a_tokens[section_num][i] = token.replace('что', 'што')
 
                 # verb endings 'тся ться'
-                if token not in 'заботься отметься'.split():
+                if token not in {'заботься', 'отметься'}:
                     if token[-3:] == 'тся':
                         self._a_tokens[section_num][i] = token[:-3] + 'ца'
                     elif token[-4:] == 'ться':
                         self._a_tokens[section_num][i] = token[:-4] + 'ца'
 
                 # noun endings 'ия ие ию'
-                if token[-2:] in ['ия', 'ие', 'ию'] and token[-3] not in ['ц', 'щ']:
-                    if token[-3] not in ['ж', 'ш']:
+                if (token[-2:] in {'ия', 'ие', 'ию'}) and (token[-3] not in {'ц', 'щ'}):
+                    if token[-3] not in {'ж', 'ш'}:
                         self._a_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
                     else:
                         self._a_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
 
                 # unpronounceable consonants
-                for sub in second_silent:
+                for sub in first_silent + second_silent:
                     if sub in token:
-                        self._a_tokens[section_num][i] = token.replace(sub, sub.replace(sub[1], '', 1))
-
-                for sub in first_silent:
-                    if sub in token:
-                        self._a_tokens[section_num][i] = token.replace(sub, sub.replace(sub[0], '', 1))
+                        new_sub = sub.translate(str.maketrans('', '', 'ьъ'))
+                        self._a_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
 
                 # combinations with hissing consonants
                 stem = snowball.stem(token)
+                if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
+                    self._a_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч', 'ч')
                 for key, value in hissing_rd.items():
                     if key in token:
                         self._a_tokens[section_num][i] = token.replace(key, value)
 
-                if ('зч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._a_tokens[section_num][i] = token.replace('зч', 'щ')
-                elif ('тч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._a_tokens[section_num][i] = token.replace('тч', 'ч')
-                elif ('дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._a_tokens[section_num][i] = token.replace('дч', 'ч')
-
             # ---- LPC-3. Transliteration ----
-            self._transliterated_tokens[section_num] = self._a_tokens[section_num][:]
-
-            for i, token in enumerate(self._a_tokens[section_num]):
-                transliterated_token = epi.transliterate(token)
+            self._transliterated_tokens[section_num] = [epi.transliterate(token)
+                                                        for token in self._a_tokens[section_num]]
+            for i, token in enumerate(self._transliterated_tokens[section_num]):
                 for key, value in non_ipa_symbols.items():
-                    if key in transliterated_token:
-                        transliterated_token = transliterated_token.replace(key, value)
-
-                self._transliterated_tokens[section_num][i] = transliterated_token
+                    if key in token:
+                        self._transliterated_tokens[section_num][i] = token.replace(key, value)
 
             # ---- LPC-4. Common rules ----
             # fricative g
@@ -158,35 +145,39 @@ class RuTranscript:
                 token_let = self._tokens[section_num][i]
                 nlp_token = nlp(token_let)[0]
                 lemma = nlp_token.lemma_
-                if lemma in 'ага ого угу господь господи бог'.split(' '):
+
+                if lemma in {'ага', 'ого', 'угу', 'господь', 'господи', 'бог'}:
                     self._transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
-                elif (token_let in 'ах эх ох ух'.split(' ')) \
-                        and (allophones[next_token[0]]['phon'] == 'C') \
-                        and (allophones[next_token[0]]['voice'] == 'voiced'):
-                    self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
+                elif token_let in {'ах', 'эх', 'ох', 'ух'}:
+                    next_token_allophones = allophones.get(next_token[0], {})
+                    if next_token_allophones.get('phon') == 'C' and next_token_allophones.get('voice') == 'voiced':
+                        self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
 
             # ---- Join phonemes ----
             section_phonemes_list = []
-            transliterated_tokens_joined = '_'.join(self._transliterated_tokens[section_num])
-            for i, symb in enumerate(transliterated_tokens_joined):
-                if symb not in ['+', '-']:
+            joined_tokens = '_'.join(self._transliterated_tokens[section_num])
+            i = 0
+            while i < len(joined_tokens):
+                if joined_tokens[i] not in ['+', '-']:
                     n = 4
-                    if i != len(transliterated_tokens_joined) - 1:
-                        while (transliterated_tokens_joined[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ']) \
-                                and (n > 0):
+                    if i != len(joined_tokens) - 1:
+                        while (joined_tokens[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ']) and (n > 0):
                             n -= 1
-                        section_phonemes_list.append(transliterated_tokens_joined[i:i + n])
-                    elif symb in epi_starterpack + ['||', 'γ']:
-                        section_phonemes_list.append(symb)
+                        section_phonemes_list.append(joined_tokens[i:i + n])
+                    elif joined_tokens[i] in epi_starterpack + ['||', 'γ']:
+                        section_phonemes_list.append(joined_tokens[i])
+                    i += n
                 else:
-                    section_phonemes_list.append(symb)
+                    section_phonemes_list.append(joined_tokens[i])
+                    i += 1
 
-            section_phonemes_list[:] = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
+            section_phonemes_list = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
             self._phonemes_list.append(section_phonemes_list)
 
-            for allophone_index, allophone in enumerate(self._phonemes_list[section_num]):
-                if ((allophone == 't͡s') and self._phonemes_list[section_num][allophone_index + 1] == 's') \
-                        or ((allophone == 'd͡ʒ') and self._phonemes_list[section_num][allophone_index + 1] == 'ʒ'):
+            for allophone_index in range(len(self._phonemes_list[section_num]) - 1):
+                allophone = self._phonemes_list[section_num][allophone_index]
+                next_allophone = self._phonemes_list[section_num][allophone_index + 1]
+                if (allophone == 't͡s' and next_allophone == 's') or (allophone == 'd͡ʒ' and next_allophone == 'ʒ'):
                     del self._phonemes_list[section_num][allophone_index + 1]
 
             # ---- Join letters ----
@@ -214,10 +205,8 @@ class RuTranscript:
             n = 0
             for symb_i, symb in enumerate(section):
                 if symb == '+':
-                    preavi = []  # pre accented vowel indexes
-                    for phon_i, phon in enumerate(section[:symb_i - 1]):
-                        if (allophones[phon]['phon'] == 'V') and ('_' not in section[phon_i + n:symb_i]):
-                            preavi.append(phon_i)
+                    preavi = [phon_i for phon_i, phon in enumerate(section[:symb_i - 1]) if
+                              allophones[phon]['phon'] == 'V' and '_' not in section[phon_i + n:symb_i]]
                     if preavi:
                         self._phrasal_words[section_num].insert(preavi[-1] + n + 1, '-')
                         n += 1
