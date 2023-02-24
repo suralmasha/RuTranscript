@@ -1,4 +1,5 @@
 from os.path import join, dirname, abspath
+from collections import defaultdict
 
 epi_starterpack = 'a b bʲ v vʲ ɡ ɡʲ d dʲ e ʒ z zʲ i j k kʲ l lʲ m mʲ n nʲ o '\
                   'p pʲ r rʲ s sʲ t tʲ u f fʲ x xʲ t͡s t͡ɕ ʂ ɕː ɨ d͡ʒ'.split()
@@ -11,119 +12,82 @@ with open(join(ROOT_DIR, 'alphabet.txt'), encoding='utf-8') as f:
     alphabet = f.read().split(', ')
 
 with open(join(ROOT_DIR, 'sorted_allophones.txt'), encoding='utf-8') as f:
-    sorted_phonemes_txt = [line.replace('\n', '') for i, line in enumerate(f.readlines())]
-    sorted_phonemes = {}
+    sorted_phonemes_txt = (line.replace('\n', '') for line in f)
+    sorted_phonemes_1 = {}
     for group in sorted_phonemes_txt:
         group_name, phonemes = group.split(' = ')
-        sorted_phonemes[group_name] = phonemes.split(', ')
+        sorted_phonemes_1[group_name] = phonemes.split(', ')
+
+sorted_phonemes = defaultdict(list)
+for key, value in sorted_phonemes_1.items():
+    for element in value:
+        sorted_phonemes[element].append(key)
 
 with open(join(ROOT_DIR, 'paired_consonants.txt'), encoding='utf-8') as f:
     paired_c_txt = f.read().replace(')', ')_').split('_, ')
-    paired_c = {}
-    for pair in paired_c_txt:
-        voiced, silent = pair.split(', ')
-        paired_c[voiced.replace('(', '')] = silent.replace(')', '')
+    paired_c = {voiced.replace('(', ''): silent.replace(')', '')
+                for voiced, silent in (pair.split(', ') for pair in paired_c_txt)}
 
 # creating a dictionary with all allophones
-allophones = dict.fromkeys(alphabet)
+allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None} if 'total_v' in sorted_phonemes[key]
+              else {'phon': 'C', 'place': None, 'manner': None, 'palatalization': None, 'voice': None, 'pair': None,
+                    'hissing': None, 'sonorous': None}
+              for key in alphabet}
+# vowels
+# row
+row_map = {'front_v': 'front', 'near_front_v': 'near front', 'central_v': 'central', 'near_back_v': 'near back',
+           'back_v': 'back'}
+# rise
+rise_map = {'close_v': 'close', 'near_close_v': 'near close', 'close_mid_v': 'close mid', 'mid_v': 'mid',
+            'open_mid_v': 'open mid', 'near_open_v': 'near open', 'open_v': 'open'}
+# round / velarize
+round_map = {'rounded_v': 'round', 'velarize_v': 'velarize'}
+# consonants
+# place
+place_map = {'bilabial_c': 'labial, bilabial', 'labiodental_c': 'labial, labiodental', 'dental_c': 'lingual, dental',
+             'palatinodental_c': 'lingual, palatinоdental', 'palatal_c': 'lingual, palatal',
+             'velar_c': 'lingual, velar', 'glottal_c': 'glottal'}
+# manner
+manner_map = {'explosive_c': 'obstruent, explosive', 'affricate_c': 'obstruent, affricate',
+              'fricative_c': 'obstruent, fricative', 'nasal_c': 'sonorant, nasal',
+              'lateral_c': 'sonorant, lateral', 'vibrant_c': 'sonorant, vibrant'}
+# hard / soft
+palatalization_map = {'hard_c': 'hard', 'always_hard_c': 'ahard', 'soft_c': 'soft', 'always_soft_c': 'asoft'}
+# voice / silent
+voice_map = {'voiced_c': 'voiced', 'voiceless_c': 'voiceless'}
+paired_c_inv = {v: k for k, v in paired_c.items()}
+# hissing sounds
+hissing_map = {'hissing_c': 'hissing'}
+
 for key in allophones.keys():
-    # vowels
-    if key in sorted_phonemes['total_v']:
-        allophones[key] = {'phon': 'V', 'row': '', 'rise': '', 'round': ''}
-        # row
-        if key in sorted_phonemes['front_v']:
-            allophones[key]['row'] = 'front'
-        elif key in sorted_phonemes['near_front_v']:
-            allophones[key]['row'] = 'near front'
-        elif key in sorted_phonemes['central_v']:
-            allophones[key]['row'] = 'central'
-        elif key in sorted_phonemes['near_back_v']:
-            allophones[key]['row'] = 'near back'
-        elif key in sorted_phonemes['back_v']:
-            allophones[key]['row'] = 'back'
-        # rise
-        if key in sorted_phonemes['close_v']:
-            allophones[key]['rise'] = 'close'
-        elif key in sorted_phonemes['near_close_v']:
-            allophones[key]['rise'] = 'near close'
-        elif key in sorted_phonemes['close_mid_v']:
-            allophones[key]['rise'] = 'close mid'
-        elif key in sorted_phonemes['mid_v']:
-            allophones[key]['rise'] = 'mid'
-        elif key in sorted_phonemes['open_mid_v']:
-            allophones[key]['rise'] = 'open mid'
-        elif key in sorted_phonemes['near_open_v']:
-            allophones[key]['rise'] = 'near open'
-        elif key in sorted_phonemes['open_v']:
-            allophones[key]['rise'] = 'open'
-        # round / velarize
-        if key in sorted_phonemes['rounded_v']:
-            allophones[key]['round'] = 'round'
-        elif key in sorted_phonemes['velarize_v']:
-            allophones[key]['round'] = 'velarize'
-        else:
-            allophones[key]['round'] = 'not round and not velarize'
-    # consonants
-    elif key in sorted_phonemes['total_c']:
-        allophones[key] = {'phon': 'C', 'place': '', 'manner': '',
-                           'palatalization': '', 'voice': '',
-                           'pair': None, 'hissing': None, 'sonorous': None}
-        # place
-        if key in sorted_phonemes['bilabial_c']:
-            allophones[key]['place'] = 'labial, bilabial'
-        elif key in sorted_phonemes['labiodental_c']:
-            allophones[key]['place'] = 'labial, labiodental'
-        elif key in sorted_phonemes['dental_c']:
-            allophones[key]['place'] = 'lingual, dental'
-        elif key in sorted_phonemes['palatinodental_c']:
-            allophones[key]['place'] = 'lingual, palatinоdental'
-        elif key in sorted_phonemes['palatal_c']:
-            allophones[key]['place'] = 'lingual, palatal'
-        elif key in sorted_phonemes['velar_c']:
-            allophones[key]['place'] = 'lingual, velar'
-        elif key in sorted_phonemes['glottal_c']:
-            allophones[key]['place'] = 'glottal'
-        # manner
-        if key in sorted_phonemes['explosive_c']:
-            allophones[key]['manner'] = 'obstruent, explosive'
-        elif key in sorted_phonemes['affricate_c']:
-            allophones[key]['manner'] = 'obstruent, affricate'
-        elif key in sorted_phonemes['fricative_c']:
-            allophones[key]['manner'] = 'obstruent, fricative'
-        elif key in sorted_phonemes['nasal_c']:
-            allophones[key]['manner'] = 'sonorant, nasal'
-        elif key in sorted_phonemes['lateral_c']:
-            allophones[key]['manner'] = 'sonorant, lateral'
-        elif key in sorted_phonemes['vibrant_c']:
-            allophones[key]['manner'] = 'sonorant, vibrant'
-        # hard / soft
-        if key in sorted_phonemes['hard_c']:
-            allophones[key]['palatalization'] = 'hard'
-        elif key in sorted_phonemes['always_hard_c']:
-            allophones[key]['palatalization'] = 'ahard'
-        elif key in sorted_phonemes['soft_c']:
-            allophones[key]['palatalization'] = 'soft'
-        elif key in sorted_phonemes['always_soft_c']:
-            allophones[key]['palatalization'] = 'asoft'
-        # voice / silent
-        if key in sorted_phonemes['voiced_c']:
-            allophones[key]['voice'] = 'voiced'
-            if key in paired_c.keys():
+    for group in sorted_phonemes[key]:
+        # vowels
+        if allophones[key]['phon'] == 'V':
+            row = row_map.get(group, None)
+            allophones[key]['row'] = row if row is not None else allophones[key]['row']
+            rise = rise_map.get(group, None)
+            allophones[key]['rise'] = rise if rise is not None else allophones[key]['rise']
+            round_ph = round_map.get(group, None)
+            allophones[key]['round'] = round_ph if round_ph is not None else allophones[key]['round']
+
+        # consonants
+        if allophones[key]['phon'] == 'C':
+            place = place_map.get(group, None)
+            allophones[key]['place'] = place if place is not None else allophones[key]['place']
+            manner = manner_map.get(group, None)
+            allophones[key]['manner'] = manner if manner is not None else allophones[key]['manner']
+            palatalization = palatalization_map.get(group, None)
+            allophones[key]['palatalization'] = palatalization if palatalization is not None \
+                else allophones[key]['palatalization']
+            hissing = hissing_map.get(group, None)
+            allophones[key]['hissing'] = hissing if hissing is not None else allophones[key]['hissing']
+            voice = voice_map.get(group, None)
+            allophones[key]['voice'] = voice if voice is not None else allophones[key]['voice']
+            if (allophones[key]['voice'] == 'voiced') and (key in paired_c.keys()):
                 allophones[key]['pair'] = paired_c[key]
-        elif key in sorted_phonemes['voiceless_c']:
-            allophones[key]['voice'] = 'voiceless'
-            if key in paired_c.values():
-                allophones[key]['pair'] = [k for k, v in paired_c.items() if v == key][0]
-        # sonorous sounds
-        if key in sorted_phonemes['sonorous_c']:
-            allophones[key]['sonorous'] = 'sonorous'
-        # hissing sounds
-        if key in sorted_phonemes['ship_c']:
-            allophones[key]['hissing'] = 'hissing'
+            elif (allophones[key]['voice'] == 'voiceless') and (key in paired_c.values()):
+                allophones[key]['pair'] = paired_c_inv[key]
+
 # symbols
-allophones.update({'+': {'phon': 'symb'},
-                   '-': {'phon': 'symb'},
-                   '|': {'phon': 'symb'},
-                   '||': {'phon': 'symb'},
-                   '_': {'phon': 'symb'},
-                   '': {'phon': 'symb'}})
+allophones.update({'+': {'phon': 'symb'}, '-': {'phon': 'symb'}, '|': {'phon': 'symb'}, '||': {'phon': 'symb'},
+                   '_': {'phon': 'symb'}, '': {'phon': 'symb'}})
