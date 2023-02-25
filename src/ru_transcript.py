@@ -17,7 +17,7 @@ snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
 
 ROOT_DIR = dirname(abspath(__file__))
-wb = load_workbook(join(ROOT_DIR, 'irregular_exceptions.xlsx'))
+wb = load_workbook(join(ROOT_DIR, 'data/irregular_exceptions.xlsx'))
 sheet = wb.active
 irregular_exceptions = {sheet[f'A{i}'].value: sheet[f'B{i}'].value for i in range(2, sheet.max_row + 1)}
 irregular_exceptions_stems = {snowball.stem(ex): pron for ex, pron in irregular_exceptions.items()}
