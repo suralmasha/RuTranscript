@@ -41,19 +41,32 @@ or
 >>> ru_transcript.transcribe()
 ```
 
->**ATTENTION** At the moment, automatic stress placement is disabled (except monosyllabic words and words with *ё*). Therefore, it is **mandatory** to add text with accents placed.
-
-You can get a full transcription with pauses by using attribute `transcription`. Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), punctuation marks inside a sentence are indicated by short pauses (`'|'`).
+You can get a full **transcription with pauses** by using attribute `transcription`. Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), punctuation marks inside a sentence are indicated by short pauses (`'|'`).
 
 ```
 >>> print(ru_transcript.transcription)
-k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s kʲ rʲ i p t͡s ə jᶣ ᵿ ||
+k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s k rʲ i p t͡sˠ ɨ jᶣ ᵿ ||
 ```
 
-Or you can get a list of allophones (without pauses) by using attribute `allophones`.
+You can get a list of **allophones** without pauses by using attribute `allophones`.
 
 ```
 >>> print(ru_transcript.allophones)
-['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'kʲ', 'rʲ', 'i', 'p', 't͡s', 'ə', 'jᶣ', 'ᵿ']
+['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
-You can also find an example of using the framework in the "RuTranscript_example.ipynb" file.
+
+You can get a list of **phonemes (main allophones)** without pauses by using attribute `phonemes` - this is a less detailed sort of transcription.
+
+```
+>>> print(ru_transcript.phonemes)
+['k', 'a', 'k', 'p', 'o', 'l', 'u', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'a', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡s', 'i', 'j', 'u']
+```
+
+You can see **how accents were placed** by using attribute `accented_text`.
+
+```
+>>> print(ru_transcript.phonemes)
+'ка+к получи+ть транскри+пцию'
+```
+
+You can also find an example of using the framework in `RuTranscript_example.ipynb`.
