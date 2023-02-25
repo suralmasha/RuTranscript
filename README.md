@@ -69,4 +69,4 @@ You can see **how accents were placed** by using attribute `accented_text`.
 'ка+к получи+ть транскри+пцию'
 ```
 
-You can also find an example of using the framework in `RuTranscript_example.ipynb`.
+You can also find an example of using the framework in `jpt_example.ipynb` or `example.py`.
