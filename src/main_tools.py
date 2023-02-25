@@ -1,5 +1,4 @@
 import re
-from functools import lru_cache
 
 import spacy
 import nltk
@@ -11,6 +10,27 @@ from .sounds import rus_v
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
+
+
+def apply_differences(words):
+    differences = {}
+    for i, (char1, char2) in enumerate(zip(words[0], words[1].replace('+', ''))):
+        if char1 != char2:
+            differences[i + 1] = char2
+
+    original_word, changed_word = words
+    new_word = []
+    n = 0
+    for i, char in enumerate(changed_word):
+        if char == '+':
+            n += 1
+            continue
+        elif i + n + 1 in differences:
+            new_word.append(differences[i + n + 1])
+        else:
+            new_word.append(char)
+
+    return ''.join(new_word)
 
 
 def get_punctuation_dict(text):
@@ -31,64 +51,41 @@ def get_punctuation_dict(text):
     return pause_dict
 
 
-class TextNormalizationTokenization:
-    def __init__(self, text, a_text):
-        self.text = text
-        self.a_text = a_text
-        self.tokens = []
-        self.a_tokens = []
-        self.tokens_normal = []
-        self.a_tokens_normal = []
+def custom_num2text(tokens: list):
+    """
+    Turns digits to words.
+    """
+    tokens_normal = []
+    cache = {}
 
-    def section_split_and_tokenize(self):
-        """
-        Splits text by punctuation (not including ' and ") and than tokenize it.
-        """
-        sections = re.split(r'[.?!,:;()—…]', self.text)
-        sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
-        sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
-        sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
+    for section_tokens in tokens:
+        section_normal = []
+        for word in section_tokens:
+            if word.isnumeric():
+                if word not in cache:
+                    cache[word] = num2text(int(word))
+                word_normal = cache[word]
+                section_normal.extend(word_normal.split(' '))
+            else:
+                section_normal.append(word)
+        tokens_normal.append(section_normal)
 
-        a_sections = re.split(r'[.?!,:;()—…]', self.a_text)
-        a_sections = [re.sub(r'\s+', ' ', w) for w in a_sections if w != '']
-        a_sections = [re.sub(r'\s$', '', w) for w in a_sections if w != '']
-        a_sections = [re.sub(r'^\s', '', w) for w in a_sections if w != '']
+    return tokens_normal
 
-        self.tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()]
-                       for section in sections]
-        self.a_tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.lower().split()]
-                         for section in a_sections]
 
-    @lru_cache(maxsize=None)
-    def my_num2text(self):
-        """
-        Turns digits to words.
-        """
-        tokens_normal = []
-        a_tokens_normal = []
-        cache = {}
+def text_norm_tok(text: str):
+    """
+    Splits text by punctuation (not including ' and ") and than tokenize it.
+    """
+    sections = re.split(r'[.?!,:;()—…]', text)
+    sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
+    sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
+    sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
 
-        for section_tokens, a_section_tokens in zip(self.tokens, self.a_tokens):
-            section_normal = []
-            a_section_normal = []
-            for word, a_word in zip(section_tokens, a_section_tokens):
-                if word.isnumeric():
-                    if word not in cache:
-                        cache[word] = num2text(int(word))
-                    word_normal = cache[word]
-                    section_normal.extend(word_normal.split(' '))
-                    if a_word not in cache:
-                        cache[a_word] = num2text(int(a_word))
-                    a_word_normal = cache[a_word]
-                    a_section_normal.extend(a_word_normal.split(' '))
-                else:
-                    section_normal.append(word)
-                    a_section_normal.append(a_word)
-            tokens_normal.append(section_normal)
-            a_tokens_normal.append(a_section_normal)
+    tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"-]", '', word) for word in section.split()]
+              for section in sections]
 
-        self.tokens_normal = tokens_normal
-        self.a_tokens_normal = a_tokens_normal
+    return custom_num2text(tokens)
 
 
 stress_rnn = StressRNN()

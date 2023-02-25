@@ -7,8 +7,8 @@ from nltk.stem.snowball import SnowballStemmer
 from tps import find, download
 from tps import modules as md
 
-from .main_tools import get_punctuation_dict, TextNormalizationTokenization, Stresses, find_clitics, \
-    extract_phrasal_words
+from .main_tools import get_punctuation_dict, text_norm_tok, Stresses, find_clitics, \
+    extract_phrasal_words, apply_differences
 from .sounds import epi_starterpack, allophones
 from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
     long_consonants, vowels, labia_velar
@@ -43,49 +43,21 @@ yo_replacer = md.Replacer([yo_dict, "plane"])
 stress = Stresses()
 
 
-def get_allophone_info(allophone):
-    return allophones[allophone]
-
-
-def apply_differences(words):
-    differences = {}
-    for i, (char1, char2) in enumerate(zip(words[0], words[1].replace('+', ''))):
-        if char1 != char2:
-            differences[i + 1] = char2
-
-    original_word, changed_word = words
-    new_word = []
-    n = 0
-    for i, char in enumerate(changed_word):
-        if char == '+':
-            n += 1
-            continue
-        elif i + n + 1 in differences:
-            new_word.append(differences[i + n + 1])
-        else:
-            new_word.append(char)
-
-    return ''.join(new_word)
-
-
 class RuTranscript:
-    def __init__(self, text, a_text=None, accent_place='after'):
-        if a_text is not None:
-            self._a_text = a_text.replace('-', ' ')
-        else:
-            self._a_text = text.replace('-', ' ')
+    def __init__(self, text, a_text=None, accent_place='after', replacement_dict=None):
+        text = text.replace('-', ' ').lower()
+        a_text = a_text.replace('-', ' ').lower() if a_text is not None else text
+        if replacement_dict is not None:
+            user_replacer = md.Replacer([replacement_dict, "plane"])
+            text = user_replacer(text)
+            a_text = user_replacer(a_text)
 
-        self._text = text.replace('-', ' ')
-        self._accent_place = accent_place
-
-        norm_tok = TextNormalizationTokenization(self._text, self._a_text)
-        norm_tok.section_split_and_tokenize()
-        norm_tok.my_num2text()
-
-        self._pause_dict = get_punctuation_dict(self._text)
-        self._a_tokens = norm_tok.a_tokens_normal
-        self._tokens = norm_tok.tokens_normal
+        self._tokens = text_norm_tok(text)
+        self._a_tokens = text_norm_tok(a_text)
         self._sections_len = len(self._tokens)
+        self._accent_place = accent_place
+        self._pause_dict = get_punctuation_dict(text)
+
         self._phrasal_words_indexes = []
         self._transliterated_tokens = [[]] * self._sections_len
         self._phonemes_list = []
@@ -94,6 +66,7 @@ class RuTranscript:
         self.allophones = [[]] * self._sections_len
         self.transcription = []
         self.phonemes = []
+        self.accented_text = [[]] * self._sections_len
 
     def transcribe(self):
         # ---- TPS ----
@@ -114,6 +87,8 @@ class RuTranscript:
                 else stress.place_accent(token) if ('+' not in token)  # use StressRNN
                 else token
                 for token in self._a_tokens[section_num]]
+
+            self.accented_text[section_num] = self._a_tokens[section_num]
 
             # ---- Phrasal words extraction ----
             dep = stress.make_dependency_tree(' '.join(self._tokens[section_num]))
@@ -277,6 +252,9 @@ class RuTranscript:
              else section
              for section in allophones_working]
         )
+
+        # ---- Result accented text ----
+        self.accented_text = ' '.join([' '.join(section) for section in self.accented_text])
 
         # ---- Result allophones ----
         allophones_joined = []
