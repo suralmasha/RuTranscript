@@ -38,7 +38,7 @@ def get_punctuation_dict(text):
     Returns a dictionary with the indices of punctuation marks as keys and the corresponding
     punctuation symbol (either '|' or '||') as values.
     """
-    punctuation = r'.,:;()\-–—\|\?\!…'
+    punctuation = r'.,:;()\—\|\?\!…'
     pause_dict = {}
 
     i = 1
@@ -82,7 +82,7 @@ def text_norm_tok(text: str):
     sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
     sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
 
-    tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@![]{}\"—]", '', word) for word in section.split()]
+    tokens = [[re.sub(r"[,.\\|/;:()*&^%$#@?![]{}\"—…]", '', word) for word in section.split()]
               for section in sections]
 
     return custom_num2text(tokens)
