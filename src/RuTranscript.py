@@ -7,10 +7,10 @@ from nltk.stem.snowball import SnowballStemmer
 from tps import find, download
 from tps import modules as md
 
-from .main_tools import get_punctuation_dict, text_norm_tok, Stresses, find_clitics, \
+from ru_transcript.src.utils.main_tools import get_punctuation_dict, text_norm_tok, Stresses, find_clitics, \
     extract_phrasal_words, apply_differences
-from .sounds import epi_starterpack, allophones
-from .allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
+from ru_transcript.src.utils.sounds import epi_starterpack, allophones
+from ru_transcript.src.utils.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
     long_consonants, vowels, labia_velar
 
 snowball = SnowballStemmer('russian')

@@ -8,10 +8,10 @@ rus_v = 'а е ё и о у э ю я ы'.split(' ')  # russian vowels
 
 ROOT_DIR = dirname(abspath(__file__))
 
-with open(join(ROOT_DIR, 'data/alphabet.txt'), encoding='utf-8') as f:
+with open(join(ROOT_DIR, '../data/alphabet.txt'), encoding='utf-8') as f:
     alphabet = f.read().split(', ')
 
-with open(join(ROOT_DIR, 'data/sorted_allophones.txt'), encoding='utf-8') as f:
+with open(join(ROOT_DIR, '../data/sorted_allophones.txt'), encoding='utf-8') as f:
     sorted_phonemes_txt = (line.replace('\n', '') for line in f)
     sorted_phonemes_1 = {}
     for group in sorted_phonemes_txt:
@@ -23,7 +23,7 @@ for key, value in sorted_phonemes_1.items():
     for element in value:
         sorted_phonemes[element].append(key)
 
-with open(join(ROOT_DIR, 'data/paired_consonants.txt'), encoding='utf-8') as f:
+with open(join(ROOT_DIR, '../data/paired_consonants.txt'), encoding='utf-8') as f:
     paired_c_txt = f.read().replace(')', ')_').split('_, ')
     paired_c = {voiced.replace('(', ''): silent.replace(')', '')
                 for voiced, silent in (pair.split(', ') for pair in paired_c_txt)}

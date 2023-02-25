@@ -1,0 +1,2 @@
+from ru_transcript.RuTranscript import RuTranscript
+from ru_transcript.allophones_tools import get_allophone_info

@@ -1,4 +1,4 @@
-from RuTranscript.src.ru_transcript import RuTranscript
+from ru_transcript.src.RuTranscript import RuTranscript
 
 if __name__ == "__main__":
     text = 'Как получить транскрипцию?'

@@ -6,7 +6,7 @@ from nltk import Tree
 from num2t4ru import num2text
 from stressrnn import StressRNN
 
-from .sounds import rus_v
+from ru_transcript.src.utils.sounds import rus_v
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
