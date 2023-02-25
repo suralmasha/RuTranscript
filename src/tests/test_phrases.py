@@ -152,6 +152,30 @@ class TestPhrases(unittest.TestCase):
                           'pᶣ', 'ɵ', 'rˠ', 'ᵻ', 'ʂ', 'k', 'ʌ', 'p', 'ɐ', 'd', 'vᶣ', 'ɵ', 'l', 'k', 'ɐ', 'nᶣ', 'ɵ', 'kʲ',
                           'mᶣ', 'ɵ', 'd'], ru_transcript.allophones)
 
+    def test_dashes(self):
+        testing_text = 'Синтез речи - это что-то увлекательное!'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('sʲ i n tˠ ᵻ z rʲ e t͡ɕ ɪ | ɛ t ʌ ʂ tʷ o t ʌ ᵿ v lʲ ɪ k a tʲ ɪ. lʲ n ə j æ. ||',
+                         ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['sʲ', 'i', 'n', 'tˠ', 'ᵻ', 'z', 'rʲ', 'e', 't͡ɕ', 'ɪ', 'ɛ', 't', 'ʌ', 'ʂ', 'tʷ', 'o', 't',
+                          'ʌ', 'ᵿ', 'v', 'lʲ', 'ɪ', 'k', 'a', 'tʲ', 'ɪ.', 'lʲ', 'n', 'ə', 'j', 'æ.'],
+                         ru_transcript.allophones)
+
+    def test_spaces(self):
+        testing_text = 'Синтез речи     - это что-то        увлекательное!\n'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('sʲ i n tˠ ᵻ z rʲ e t͡ɕ ɪ | ɛ t ʌ ʂ tʷ o t ʌ ᵿ v lʲ ɪ k a tʲ ɪ. lʲ n ə j æ. ||',
+                         ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['sʲ', 'i', 'n', 'tˠ', 'ᵻ', 'z', 'rʲ', 'e', 't͡ɕ', 'ɪ', 'ɛ', 't', 'ʌ', 'ʂ', 'tʷ', 'o', 't',
+                          'ʌ', 'ᵿ', 'v', 'lʲ', 'ɪ', 'k', 'a', 'tʲ', 'ɪ.', 'lʲ', 'n', 'ə', 'j', 'æ.'],
+                         ru_transcript.allophones)
+
 
 if __name__ == '__main__':
     unittest.main()

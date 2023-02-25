@@ -44,9 +44,12 @@ stress = Stresses()
 
 
 class RuTranscript:
-    def __init__(self, text, a_text=None, accent_place='after', replacement_dict=None):
-        text = text.replace('-', ' ').lower()
-        a_text = a_text.replace('-', ' ').lower() if a_text is not None else text
+    def __init__(self, text: str, a_text: str=None, accent_place: str='after', replacement_dict: dict=None):
+        text = ' '.join(['—' if word == '-' else word.replace('-', '')
+                         for word in text.replace('\n', ' ').lower().split()])
+        a_text = ' '.join(['—' if word == '-' else word.replace('-', '')
+                           for word in a_text.replace('\n', ' ').lower().split()]) if a_text is not None else text
+
         if replacement_dict is not None:
             user_replacer = md.Replacer([replacement_dict, "plane"])
             text = user_replacer(text)
