@@ -9,4 +9,4 @@ if __name__ == "__main__":
     print("{:<15} {:}".format('accented_text:', ru_transcript.accented_text))
     print("{:<15} {:}".format('transcription:', ru_transcript.transcription))
     print("{:<15} {:}".format('allophones:', ru_transcript.allophones))
-    print("{:<15} {:}\n".format('phonemes:', ru_transcript.phonemes))
+    print("{:<15} {:}".format('phonemes:', ru_transcript.phonemes))
