@@ -10,8 +10,8 @@ from tps import modules as md
 from ru_transcript.src.utils.main_tools import get_punctuation_dict, text_norm_tok, Stresses, find_clitics, \
     extract_phrasal_words, apply_differences
 from ru_transcript.src.utils.sounds import epi_starterpack, allophones
-from ru_transcript.src.utils.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, assimilative_palatalization, \
-    long_consonants, vowels, labia_velar
+from ru_transcript.src.utils.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised,\
+    assimilative_palatalization, long_consonants, vowels, labia_velar
 
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
@@ -44,7 +44,7 @@ stress = Stresses()
 
 
 class RuTranscript:
-    def __init__(self, text: str, a_text: str=None, accent_place: str='after', replacement_dict: dict=None):
+    def __init__(self, text: str, a_text: str = None, accent_place: str = 'after', replacement_dict: dict = None):
         text = ' '.join(['—' if word == '-' else word.replace('-', '')
                          for word in text.replace('\n', ' ').lower().split()])
         a_text = ' '.join(['—' if word == '-' else word.replace('-', '')
