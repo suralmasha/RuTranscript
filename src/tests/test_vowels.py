@@ -321,9 +321,9 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('mʷ ʊ ɕː ɨ n ʌ', ru_transcript.transcription)
+        self.assertEqual('mʷ ʊ ɕː i n ʌ', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['mʷ', 'ʊ', 'ɕː', 'ɨ', 'n', 'ʌ'], ru_transcript.allophones)
+        self.assertEqual(['mʷ', 'ʊ', 'ɕː', 'i', 'n', 'ʌ'], ru_transcript.allophones)
 
     def test_vowel_u_4(self):  # предударный не после тв.согл.
         testing_text = 'ютиться'

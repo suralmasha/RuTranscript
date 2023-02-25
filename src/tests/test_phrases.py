@@ -11,9 +11,9 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s k rʲ i p t͡sˠ ɨ jᶣ ᵿ ||', ru_transcript.transcription)
+        self.assertEqual('k a k p ə lʷ ʊ t͡ɕ i tʲ t r ɐ n s k rʲ i p t͡sˠ ɨ jᶣ ᵿ ||', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
+        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
                           'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ'], ru_transcript.allophones)
 
     def test_readme_comma(self):
@@ -92,10 +92,10 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('n ə s t ɐ j æ ɕː ɨ j æ. mʷ ʊ ɕː ɨ nˠ ᵻ ɡʲ i b nʷ ʊ t n ə pʲ ɪ. rʲ ɪ. d ɐ vʷ o j ||',
+        self.assertEqual('n ə s t ɐ j æ ɕː ɪ j æ. mʷ ʊ ɕː i nˠ ᵻ ɡʲ i b nʷ ʊ t n ə pʲ ɪ. rʲ ɪ. d ɐ vʷ o j ||',
                          ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['n', 'ə', 's', 't', 'ɐ', 'j', 'æ', 'ɕː', 'ɨ', 'j', 'æ.', 'mʷ', 'ʊ', 'ɕː', 'ɨ', 'nˠ', 'ᵻ',
+        self.assertEqual(['n', 'ə', 's', 't', 'ɐ', 'j', 'æ', 'ɕː', 'ɪ', 'j', 'æ.', 'mʷ', 'ʊ', 'ɕː', 'i', 'nˠ', 'ᵻ',
                           'ɡʲ', 'i', 'b', 'nʷ', 'ʊ', 't', 'n', 'ə', 'pʲ', 'ɪ.', 'rʲ', 'ɪ.', 'd', 'ɐ', 'vʷ', 'o', 'j'],
                          ru_transcript.allophones)
 
@@ -130,17 +130,17 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('x ɐ tʲ æ n ə i bʷ o lʲ ɪ. j æ. t͡ɕᶣ ᵿ dʷ o vʲ ɪ ɕː nˠ ᵻ j æ. ɪ. p ɐ tʲ i rʷ ʊ jᶣ ᵿ ɕː ɨ j æ. '
+        self.assertEqual('x ɐ tʲ æ n ə i bʷ o lʲ ɪ. j æ. t͡ɕᶣ ᵿ dʷ o vʲ ɪ ɕː nˠ ᵻ j æ. ɪ. p ɐ tʲ i rʷ ʊ jᶣ ᵿ ɕː ɪ j æ. '
                          'p ɐ d rʷ o b n ə sʲ tʲ ɪ l a ɡʲ ɪ. r n ɐ j ʒˠ ɨ zʲ nʲ ɪ | ʝ æ k a k ɡ ə v ɐ rʲ i t͡s ə ə pʷ '
                          'ʊ sʲ tʲ i l ||', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['x', 'ɐ', 'tʲ', 'æ', 'n', 'ə', 'i', 'bʷ', 'o', 'lʲ', 'ɪ.', 'j', 'æ.', 't͡ɕᶣ', 'ᵿ', 'dʷ', 'o',
                           'vʲ', 'ɪ', 'ɕː', 'nˠ', 'ᵻ', 'j', 'æ.', 'ɪ.', 'p', 'ɐ', 'tʲ', 'i', 'rʷ', 'ʊ', 'jᶣ', 'ᵿ', 'ɕː',
-                          'ɨ', 'j', 'æ.', 'p', 'ɐ', 'd', 'rʷ', 'o', 'b', 'n', 'ə', 'sʲ', 'tʲ', 'ɪ', 'l', 'a', 'ɡʲ',
+                          'ɪ', 'j', 'æ.', 'p', 'ɐ', 'd', 'rʷ', 'o', 'b', 'n', 'ə', 'sʲ', 'tʲ', 'ɪ', 'l', 'a', 'ɡʲ',
                           'ɪ.', 'r', 'n', 'ɐ', 'j', 'ʒˠ', 'ɨ', 'zʲ', 'nʲ', 'ɪ', 'ʝ', 'æ', 'k', 'a', 'k', 'ɡ', 'ə', 'v',
                           'ɐ', 'rʲ', 'i', 't͡s', 'ə', 'ə', 'pʷ', 'ʊ', 'sʲ', 'tʲ', 'i', 'l'], ru_transcript.allophones)
 
-    def test_jo(self):
+    def test_yo(self):
         testing_text = 'елка для ее ежика перышка подвел конек мед.'
         ru_transcript = RuTranscript(testing_text)
         ru_transcript.transcribe()

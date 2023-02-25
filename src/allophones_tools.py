@@ -5,6 +5,10 @@ from .sounds import allophones, rus_v
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
 
 
+def get_allophone_info(allophone):
+    return allophones[allophone]
+
+
 def shch(section: list):
     for i, current_phon in enumerate(section[:-1]):
         try:
@@ -246,8 +250,8 @@ def assimilative_palatalization(tokens_section, phonemes_list_section):
             elif current_phon in {'r', 'ɡ'}:
                 continue
 
-            # не смягчение звука [т] перед [р] ([тр’]и́, тряска)
-            elif (current_phon == 't') and (next_phon == 'rʲ'):
+            # не смягчение звуков [т], [з] перед [р] ([тр’]и́, тряска, зрелый)
+            elif (current_phon in {'t', 'z'}) and (next_phon == 'rʲ'):
                 continue
 
             # не смягчение звука [к] перед [р] (транскрипция)
@@ -276,13 +280,19 @@ def long_consonants(phonemes_list_section):
         except IndexError:
             next_phon = ''
 
-        if (current_phon[0] in 'ʂ̺bpfkstrlmngdz') and (current_phon == next_phon):
+        if (current_phon[0] in 'ʂbpfkstrlmngdz') and (current_phon == next_phon):
             del phonemes_list_section[i + n]
             del phonemes_list_section[i + n + add_symb]
             phonemes_list_section.insert(i + n, current_phon + 'ː')
             n -= 1
 
     return phonemes_list_section
+
+
+ts = {'t͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
+zh_sh_ts = {'ʒ', 'ʒʷ', 'ʒˠ', 'ʑː', 'ʑːʷ', 'ʑːˠ', 'ʑʲː', 'ʑːᶣ',
+           'ʂ', 'ʂʷ', 'ʂˠ', 'ʂː', 'ʂːʷ', 'ʂːˠ',
+           't͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
 
 
 def vowels(segment: list):
@@ -312,7 +322,7 @@ def vowels(segment: list):
                     and (i != 0) and (previous_phon != '_'):  # not last, not first
 
                 if next_phon == '+':  # ударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                    if previous_phon in zh_sh_ts:
                         segment[i] = 'ɐ.'
                     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization'])\
                             and (after_next_phon == 'l'):
@@ -323,7 +333,7 @@ def vowels(segment: list):
                         segment[i] = 'æ'
 
                 elif next_phon == '-':  # первый предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                    if previous_phon in zh_sh_ts:
                         segment[i] = 'ᵻ'
                     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                         segment[i] = 'ɐ'
@@ -331,15 +341,17 @@ def vowels(segment: list):
                         segment[i] = 'ɪ'
 
                 else:  # заударные / второй предударный (not last, not first)
-                    # if (previous_allophone['phon'] == 'C') \
-                    #        and ((previous_allophone['hissing'] == 'hissing')
-                    #             or ('hard' in previous_allophone['palatalization'])):
-                    segment[i] = 'ə'
-                    # else:
-                    #    segment[i] = 'ɪ.'
+                    if (previous_allophone['phon'] == 'C'
+                        and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts
+                             or 'hard' in previous_allophone['palatalization'])) \
+                            or (previous_allophone['phon'] == 'V'):
+                        segment[i] = 'ə'
+                    else:
+                        segment[i] = 'ɪ.'
 
             elif (i == len(segment) - 1) or (next_phon == '_'):   # заударные (last)
-                if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                if (previous_allophone['phon'] == 'C') \
+                        and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts):
                     segment[i] = 'ə'
                 elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                     segment[i] = 'ʌ'
@@ -357,14 +369,14 @@ def vowels(segment: list):
                     and (i != 0) and (previous_phon != '_'):  # not last, not first
 
                 if next_phon == '+':  # ударный (not last, not first)
-                    if previous_allophone['phon'] == 'C' and (previous_allophone['hissing'] == 'hissing'):
+                    if previous_phon in zh_sh_ts:
                         segment[i] = 'ɐ.'
                     elif (previous_allophone['phon'] == 'C' and 'soft' in previous_allophone['palatalization'])\
                             or (previous_allophone['phon'] == 'V'):
                         segment[i] = 'ɵ'
 
                 elif next_phon == '-':  # первый предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                    if previous_phon in zh_sh_ts:
                         segment[i] = 'ᵻ'
                     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                         segment[i] = 'ɐ'
@@ -372,15 +384,17 @@ def vowels(segment: list):
                         segment[i] = 'ɪ'
 
                 else:  # заударные/второй предударный (not last, not first)
-                    # if (previous_allophone['phon'] == 'C') \
-                    #        and ((previous_allophone['hissing'] == 'hissing')
-                    #             or ('hard' in previous_allophone['palatalization'])):
-                    segment[i] = 'ə'
-                    # else:
-                    #    segment[i] = 'ɪ.'
+                    if (previous_allophone['phon'] == 'C'
+                        and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts
+                             or 'hard' in previous_allophone['palatalization'])) \
+                            or (previous_allophone['phon'] == 'V'):
+                        segment[i] = 'ə'
+                    else:
+                        segment[i] = 'ɪ.'
 
             elif (i == len(segment) - 1) or (next_phon == '_'):  # заударные (last)
-                if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                if (previous_allophone['phon'] == 'C') \
+                        and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts):
                     segment[i] = 'ə'
                 elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                     segment[i] = 'ʌ'
@@ -398,13 +412,14 @@ def vowels(segment: list):
                     and (i != 0) and (previous_phon != '_'):  # not last, not first
 
                 if (next_phon == '+') and (previous_allophone['phon'] == 'C'):  # ударный (not last, not first)
-                    if previous_allophone['hissing'] == 'hissing':
+                    if previous_phon in zh_sh_ts:
                         segment[i] = 'ᵻ'
                     elif 'hard' in previous_allophone['palatalization']:
                         segment[i] = 'ɛ'
 
                 elif next_phon == '-':  # первый предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                    if (previous_allophone['phon'] == 'C') \
+                            and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts):
                         segment[i] = 'ə'
                     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                         segment[i] = 'ᵻ'
@@ -412,7 +427,8 @@ def vowels(segment: list):
                         segment[i] = 'ɪ'
 
                 else:  # заударные / второй предударный (not last, not first)
-                    if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                    if (previous_allophone['phon'] == 'C') \
+                            and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts):
                         segment[i] = 'ə'
                     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                         segment[i] = 'ᵻ'
@@ -420,7 +436,8 @@ def vowels(segment: list):
                         segment[i] = 'ɪ.'
 
             elif (i == len(segment) - 1) or (next_phon == '_'):  # заударные (last)
-                if (previous_allophone['phon'] == 'C') and (previous_allophone['hissing'] == 'hissing'):
+                if (previous_allophone['phon'] == 'C') \
+                        and (previous_allophone['hissing'] == 'hissing' or previous_phon in ts):
                     segment[i] = 'ə'
                 elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
                     segment[i] = 'ᵻ'
@@ -455,7 +472,8 @@ def vowels(segment: list):
                     segment[i] = 'ᵿ'
 
         elif (current_phon == 'i') and (previous_allophone['phon'] == 'C'):
-            if previous_allophone['hissing'] == 'hissing':  # после шипящей
+            # после ж, ш, ц
+            if previous_phon in zh_sh_ts:
                 segment[i] = 'ɨ'
             elif next_phon != '+':  # безударный
                 segment[i] = 'ɪ'
@@ -475,12 +493,13 @@ def vowels(segment: list):
                                      and after_next_allophone['place'] == 'lingual, velar')):
                         segment[i] = 'ɨ̟'
 
-                elif previous_allophone['hissing'] == 'hissing':  # предударный / заунарный (not last)
+                # предударный / заунарный (not last)
+                elif previous_allophone['hissing'] == 'hissing' or previous_phon in ts:
                     segment[i] = 'ə'
                 else:
                     segment[i] = 'ᵻ'
 
-            elif previous_allophone['hissing'] == 'hissing':  # заударный (last)
+            elif previous_allophone['hissing'] == 'hissing' or previous_phon in ts:  # заударный (last)
                 segment[i] = 'ə'
             else:
                 segment[i] = 'ᵻ'
