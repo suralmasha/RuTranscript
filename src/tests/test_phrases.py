@@ -35,11 +35,11 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('i nʲ ɪ k ɐ ɡ d a | nʲ ɪ v j ɪ dʲ i n ə j s a m ə j ᵿ bʷ o ɡ ə j s a m ə j f ə n t ɐ sʲ tʲ '
+        self.assertEqual('i nʲ ɪ k ɐ ɡ d a | nʲ ɪ vʲ j ɪ dʲ i n ə j s a m ə j ᵿ bʷ o ɡ ə j s a m ə j f ə n t ɐ sʲ tʲ '
                          'i t͡ɕ ə s k ə j pʲ ɪ. tʲ ɪ r bʷ u r ʒ s k ə j k ɐ m p a nʲ ɪ i | mʲ ɪ nʲ æ nʲ ɪ. ə bʲ j ɪ '
                          'v lʲ æ lʲ ɪ ɡʲ e nʲ ɪ j ɪ. m ||', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['i', 'nʲ', 'ɪ', 'k', 'ɐ', 'ɡ', 'd', 'a', 'nʲ', 'ɪ', 'v', 'j', 'ɪ', 'dʲ', 'i', 'n', 'ə', 'j',
+        self.assertEqual(['i', 'nʲ', 'ɪ', 'k', 'ɐ', 'ɡ', 'd', 'a', 'nʲ', 'ɪ', 'vʲ', 'j', 'ɪ', 'dʲ', 'i', 'n', 'ə', 'j',
                           's', 'a', 'm', 'ə', 'j', 'ᵿ', 'bʷ', 'o', 'ɡ', 'ə', 'j', 's', 'a', 'm', 'ə', 'j', 'f', 'ə',
                           'n', 't', 'ɐ', 'sʲ', 'tʲ', 'i', 't͡ɕ', 'ə', 's', 'k', 'ə', 'j', 'pʲ', 'ɪ.', 'tʲ', 'ɪ', 'r',
                           'bʷ', 'u', 'r', 'ʒ', 's', 'k', 'ə', 'j', 'k', 'ɐ', 'm', 'p', 'a', 'nʲ', 'ɪ', 'i', 'mʲ', 'ɪ',

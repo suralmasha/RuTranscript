@@ -153,12 +153,13 @@ class RuTranscript:
                         self._a_tokens[section_num][i] = token.replace(key, value)
 
             # ---- LPC-3. Transliteration ----
-            self._transliterated_tokens[section_num] = [epi.transliterate(token)
+            self._transliterated_tokens[section_num] = [epi.transliterate(token).replace('6', '').replace('4', '')
                                                         for token in self._a_tokens[section_num]]
             for i, token in enumerate(self._transliterated_tokens[section_num]):
                 for key, value in non_ipa_symbols.items():
                     if key in token:
-                        self._transliterated_tokens[section_num][i] = token.replace(key, value)
+                        token = token.replace(key, value)
+                        self._transliterated_tokens[section_num][i] = token
 
             # ---- LPC-4. Common rules ----
             # fricative g
@@ -166,7 +167,7 @@ class RuTranscript:
                 try:
                     next_token = self._transliterated_tokens[section_num][i + 1]
                 except IndexError:
-                    next_token = ''
+                    next_token = ' '
 
                 token_let = self._tokens[section_num][i]
                 nlp_token = nlp(token_let)[0]
@@ -175,18 +176,19 @@ class RuTranscript:
                 if lemma in {'ага', 'ого', 'угу', 'господь', 'господи', 'бог'}:
                     self._transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
                 elif token_let in {'ах', 'эх', 'ох', 'ух'}:
-                    next_token_allophones = allophones.get(next_token[0], {})
-                    if next_token_allophones.get('phon') == 'C' and next_token_allophones.get('voice') == 'voiced':
+                    next_token_allophone = allophones.get(next_token[0], {})
+                    if next_token_allophone.get('voice', '') == 'voiced':
                         self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
 
             # ---- Join phonemes ----
             section_phonemes_list = []
             joined_tokens = '_'.join(self._transliterated_tokens[section_num])
             i = 0
-            while i < len(joined_tokens):
+            default_len = len(joined_tokens)
+            while i < default_len:
                 if joined_tokens[i] not in ['+', '-']:
                     n = 4
-                    if i != len(joined_tokens) - 1:
+                    if i != default_len - 1:
                         while (joined_tokens[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ']) and (n > 0):
                             n -= 1
                         section_phonemes_list.append(joined_tokens[i:i + n])

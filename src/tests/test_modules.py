@@ -1,6 +1,7 @@
 import unittest
 
 from ru_transcript.src.RuTranscript import RuTranscript
+from ru_transcript.src.utils.main_tools import text_norm_tok
 
 
 class TestModules(unittest.TestCase):
@@ -45,7 +46,13 @@ class TestModules(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, replacement_dict={"tts": "синтез речи"})
         ru_transcript.transcribe()
         print(testing_text, ru_transcript._tokens)
-        self.assertEqual([['синтэз', 'речи', 'это', 'увлекательно']], ru_transcript._tokens)
+        self.assertEqual([['синтэз', 'речи'], ['это', 'увлекательно']], ru_transcript._tokens)
+
+    def test_dirty_text(self):
+        testing_text = 'синтез речи - это#$ «увлекательно»'
+        res = text_norm_tok(testing_text)
+        print(testing_text, res)
+        self.assertEqual([['синтез', 'речи', '-', 'это', 'увлекательно']], res)
 
 
 if __name__ == '__main__':
