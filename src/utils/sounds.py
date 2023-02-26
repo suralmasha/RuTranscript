@@ -31,7 +31,7 @@ with open(join(ROOT_DIR, '../data/paired_consonants.txt'), encoding='utf-8') as 
 # creating a dictionary with all allophones
 allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None} if 'total_v' in sorted_phonemes[key]
               else {'phon': 'C', 'place': None, 'manner': None, 'palatalization': None, 'voice': None, 'pair': None,
-                    'hissing': None, 'sonorous': None}
+                    'hissing': None}
               for key in alphabet}
 # vowels
 # row
