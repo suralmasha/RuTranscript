@@ -43,12 +43,16 @@ yo_replacer = md.Replacer([yo_dict, "plane"])
 stress = Stresses()
 
 
+def remove_extra_accents(string):
+    first_plus_index = string.find('+')
+    return string[:first_plus_index + 1] + string[first_plus_index + 1:].replace('+', '')
+
+
 class RuTranscript:
     def __init__(self, text: str, a_text: str = None, accent_place: str = 'after', replacement_dict: dict = None):
-        text = ' '.join(['—' if word == '-' else word.replace('-', '')
-                         for word in text.replace('\n', ' ').lower().split()])
-        a_text = ' '.join(['—' if word == '-' else word.replace('-', '')
-                           for word in a_text.replace('\n', ' ').lower().split()]) if a_text is not None else text
+        text = ' '.join(['—' if word == '-' else word for word in text.replace('\n', ' ').lower().split()])
+        a_text = ' '.join(['—' if word == '-' else word for word in a_text.replace('\n', ' ').lower().split()]) \
+            if a_text is not None else text
 
         if replacement_dict is not None:
             user_replacer = md.Replacer([replacement_dict, "plane"])
@@ -93,6 +97,14 @@ class RuTranscript:
 
             self.accented_text[section_num] = self._a_tokens[section_num]
 
+            # ---- Removing dashes ----
+            section = self._tokens[section_num]
+            a_section = self._a_tokens[section_num]
+            self._tokens[section_num] = [token.replace('-', '') for token in section]
+            self._a_tokens[section_num] = [token.replace('-', '') if token.count('+') == 1
+                                           else remove_extra_accents(token).replace('-', '')
+                                           for token in a_section]
+
             # ---- Phrasal words extraction ----
             dep = stress.make_dependency_tree(' '.join(self._tokens[section_num]))
             self._phrasal_words_indexes.append(find_clitics(dep, self._tokens[section_num]))
@@ -115,9 +127,11 @@ class RuTranscript:
             # ---- LPC-2. Regular exceptions ----
             for i, token in enumerate(self._a_tokens[section_num]):
                 # adjective endings 'ого его'
-                if token.replace('+', '')[-3:] in 'ого его'.split() and token != 'ого+':
+                if token != 'ого+' and (token.replace('+', '').startswith('какого')
+                                        or token.replace('+', '').endswith('ого')
+                                        or token.replace('+', '').endswith('его')):
                     accent_index = token.index('+')
-                    token = token.replace('+', '')[:-2] + 'во'
+                    token = token.replace('+', '').replace('ого', 'ово').replace('его', 'ево')
                     self._a_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
 
                 # 'что' --> 'што'

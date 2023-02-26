@@ -198,7 +198,7 @@ def extract_phrasal_words(phonemes, indexes):
     Joins clitics with main words.
     Args:
         phonemes (list): list of phonemes with '_' for spaces;
-        indexes (list[tuple]): list of tuples with indexes of a main and a dependent words.
+        indexes (set[tuple]): set of tuples with indexes of a main and a dependent words.
     """
     tokens_list = []
     start_token_index = 0
@@ -211,36 +211,44 @@ def extract_phrasal_words(phonemes, indexes):
     tokens_list.append(phonemes[start_token_index:])
 
     phrasal_words = tokens_list[:]
-    proclitic_index = None
-    enclitic_index = None
     n = 0
+    main_word_cache = []
+    enclitic_cache = []
 
     for tuple_indexes in indexes:
         try:
             main_word_index = tuple_indexes[0]
-            main_word = tokens_list[main_word_index]
 
-            if tuple_indexes[1] > main_word_index:
+            if tuple_indexes[1] > main_word_index:  # проклитика
+                main_word = phrasal_words[main_word_index + n] if main_word_index in main_word_cache\
+                    else tokens_list[main_word_index]
+                main_word_cache.append(main_word_index)
                 proclitic_index = tuple_indexes[1]
-            else:
-                enclitic_index = tuple_indexes[1]
 
-            if proclitic_index is not None:
                 proclitic = [x for x in tokens_list[proclitic_index] if x != '+']
                 phrasal_words.remove(tokens_list[proclitic_index])
                 phrasal_words.remove(main_word)
                 if proclitic_index == 1:
                     phrasal_words.insert(0, main_word + proclitic)
                 else:
-                    phrasal_words.insert(proclitic_index + n, main_word + proclitic)
+                    phrasal_words.insert(proclitic_index - main_word_cache.count(main_word_index),
+                                         main_word + proclitic)
                 n -= 1
 
-            if enclitic_index is not None:
+            else:  # энклитика
+                main_word = phrasal_words[main_word_index - enclitic_cache.count(main_word_index)] \
+                    if main_word_index in enclitic_cache \
+                    else tokens_list[main_word_index]
+                main_word_cache.append(main_word_index)
+                enclitic_index = tuple_indexes[1]
+                enclitic_cache.append(enclitic_index)
+
                 enclitic = [x for x in tokens_list[enclitic_index] if x != '+']
                 phrasal_words.remove(tokens_list[enclitic_index])
                 phrasal_words.remove(main_word)
-                phrasal_words.insert(enclitic_index + n, enclitic + main_word)
+                phrasal_words.insert(enclitic_index + n + enclitic_cache.count(main_word_index), enclitic + main_word)
                 n -= 1
+
         except:
             continue
 

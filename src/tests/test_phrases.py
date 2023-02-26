@@ -116,10 +116,10 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('d a i s vʷ o lʲ f ə m u mʲ ɪ nʲ æ x ɐ rʷ o ʂ j æ. ə t n ɐ ʂˠ ᵻ nʲ j æ. ||',
+        self.assertEqual('d a i s vʷ o lʲ f ə m ᵿ mʲ ɪ nʲ æ x ɐ rʷ o ʂ j æ. ə t n ɐ ʂˠ ᵻ nʲ j æ. ||',
                          ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['d', 'a', 'i', 's', 'vʷ', 'o', 'lʲ', 'f', 'ə', 'm', 'u', 'mʲ', 'ɪ', 'nʲ', 'æ', 'x', 'ɐ',
+        self.assertEqual(['d', 'a', 'i', 's', 'vʷ', 'o', 'lʲ', 'f', 'ə', 'm', 'ᵿ', 'mʲ', 'ɪ', 'nʲ', 'æ', 'x', 'ɐ',
                           'rʷ', 'o', 'ʂ', 'j', 'æ.', 'ə', 't', 'n', 'ɐ', 'ʂˠ', 'ᵻ', 'nʲ', 'j', 'æ.'],
                          ru_transcript.allophones)
 
@@ -174,6 +174,31 @@ class TestPhrases(unittest.TestCase):
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['sʲ', 'i', 'n', 'tˠ', 'ᵻ', 'z', 'rʲ', 'e', 't͡ɕ', 'ɪ', 'ɛ', 't', 'ʌ', 'ʂ', 'tʷ', 'o', 't',
                           'ʌ', 'ᵿ', 'v', 'lʲ', 'ɪ', 'k', 'a', 'tʲ', 'ɪ.', 'lʲ', 'n', 'ə', 'j', 'æ.'],
+                         ru_transcript.allophones)
+
+    def test_skipping_proclitic(self):
+        testing_text = 'Они расцветают и становятся заметными лишь на фоне какого-нибудь безобразия.'
+        testing_a_text = 'Он+и расцвет+ают и стан+овятся зам+етными л+ишь н+а ф+оне какого-нибудь безобр+азия.'
+        ru_transcript = RuTranscript(testing_text, testing_a_text, accent_place='before')
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('ɐ nʲ i r ə s d̻͡z̪ vʲ ɪ t a jᶣ ᵿ t ᵻ s t ɐ nʷ o vʲ ɪ. t͡s ə z ɐ mʲ e t nˠ ᵻ mʲ ɪ lʲ ɪ ʂ n ɐ '
+                         'fʷ o nʲ æ. k ɐ kʷ o v ə nʲ ɪ bʷ ʊ dʲ bʲ ɪ. z ɐ b r a zʲ j æ. ||', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['ɐ', 'nʲ', 'i', 'r', 'ə', 's', 'd̻͡z̪', 'vʲ', 'ɪ', 't', 'a', 'jᶣ', 'ᵿ', 't', 'ᵻ', 's', 't',
+                          'ɐ', 'nʷ', 'o', 'vʲ', 'ɪ.', 't͡s', 'ə', 'z', 'ɐ', 'mʲ', 'e', 't', 'nˠ', 'ᵻ', 'mʲ', 'ɪ',
+                          'lʲ', 'ɪ', 'ʂ', 'n', 'ɐ', 'fʷ', 'o', 'nʲ', 'æ.', 'k', 'ɐ', 'kʷ', 'o', 'v', 'ə', 'nʲ', 'ɪ',
+                          'bʷ', 'ʊ', 'dʲ', 'bʲ', 'ɪ.', 'z', 'ɐ', 'b', 'r', 'a', 'zʲ', 'j', 'æ.'],
+                         ru_transcript.allophones)
+
+    def test_skipping_enclitic(self):
+        testing_text = 'Да это же писатель!'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('d ɐ e t ə ʒ ə pʲ ɪ s a tʲ ɪ. lʲ ||', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['d', 'ɐ', 'e', 't', 'ə', 'ʒ', 'ə', 'pʲ', 'ɪ', 's', 'a', 'tʲ', 'ɪ.', 'lʲ'],
                          ru_transcript.allophones)
 
 
