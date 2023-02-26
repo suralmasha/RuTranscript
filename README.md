@@ -65,7 +65,7 @@ You can get a list of **phonemes (main allophones)** without pauses by using att
 You can see **how accents were placed** by using attribute `accented_text`.
 
 ```
->>> print(ru_transcript.phonemes)
+>>> print(ru_transcript.accented_text)
 'ка+к получи+ть транскри+пцию'
 ```
 
