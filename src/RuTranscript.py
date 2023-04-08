@@ -1,4 +1,5 @@
 from os.path import join, dirname, abspath
+from tqdm import tqdm
 
 import spacy
 import epitran
@@ -49,7 +50,14 @@ def remove_extra_accents(string):
 
 
 class RuTranscript:
-    def __init__(self, text: str, a_text: str = None, accent_place: str = 'after', replacement_dict: dict = None):
+    def __init__(
+            self,
+            text: str,
+            a_text: str = None,
+            accent_place: str = 'after',
+            save_spaces: bool = False,
+            replacement_dict: dict = None
+    ):
         text = ' '.join(['—' if word == '-' else word for word in text.replace('\n', ' ').lower().split()])
         a_text = ' '.join(['—' if word == '-' else word for word in a_text.replace('\n', ' ').lower().split()]) \
             if a_text is not None else text
@@ -59,6 +67,7 @@ class RuTranscript:
             text = user_replacer(text)
             a_text = user_replacer(a_text)
 
+        self._save_spaces = save_spaces
         self._tokens = text_norm_tok(text)
         self._a_tokens = text_norm_tok(a_text)
         self._sections_len = len(self._tokens)
@@ -77,7 +86,7 @@ class RuTranscript:
 
     def transcribe(self):
         # ---- TPS ----
-        for section_num in range(self._sections_len):
+        for section_num in tqdm(range(self._sections_len)):
             default_section = self._tokens[section_num]
             self._tokens[section_num] = [e_replacer(token).replace('+', '') for token in self._tokens[section_num]]
             self._tokens[section_num] = [yo_replacer(token).replace('+', '') for token in self._tokens[section_num]]
@@ -276,14 +285,15 @@ class RuTranscript:
         self.accented_text = ' '.join([' '.join(section) for section in self.accented_text])
 
         # ---- Result allophones ----
+        escape_symbols = ['+', '-', '_'] if not self._save_spaces else ['+', '-']
+
         allophones_joined = []
         for section in self.allophones:
             allophones_joined.extend(section)
-
-        self.allophones = [x for x in allophones_joined if x not in ['+', '-', '_']]
+        self.allophones = [x for x in allophones_joined if x not in escape_symbols]
 
         # ---- Result phonemes ----
         phonemes_joined = []
         for section in self._phonemes_list:
             phonemes_joined.extend(section)
-        self.phonemes = [x for x in phonemes_joined if x not in ['+', '-', '_']]
+        self.phonemes = [x for x in phonemes_joined if x not in escape_symbols]

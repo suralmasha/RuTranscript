@@ -29,9 +29,9 @@ with open(join(ROOT_DIR, '../data/paired_consonants.txt'), encoding='utf-8') as 
                 for voiced, silent in (pair.split(', ') for pair in paired_c_txt)}
 
 # creating a dictionary with all allophones
-allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None} if 'total_v' in sorted_phonemes[key]
+allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None, 'class': 'vowel'} if 'total_v' in sorted_phonemes[key]
               else {'phon': 'C', 'place': None, 'manner': None, 'palatalization': None, 'voice': None, 'pair': None,
-                    'hissing': None}
+                    'hissing': None, 'class': None}
               for key in alphabet}
 # vowels
 # row
@@ -58,6 +58,8 @@ voice_map = {'voiced_c': 'voiced', 'voiceless_c': 'voiceless'}
 paired_c_inv = {v: k for k, v in paired_c.items()}
 # hissing sounds
 hissing_map = {'hissing_c': 'hissing'}
+# class
+class_map = {'sonorous_class_c': 'sonorous', 'voiced_class_c': 'voiced', 'voiceless_class_c': 'voiceless', 'hissing_class_c': 'hissing'}
 
 for key in allophones.keys():
     for group in sorted_phonemes[key]:
@@ -81,6 +83,8 @@ for key in allophones.keys():
                 else allophones[key]['palatalization']
             hissing = hissing_map.get(group, None)
             allophones[key]['hissing'] = hissing if hissing is not None else allophones[key]['hissing']
+            class_consonants = class_map.get(group, None)
+            allophones[key]['class'] = class_consonants
             voice = voice_map.get(group, None)
             allophones[key]['voice'] = voice if voice is not None else allophones[key]['voice']
             if (allophones[key]['voice'] == 'voiced') and (key in paired_c.keys()):
