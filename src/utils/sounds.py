@@ -59,10 +59,18 @@ paired_c_inv = {v: k for k, v in paired_c.items()}
 # hissing sounds
 hissing_map = {'hissing_c': 'hissing'}
 # class
-class_map = {'sonorous_class_c': 'sonorous', 'voiced_class_c': 'voiced', 'voiceless_class_c': 'voiceless', 'hissing_class_c': 'hissing'}
+class_map = {'sonorous_class': 'sonorous', 'voiced_class': 'voiced',
+             'voiceless_class': 'voiceless', 'hissing_class': 'hissing'}
+# experiments
+# allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None, 'class': 'vowel', 'experiment': None} if 'total_v' in sorted_phonemes[key] else {'phon': 'C', 'place': None, 'manner': None, 'palatalization': None, 'voice': None, 'pair': None, 'hissing': None, 'class': None, 'experiment': None} for key in alphabet}
+# experiment_map = {'complex_experiment': 'complex', 'rare_experiment': 'rare', 'random_vowels_experiment': 'random_vowel', 'long_consonants_experiment': 'long_consonant'}
 
 for key in allophones.keys():
     for group in sorted_phonemes[key]:
+        # experiments
+        # experiment = experiment_map.get(group, None)
+        # allophones[key]['experiment'] = experiment if experiment is not None else allophones[key]['experiment']
+
         # vowels
         if allophones[key]['phon'] == 'V':
             row = row_map.get(group, None)

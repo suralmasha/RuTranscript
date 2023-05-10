@@ -1,5 +1,4 @@
 from os.path import join, dirname, abspath
-from tqdm import tqdm
 
 import spacy
 import epitran
@@ -27,7 +26,7 @@ epi = epitran.Epitran('rus-Cyrl')
 second_silent = 'стн стл здн рдн нтск ндск лвств'.split()
 first_silent = 'лнц дц вств'.split()
 hissing_rd = {'сш': 'шш', 'зш': 'шш', 'сж': 'жж', 'сч': 'щ'}
-non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː'}
+non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː', 'ʒ': 'ʐ', 'd͡ʐ': 'd͡ʒ'}
 
 try:
     yo_dict = find("yo.dict", raise_exception=True)
@@ -43,6 +42,12 @@ e_replacer = md.Replacer([e_dict, "plane"])
 yo_replacer = md.Replacer([yo_dict, "plane"])
 stress = Stresses()
 
+# with open(join(ROOT_DIR, '../data/error_words_accents_default.txt'), encoding='utf-8') as f:
+#    error_words_accents = f.readlines()
+# error_words_accents_dict = {}
+# for w in error_words_accents:
+#    error_words_accents_dict[w.replace('+', '').replace('\n', '')] = w
+
 
 def remove_extra_accents(string):
     first_plus_index = string.find('+')
@@ -53,25 +58,29 @@ class RuTranscript:
     def __init__(
             self,
             text: str,
-            a_text: str = None,
-            accent_place: str = 'after',
+            stressed_text: str = None,
+            stress_place: str = 'after',
             save_spaces: bool = False,
-            replacement_dict: dict = None
+            replacement_dict: dict = None,
+            save_stresses=False,
+            stress_accuracy_threshold=0.86
     ):
         text = ' '.join(['—' if word == '-' else word for word in text.replace('\n', ' ').lower().split()])
-        a_text = ' '.join(['—' if word == '-' else word for word in a_text.replace('\n', ' ').lower().split()]) \
-            if a_text is not None else text
+        stressed_text = ' '.join(['—' if word == '-' else word for word in stressed_text.replace('\n', ' ').lower().split()]) \
+            if stressed_text is not None else text
 
         if replacement_dict is not None:
             user_replacer = md.Replacer([replacement_dict, "plane"])
             text = user_replacer(text)
-            a_text = user_replacer(a_text)
+            stressed_text = user_replacer(stressed_text)
 
+        self._stress_accuracy_threshold = stress_accuracy_threshold
+        self._save_stresses = save_stresses
         self._save_spaces = save_spaces
         self._tokens = text_norm_tok(text)
-        self._a_tokens = text_norm_tok(a_text)
+        self._stressed_tokens = text_norm_tok(stressed_text)
         self._sections_len = len(self._tokens)
-        self._accent_place = accent_place
+        self._stress_place = stress_place
         self._pause_dict = get_punctuation_dict(text)
 
         self._phrasal_words_indexes = []
@@ -82,37 +91,37 @@ class RuTranscript:
         self.allophones = [[]] * self._sections_len
         self.transcription = []
         self.phonemes = []
-        self.accented_text = [[]] * self._sections_len
+        self.stressed_text = [[]] * self._sections_len
 
     def transcribe(self):
         # ---- TPS ----
-        for section_num in tqdm(range(self._sections_len)):
+        for section_num in range(self._sections_len):
             default_section = self._tokens[section_num]
             self._tokens[section_num] = [e_replacer(token).replace('+', '') for token in self._tokens[section_num]]
             self._tokens[section_num] = [yo_replacer(token).replace('+', '') for token in self._tokens[section_num]]
 
             if self._tokens[section_num] != default_section:
-                self._a_tokens[section_num] = [
+                self._stressed_tokens[section_num] = [
                     apply_differences([default_section[i], self._tokens[section_num][i]])
                     for i in range(len(default_section))
                 ]
 
             # ---- Accenting ----
-            self._a_tokens[section_num] = [
-                stress.replace_accent(token) if ('+' in token) and (self._accent_place == 'before')  # need to replace
-                else stress.place_accent(token) if ('+' not in token)  # use StressRNN
+            self._stressed_tokens[section_num] = [
+                stress.replace_stress(token) if ('+' in token) and (self._stress_place == 'before')  # need to replace
+                else stress.place_stress(token, self._stress_accuracy_threshold) if ('+' not in token)  # use StressRNN
                 else token
-                for token in self._a_tokens[section_num]]
+                for token in self._stressed_tokens[section_num]]
 
-            self.accented_text[section_num] = self._a_tokens[section_num]
+            self.stressed_text[section_num] = self._stressed_tokens[section_num]
 
             # ---- Removing dashes ----
             section = self._tokens[section_num]
-            a_section = self._a_tokens[section_num]
+            a_section = self._stressed_tokens[section_num]
             self._tokens[section_num] = [token.replace('-', '') for token in section]
-            self._a_tokens[section_num] = [token.replace('-', '') if token.count('+') == 1
+            self._stressed_tokens[section_num] = [token.replace('-', '') if token.count('+') == 1
                                            else remove_extra_accents(token).replace('-', '')
-                                           for token in a_section]
+                                                  for token in a_section]
 
             # ---- Phrasal words extraction ----
             dep = stress.make_dependency_tree(' '.join(self._tokens[section_num]))
@@ -130,54 +139,54 @@ class RuTranscript:
                         new_token = irregular_exceptions_stems[stem][:dif] + ending
 
                     self._tokens[section_num][i] = new_token
-                    accent_index = self._a_tokens[section_num][i].index('+')
-                    self._a_tokens[section_num][i] = new_token[:accent_index] + '+' + new_token[accent_index:]
+                    accent_index = self._stressed_tokens[section_num][i].index('+')
+                    self._stressed_tokens[section_num][i] = new_token[:accent_index] + '+' + new_token[accent_index:]
 
             # ---- LPC-2. Regular exceptions ----
-            for i, token in enumerate(self._a_tokens[section_num]):
+            for i, token in enumerate(self._stressed_tokens[section_num]):
                 # adjective endings 'ого его'
                 if token != 'ого+' and (token.replace('+', '').startswith('какого')
                                         or token.replace('+', '').endswith('ого')
                                         or token.replace('+', '').endswith('его')):
                     accent_index = token.index('+')
                     token = token.replace('+', '').replace('ого', 'ово').replace('его', 'ево')
-                    self._a_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
+                    self._stressed_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
 
                 # 'что' --> 'што'
-                if 'что' in self._a_tokens[section_num][i]:
-                    self._a_tokens[section_num][i] = token.replace('что', 'што')
+                if 'что' in self._stressed_tokens[section_num][i]:
+                    self._stressed_tokens[section_num][i] = token.replace('что', 'што')
 
                 # verb endings 'тся ться'
                 if token not in {'заботься', 'отметься'}:
                     if token[-3:] == 'тся':
-                        self._a_tokens[section_num][i] = token[:-3] + 'ца'
+                        self._stressed_tokens[section_num][i] = token[:-3] + 'ца'
                     elif token[-4:] == 'ться':
-                        self._a_tokens[section_num][i] = token[:-4] + 'ца'
+                        self._stressed_tokens[section_num][i] = token[:-4] + 'ца'
 
                 # noun endings 'ия ие ию'
                 if (token[-2:] in {'ия', 'ие', 'ию'}) and (token[-3] not in {'ц', 'щ'}):
                     if token[-3] not in {'ж', 'ш'}:
-                        self._a_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
+                        self._stressed_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
                     else:
-                        self._a_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
+                        self._stressed_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
 
                 # unpronounceable consonants
                 for sub in first_silent + second_silent:
                     if sub in token:
                         new_sub = sub.translate(str.maketrans('', '', 'ьъ'))
-                        self._a_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
+                        self._stressed_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
 
                 # combinations with hissing consonants
                 stem = snowball.stem(token)
                 if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._a_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч', 'ч')
+                    self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч', 'ч')
                 for key, value in hissing_rd.items():
                     if key in token:
-                        self._a_tokens[section_num][i] = token.replace(key, value)
+                        self._stressed_tokens[section_num][i] = token.replace(key, value)
 
             # ---- LPC-3. Transliteration ----
             self._transliterated_tokens[section_num] = [epi.transliterate(token).replace('6', '').replace('4', '')
-                                                        for token in self._a_tokens[section_num]]
+                                                        for token in self._stressed_tokens[section_num]]
             for i, token in enumerate(self._transliterated_tokens[section_num]):
                 for key, value in non_ipa_symbols.items():
                     if key in token:
@@ -212,7 +221,7 @@ class RuTranscript:
                 if joined_tokens[i] not in ['+', '-']:
                     n = 4
                     if i != default_len - 1:
-                        while (joined_tokens[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ']) and (n > 0):
+                        while (joined_tokens[i:i + n] not in epi_starterpack + ['_', '|', '||', 'γ', 'ʐ']) and (n > 0):
                             n -= 1
                         section_phonemes_list.append(joined_tokens[i:i + n])
                     elif joined_tokens[i] in epi_starterpack + ['||', 'γ']:
@@ -225,14 +234,16 @@ class RuTranscript:
             section_phonemes_list = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
             self._phonemes_list.append(section_phonemes_list)
 
+            n = 0
             for allophone_index in range(len(self._phonemes_list[section_num]) - 1):
-                allophone = self._phonemes_list[section_num][allophone_index]
-                next_allophone = self._phonemes_list[section_num][allophone_index + 1]
-                if (allophone == 't͡s' and next_allophone == 's') or (allophone == 'd͡ʒ' and next_allophone == 'ʒ'):
-                    del self._phonemes_list[section_num][allophone_index + 1]
+                allophone = self._phonemes_list[section_num][allophone_index + n]
+                next_allophone = self._phonemes_list[section_num][allophone_index + n + 1]
+                if (allophone == 't͡s' and next_allophone == 's') or (allophone == 'd͡ʒ' and next_allophone == 'ʐ'):
+                    del self._phonemes_list[section_num][allophone_index + n + 1]
+                    n -= 1
 
             # ---- Join letters ----
-            self._letters_list.append(list('_'.join(self._a_tokens[section_num])))
+            self._letters_list.append(list('_'.join(self._stressed_tokens[section_num])))
 
             # ---- Continue LPC-4. Common rules ----
             self._phonemes_list[section_num] = fix_jotised(self._phonemes_list[section_num],
@@ -282,10 +293,14 @@ class RuTranscript:
         )
 
         # ---- Result accented text ----
-        self.accented_text = ' '.join([' '.join(section) for section in self.accented_text])
+        self.stressed_text = ' '.join([' '.join(section) for section in self.stressed_text])
 
         # ---- Result allophones ----
-        escape_symbols = ['+', '-', '_'] if not self._save_spaces else ['+', '-']
+        escape_symbols = ['+', '-', '_']
+        if self._save_stresses:
+            escape_symbols.remove('+')
+        if self._save_spaces:
+            escape_symbols.remove('_')
 
         allophones_joined = []
         for section in self.allophones:

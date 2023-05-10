@@ -131,9 +131,9 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('ʒʷ ʊ ʑː ɐ. tʲ', ru_transcript.transcription)
+        self.assertEqual('ʐʷ ʊ ʑː ɐ. tʲ', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['ʒʷ', 'ʊ', 'ʑː', 'ɐ.', 'tʲ'], ru_transcript.allophones)
+        self.assertEqual(['ʐʷ', 'ʊ', 'ʑː', 'ɐ.', 'tʲ'], ru_transcript.allophones)
 
     def test_long_ge_2(self):  # 'щ' пред звонкой согласной
         testing_text = 'вещдок'

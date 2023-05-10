@@ -96,7 +96,7 @@ class Stresses:
         self.dependency_tree = None
         self.nlp = spacy.load('ru_core_news_sm')
 
-    def place_accent(self, token):
+    def place_stress(self, token, stress_accuracy_threshold):
         """
         Places an accent.
         Args:
@@ -119,21 +119,19 @@ class Stresses:
         else:
         #    raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
         #                     f"Add stresses yourselves.\nThere is no stress for the word {token}")
-            return stress_rnn.put_stress(token, accuracy_threshold=0.0)
+            return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
 
     @staticmethod
-    def replace_accent(token):
+    def replace_stress(token):
         """
         Replaces an accent from a place before a stressed vowel to a place after it.
         Args:
           token (str): token which needs to be refactored.
         """
         plus_index = token.find('+')
-        if plus_index == -1:
-            return token
         new_token_split = list(token)
         new_token_split.remove('+')
-        new_token_split.insert(plus_index + 1, token[plus_index])
+        new_token_split.insert(plus_index + 1, '+')
         return ''.join(new_token_split)
 
     def to_nltk_tree(self, node):

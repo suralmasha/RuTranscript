@@ -21,8 +21,8 @@ def shch(section: list):
             two_current = ''
 
         next_allophone = allophones[next_phon]
-        if ((current_phon == 'ʒ') and (next_allophone.get('voice', '') == 'voiceless') and (next_phon != 's')) \
-                or (two_current in {('s', 't͡ɕ'), ('z', 't͡ɕ'), ('ʒ', 't͡ɕ')}):
+        if ((current_phon == 'ʐ') and (next_allophone.get('voice', '') == 'voiceless') and (next_phon != 's')) \
+                or (two_current in {('s', 't͡ɕ'), ('z', 't͡ɕ'), ('ʐ', 't͡ɕ')}):
             section[i] = 'ɕː'
             del section[i + 1]
 
@@ -41,7 +41,7 @@ def long_ge(section: list):
             two_current = ''
 
         next_allophone = allophones[next_phon]
-        if (current_phon == next_phon == 'ʒ') or (two_current == ('z', 'ʒ')):
+        if (current_phon == next_phon == 'ʐ') or (two_current == ('z', 'ʐ')):
             section[i] = 'ʑː'
             del section[i + 1]
         elif (current_phon == 'ɕː') and (next_allophone.get('voice', '') == 'voiced') \
@@ -281,7 +281,7 @@ def long_consonants(phonemes_list_section):
 
 
 ts = {'t͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
-zh_sh_ts = {'ʒ', 'ʒʷ', 'ʒˠ', 'ʑː', 'ʑːʷ', 'ʑːˠ', 'ʑʲː', 'ʑːᶣ',
+zh_sh_ts = {'ʐ', 'ʐʷ', 'ʐˠ', 'ʑː', 'ʑːʷ', 'ʑːˠ', 'ʑʲː', 'ʑːᶣ',
            'ʂ', 'ʂʷ', 'ʂˠ', 'ʂː', 'ʂːʷ', 'ʂːˠ',
            't͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
 
