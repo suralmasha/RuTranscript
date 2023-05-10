@@ -66,7 +66,8 @@ class RuTranscript:
             stress_accuracy_threshold=0.86
     ):
         text = ' '.join(['—' if word == '-' else word for word in text.replace('\n', ' ').lower().split()])
-        stressed_text = ' '.join(['—' if word == '-' else word for word in stressed_text.replace('\n', ' ').lower().split()]) \
+        stressed_text = ' '.join(['—' if word == '-' else word
+                                  for word in stressed_text.replace('\n', ' ').lower().split()])\
             if stressed_text is not None else text
 
         if replacement_dict is not None:
@@ -120,7 +121,7 @@ class RuTranscript:
             a_section = self._stressed_tokens[section_num]
             self._tokens[section_num] = [token.replace('-', '') for token in section]
             self._stressed_tokens[section_num] = [token.replace('-', '') if token.count('+') == 1
-                                           else remove_extra_accents(token).replace('-', '')
+                                                  else remove_extra_accents(token).replace('-', '')
                                                   for token in a_section]
 
             # ---- Phrasal words extraction ----
@@ -179,7 +180,8 @@ class RuTranscript:
                 # combinations with hissing consonants
                 stem = snowball.stem(token)
                 if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч', 'ч')
+                    self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч',
+                                                                                                                'ч')
                 for key, value in hissing_rd.items():
                     if key in token:
                         self._stressed_tokens[section_num][i] = token.replace(key, value)
