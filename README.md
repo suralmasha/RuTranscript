@@ -21,14 +21,14 @@ Put your text in the appropriate variable (in the example - `text`). Pass it to 
 >>> ru_transcript.transcribe()
 ```
 
-You can also highlight the accents in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `accented_text_if_have`). If you want to put an accent mark before a stressed vowel, specify it using the parameter `accent_place='before'`.
+You can also highlight the stresses in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `stressed_text_if_have`). If you want to put a stress mark before a stressed vowel, specify it using the parameter `stress_place='before'`.
 
 **Important!** The number of words in these two texts must match.
 
 ```
 >>> text = 'Как получить транскрипцию?'
->>> accented_text_if_have = 'Как получи+ть транскрипцию?'
->>> ru_transcript = RuTranscript(text, accented_text_if_have)
+>>> stressed_text_if_have = 'Как получи+ть транскрипцию?'
+>>> ru_transcript = RuTranscript(text, stressed_text_if_have)
 >>> ru_transcript.transcribe()
 ```
 
@@ -36,8 +36,8 @@ or
 
 ```
 >>> text = 'Как получить транскрипцию?'
->>> accented_text_if_have = 'Как получ+ить транскрипцию?'
->>> ru_transcript = RuTranscript(text, accented_text_if_have, accent_place='before')
+>>> stressed_text_if_have = 'Как получ+ить транскрипцию?'
+>>> ru_transcript = RuTranscript(text, stressed_text_if_have, stress_place='before')
 >>> ru_transcript.transcribe()
 ```
 
@@ -62,10 +62,10 @@ You can get a list of **phonemes (main allophones)** without pauses by using att
 ['k', 'a', 'k', 'p', 'o', 'l', 'u', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'a', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡s', 'i', 'j', 'u']
 ```
 
-You can see **how accents were placed** by using attribute `accented_text`.
+You can see **how stresses were placed** by using attribute `stressed_text`.
 
 ```
->>> print(ru_transcript.accented_text)
+>>> print(ru_transcript.stressed_text)
 'ка+к получи+ть транскри+пцию'
 ```
 
