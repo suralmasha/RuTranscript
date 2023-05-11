@@ -42,12 +42,6 @@ e_replacer = md.Replacer([e_dict, "plane"])
 yo_replacer = md.Replacer([yo_dict, "plane"])
 stress = Stresses()
 
-# with open(join(ROOT_DIR, '../data/error_words_accents_default.txt'), encoding='utf-8') as f:
-#    error_words_accents = f.readlines()
-# error_words_accents_dict = {}
-# for w in error_words_accents:
-#    error_words_accents_dict[w.replace('+', '').replace('\n', '')] = w
-
 
 def remove_extra_accents(string):
     first_plus_index = string.find('+')

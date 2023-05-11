@@ -54,6 +54,13 @@ class TestModules(unittest.TestCase):
         print(testing_text, res)
         self.assertEqual([['синтез', 'речи', '-', 'это', 'увлекательно']], res)
 
+    def test_error_stress(self):
+        testing_text = 'литературнохудожественный'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.stressed_text)
+        self.assertEqual('литературнохудо+жественный', ru_transcript.stressed_text)
+
 
 if __name__ == '__main__':
     unittest.main()

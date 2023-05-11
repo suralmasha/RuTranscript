@@ -1,4 +1,5 @@
 import re
+from os.path import join, dirname, abspath
 
 import spacy
 import nltk
@@ -10,6 +11,15 @@ from ru_transcript.src.utils.sounds import rus_v
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
+
+ROOT_DIR = dirname(abspath(__file__))
+
+with open(join(ROOT_DIR, '../data/error_words_stresses_default.txt'), encoding='utf-8') as file:
+    error_words_stresses = file.readlines()
+
+stress_default_dict = {}
+for word in error_words_stresses:
+    stress_default_dict[word.replace('+', '').replace('\n', '')] = word
 
 
 def apply_differences(words):
@@ -96,11 +106,13 @@ class Stresses:
         self.dependency_tree = None
         self.nlp = spacy.load('ru_core_news_sm')
 
-    def place_stress(self, token, stress_accuracy_threshold):
+    @staticmethod
+    def place_stress(token, stress_accuracy_threshold):
         """
         Places an accent.
         Args:
           token (str): token without an accent.
+          :param stress_accuracy_threshold:
         """
         token_list = list(token)
         vowels = []
@@ -108,18 +120,19 @@ class Stresses:
             if let == 'ё':
                 token_list.insert(i + 1, '+')
                 return ''.join(token_list)
-            elif let in rus_v:
+            if let in rus_v:
                 vowels.append(i)
 
         if vowels and len(vowels) == 1:
             token_list.insert(vowels[0] + 1, '+')
             return ''.join(token_list)
-        elif not vowels:
+        if not vowels:
             return ''.join(token_list)
-        else:
-        #    raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-        #                     f"Add stresses yourselves.\nThere is no stress for the word {token}")
-            return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+        if token in stress_default_dict.keys():
+            return stress_default_dict[token]
+        # raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
+        # f"Add stresses yourselves.\nThere is no stress for the word {token}")
+        return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
 
     @staticmethod
     def replace_stress(token):
