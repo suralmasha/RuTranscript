@@ -156,7 +156,7 @@ class TestVowels(unittest.TestCase):
         self.assertEqual(['t͡s', 'ɐ.', 'k', 'ə', 'tʲ'], ru_transcript.allophones)
 
     def test_vowel_o_4(self):  # предударный после тв.согл. или в начале слова
-        testing_text = 'стопа+'
+        testing_text = 'стопа'
         testing_a_text = 'стопа+'
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
@@ -221,9 +221,9 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
-        self.assertEqual('ʂ ə k ɐ l a d', ru_transcript.transcription)
+        self.assertEqual('ʂ ə k ɐ l a t', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
-        self.assertEqual(['ʂ', 'ə', 'k', 'ɐ', 'l', 'a', 'd'], ru_transcript.allophones)
+        self.assertEqual(['ʂ', 'ə', 'k', 'ɐ', 'l', 'a', 't'], ru_transcript.allophones)
 
     def test_vowel_e_1(self):  # ударный после тв.согл. или в начале слова
         testing_text = 'это'

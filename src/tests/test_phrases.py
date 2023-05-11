@@ -146,11 +146,11 @@ class TestPhrases(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ʝᶣ ɵ l k ʌ d lʲ æ j ɪ jᶣ ɵ jᶣ ɵ ʐˠ ɨ k ʌ pᶣ ɵ rˠ ᵻ ʂ k ʌ p ɐ d vᶣ ɵ l k ɐ nᶣ ɵ kʲ '
-                         'mᶣ ɵ d ||', ru_transcript.transcription)
+                         'mᶣ ɵ t ||', ru_transcript.transcription)
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['ʝᶣ', 'ɵ', 'l', 'k', 'ʌ', 'd', 'lʲ', 'æ', 'j', 'ɪ', 'jᶣ', 'ɵ', 'jᶣ', 'ɵ', 'ʐˠ', 'ɨ', 'k', 'ʌ',
                           'pᶣ', 'ɵ', 'rˠ', 'ᵻ', 'ʂ', 'k', 'ʌ', 'p', 'ɐ', 'd', 'vᶣ', 'ɵ', 'l', 'k', 'ɐ', 'nᶣ', 'ɵ', 'kʲ',
-                          'mᶣ', 'ɵ', 'd'], ru_transcript.allophones)
+                          'mᶣ', 'ɵ', 't'], ru_transcript.allophones)
 
     def test_dashes(self):
         testing_text = 'Синтез речи - это что-то увлекательное!'

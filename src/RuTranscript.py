@@ -11,7 +11,7 @@ from ru_transcript.src.utils.main_tools import get_punctuation_dict, text_norm_t
     extract_phrasal_words, apply_differences
 from ru_transcript.src.utils.sounds import epi_starterpack, allophones
 from ru_transcript.src.utils.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised,\
-    assimilative_palatalization, long_consonants, vowels, labia_velar
+    assimilative_palatalization, long_consonants, vowels, labia_velar, stunning
 
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
@@ -255,6 +255,7 @@ class RuTranscript:
             self._phonemes_list[section_num] = assimilative_palatalization(self._tokens[section_num],
                                                                            self._phonemes_list[section_num])
             self._phonemes_list[section_num] = long_consonants(self._phonemes_list[section_num])
+            self._phonemes_list[section_num] = stunning(self._phonemes_list[section_num])
 
             # ---- Allophones ----
             self.allophones[section_num] = nasal_m_n(self._phonemes_list[section_num])
