@@ -194,7 +194,7 @@ def fix_jotised(phonemes_list_section, letters_list_section):
 
 
 def assimilative_palatalization(tokens_section, phonemes_list_section):
-    exceptions = 'сосиска злить после ёлка день транскрипция джаз неуклюжий'.split()
+    exceptions = 'сосиска злить после ёлка день транскрипция джаз неуклюжий шахтёр'.split()
 
     token_index = 0
     token = tokens_section[token_index]
@@ -282,8 +282,30 @@ def long_consonants(phonemes_list_section):
 
 ts = {'t͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
 zh_sh_ts = {'ʐ', 'ʐʷ', 'ʐˠ', 'ʑː', 'ʑːʷ', 'ʑːˠ', 'ʑʲː', 'ʑːᶣ',
-           'ʂ', 'ʂʷ', 'ʂˠ', 'ʂː', 'ʂːʷ', 'ʂːˠ',
-           't͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
+            'ʂ', 'ʂʷ', 'ʂˠ', 'ʂː', 'ʂːʷ', 'ʂːˠ',
+            't͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
+
+
+def stunning(segment: list):
+    for i, current_phon in enumerate(segment):
+        try:
+            if (i < len(segment) - 1) and (segment[i + 1] != '_'):
+                continue
+        except IndexError:
+            break
+        try:
+            if (i < len(segment) - 1) and ((allophones[segment[i + 2]].get('voice', '') == 'voiced')
+                                           or (allophones[segment[i + 2]]['phon'] == 'V')):
+                continue
+        except IndexError:
+            break
+
+        allophone_info = allophones[current_phon]
+        pair = allophone_info.get('pair', None)
+        if (allophone_info.get('voice', '') == 'voiced') and (pair is not None):
+            segment[i] = pair
+
+    return segment
 
 
 def vowels(segment: list):

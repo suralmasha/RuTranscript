@@ -225,6 +225,15 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.allophones)
         self.assertEqual(['v', 'ɐ', 'tː', 'a', 'k'], ru_transcript.allophones)
 
+    def test_consonants_stunning_in_the_end_of_a_word(self):
+        testing_text = 'всерьёз'
+        ru_transcript = RuTranscript(testing_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.transcription)
+        self.assertEqual('vʲ sʲ ɪ rʲ jᶣ ɵ s', ru_transcript.transcription)
+        print(testing_text, ru_transcript.allophones)
+        self.assertEqual(['vʲ', 'sʲ', 'ɪ', 'rʲ', 'jᶣ', 'ɵ', 's'], ru_transcript.allophones)
+
 
 if __name__ == '__main__':
     unittest.main()
