@@ -41,7 +41,7 @@ def long_ge(section: list):
             two_current = ''
 
         next_allophone = allophones[next_phon]
-        if (current_phon == next_phon == 'ʐ') or (two_current == ('z', 'ʐ')):
+        if two_current in [('ʐ', 'ʐ'), ('z', 'ʐ')]:
             section[i] = 'ʑː'
             del section[i + 1]
         elif (current_phon == 'ɕː') and (next_allophone.get('voice', '') == 'voiced') \
@@ -54,16 +54,14 @@ def long_ge(section: list):
 def nasal_m_n(section: list):
     for i, current_phon in enumerate(section[:-1]):
         try:
-            next_phon = section[i + 1]
+            if allophones[section[i + 1]].get('place', '') != 'labial, labiodental':
+                continue
         except IndexError:
-            next_phon = ''
+            break
 
-        next_allophone = allophones[next_phon]
-        if (current_phon == 'm' or current_phon == 'n') and (next_allophone.get('place', '') == 'labial, labiodental'):
+        if current_phon in ['m', 'n']:
             section[i] = 'ɱ'
-
-        elif (current_phon == 'mʲ' or current_phon == 'nʲ') \
-                and (next_allophone.get('place', '') == 'labial, labiodental'):
+        elif current_phon in ['mʲ', 'nʲ']:
             section[i] = 'ɱʲ'
 
     return section
@@ -72,15 +70,14 @@ def nasal_m_n(section: list):
 def silent_r(section: list):
     for i, current_phon in enumerate(section):
         try:
-            next_phon = section[i + 1]
+            if (i < len(section) - 1) and (allophones[section[i + 1]].get('voice', '') != 'voiceless'):
+                continue
         except IndexError:
-            next_phon = ''
+            break
 
-        next_allophone = allophones[next_phon]
-        if (current_phon == 'r') and ((i == len(section) - 1) or (next_allophone.get('voice', '') == 'voiceless')):
+        if current_phon == 'r':
             section[i] = 'r̥'
-
-        elif (current_phon == 'rʲ') and (i == len(section) - 1):
+        elif current_phon == 'rʲ':
             section[i] = 'r̥ʲ'
 
     return section
@@ -89,12 +86,12 @@ def silent_r(section: list):
 def voiced_ts(section: list):
     for i, current_phon in enumerate(section):
         try:
-            next_phon = section[i + 1]
+            if allophones[section[i + 1]].get('voice', '') != 'voiced':
+                continue
         except IndexError:
-            next_phon = ''
+            break
 
-        next_allophone = allophones[next_phon]
-        if (current_phon == 't͡s') and (next_allophone.get('voice', '') == 'voiced'):
+        if current_phon == 't͡s':
             section[i] = 'd̻͡z̪'
 
     return section
