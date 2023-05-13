@@ -101,51 +101,65 @@ def text_norm_tok(text: str):
 stress_rnn = StressRNN()
 
 
-class Stresses:
+def place_stress(token: str, stress_accuracy_threshold: float):
+    """
+    Places an accent.
+    Args:
+      :param token: token without an accent.
+      :param stress_accuracy_threshold:
+    """
+    token_list = list(token)
+    vowels = []
+    for i, let in enumerate(token):
+        if let == 'ё':
+            token_list.insert(i + 1, '+')
+            return ''.join(token_list)
+        if let in rus_v:
+            vowels.append(i)
+
+    if vowels and len(vowels) == 1:
+        token_list.insert(vowels[0] + 1, '+')
+        return ''.join(token_list)
+    if not vowels:
+        return ''.join(token_list)
+    if token in stress_default_dict.keys():
+        return stress_default_dict[token]
+    # raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
+    # f"Add stresses yourselves.\nThere is no stress for the word {token}")
+    return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+
+
+def replace_stress(token):
+    """
+    Replaces an accent from a place before a stressed vowel to a place after it.
+    Args:
+      token (str): token which needs to be refactored.
+    """
+    plus_index = token.find('+')
+    new_token_split = list(token)
+    new_token_split.remove('+')
+    new_token_split.insert(plus_index + 1, '+')
+    return ''.join(new_token_split)
+
+
+def remove_extra_stresses(string: str):
+    first_plus_index = string.find('+')
+    return string[:first_plus_index + 1] + string[first_plus_index + 1:].replace('+', '')
+
+
+def replace_stress_before(text: list):
+    text_copy = text.copy()
+    for i, char in enumerate(text):
+        if char == '+':
+            text_copy.pop(i)
+            text_copy.insert(i - 1, "+")
+    return text_copy
+
+
+class SyntaxTree:
     def __init__(self):
         self.dependency_tree = None
         self.nlp = spacy.load('ru_core_news_sm')
-
-    @staticmethod
-    def place_stress(token, stress_accuracy_threshold):
-        """
-        Places an accent.
-        Args:
-          token (str): token without an accent.
-          :param stress_accuracy_threshold:
-        """
-        token_list = list(token)
-        vowels = []
-        for i, let in enumerate(token):
-            if let == 'ё':
-                token_list.insert(i + 1, '+')
-                return ''.join(token_list)
-            if let in rus_v:
-                vowels.append(i)
-
-        if vowels and len(vowels) == 1:
-            token_list.insert(vowels[0] + 1, '+')
-            return ''.join(token_list)
-        if not vowels:
-            return ''.join(token_list)
-        if token in stress_default_dict.keys():
-            return stress_default_dict[token]
-        # raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-        # f"Add stresses yourselves.\nThere is no stress for the word {token}")
-        return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
-
-    @staticmethod
-    def replace_stress(token):
-        """
-        Replaces an accent from a place before a stressed vowel to a place after it.
-        Args:
-          token (str): token which needs to be refactored.
-        """
-        plus_index = token.find('+')
-        new_token_split = list(token)
-        new_token_split.remove('+')
-        new_token_split.insert(plus_index + 1, '+')
-        return ''.join(new_token_split)
 
     def to_nltk_tree(self, node):
         if node.n_lefts + node.n_rights > 0:

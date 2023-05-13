@@ -101,5 +101,4 @@ for key in allophones.keys():
                 allophones[key]['pair'] = paired_c_inv[key]
 
 # symbols
-allophones.update({'+': {'phon': 'symb'}, '-': {'phon': 'symb'}, '|': {'phon': 'symb'}, '||': {'phon': 'symb'},
-                   '_': {'phon': 'symb'}, '': {'phon': 'symb'}})
+allophones.update({symbol: {'phon': 'symb'} for symbol in ['+', '-', '|', '||', '_', '']})

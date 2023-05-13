@@ -21,7 +21,10 @@ Put your text in the appropriate variable (in the example - `text`). Pass it to 
 >>> ru_transcript.transcribe()
 ```
 
-You can also highlight the stresses in your text. You can stress both one word from the text and all words in the text. To do this, put the "+" sign **after** the stressed vowel and put the new text in an additional variable (in the example - `stressed_text_if_have`). If you want to put a stress mark before a stressed vowel, specify it using the parameter `stress_place='before'`.
+You may define stresses both for one word and for all words in the text.
+To do this, put a stress symbol (preferably '+') before or after the stressed vowel 
+and put the stressed text in an additional variable (in the example - `stressed_text_if_have`).
+To define where you've putted the stress mark use the parameter `stress_place='before'`.
 
 **Important!** The number of words in these two texts must match.
 
@@ -41,17 +44,17 @@ or
 >>> ru_transcript.transcribe()
 ```
 
-You can get a full **transcription with pauses** by using attribute `transcription`. Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), punctuation marks inside a sentence are indicated by short pauses (`'|'`).
+You can get a full **transcription with pauses** by using method `transcription()`. Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), punctuation marks inside a sentence are indicated by short pauses (`'|'`).
 
 ```
 >>> print(ru_transcript.transcription)
 k a k p ə lʷ ʊ t͡ɕ ɨ tʲ t r ɐ n s k rʲ i p t͡sˠ ɨ jᶣ ᵿ ||
 ```
 
-You can get a list of **allophones** without pauses by using attribute `allophones`.
+You can get a list of **allophones** by using the method `allophones()`.
 
 ```
->>> print(ru_transcript.allophones)
+>>> print(ru_transcript.allophones())
 ['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'ɨ', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
 
