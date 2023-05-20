@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: suralmasha - Badasyan Alexandra
 
-import glob
-from setuptools import setup, find_packages
-from shutil import copytree, copy, rmtree
-from os import path
+from setuptools import setup  # , find_packages
+# from shutil import copytree, copy, rmtree
+# from os import path
+# import glob
 
 
 def requirements():
@@ -24,11 +24,11 @@ def requirements():
         return deps
 
 
-def add_files():
-    added_files = []
-    for filename in glob.iglob('temp/' + '**/*.*', recursive=True):
-        added_files.append(filename.replace('temp/ru_transcript/', ''))
-    return added_files
+# def add_files():
+#    added_files = []
+#    for filename in glob.iglob('temp/' + '**/*.*', recursive=True):
+#        added_files.append(filename.replace('temp/RuTranscript/', ''))
+#    return added_files
 
 
 def readme():
@@ -37,21 +37,21 @@ def readme():
 
 
 if __name__ == "__main__":
-    sources_dir = './src'
+    sources_dir = 'ru_transcript'
     # temp_dir = 'temp'
 
     # Prepare temp folders
     # rmtree(temp_dir, ignore_errors=True)
     # copytree(path.join(sources_dir, 'data'), path.join(temp_dir, 'data'), copy_function=copy)
     # copytree(path.join(sources_dir, 'tools'), path.join(temp_dir, 'tools'), copy_function=copy)
-    # copy(path.join(sources_dir, 'RuTranscript.py'), path.join(temp_dir, 'RuTranscript.py'))
+    # copy(path.join(sources_dir, 'ru_transcript.py'), path.join(temp_dir, 'ru_transcript.py'))
     # f = open(path.join(temp_dir, '__init__.py'), 'w')
-    # f.write('from ru_transcript.RuTranscript import RuTranscript'
-    #        '\nfrom ru_transcript.tools.allophones_tools import get_allophone_info')
+    # f.write('from RuTranscript.RuTranscript import RuTranscript'
+    #        '\nfrom RuTranscript.tools.allophones_tools import get_allophone_info')
     # f.close()
 
     setup(
-        name='ru_transcript',
+        name='RuTranscript',
         # version='0.1.0',
         description='Package that makes a phonetic transcription in russian.',
         long_description=readme(),
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=find_packages(sources_dir),
+        packages=['ru_transcript'],
         include_package_data=True,
         install_requires=requirements()
     )

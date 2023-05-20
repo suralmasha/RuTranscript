@@ -24,6 +24,8 @@ Put your text in the appropriate variable (in the example - `text`).
 Pass it to the `RuTranscript()` and use method `transcribe()`.
 
 ```
+from ru_transcript import RuTranscript
+
 text = 'Как получить транскрипцию?'
 ru_transcript = RuTranscript(text)
 ru_transcript.transcribe()
