@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # f.close()
 
     setup(
-        name='RuTranscript',
+        name='ru_transcript',
         # version='0.1.0',
         description='Package that makes a phonetic transcription in russian.',
         long_description=readme(),
@@ -67,5 +67,6 @@ if __name__ == "__main__":
 
         packages=['ru_transcript'],
         include_package_data=True,
-        install_requires=requirements()
+        install_requires=requirements(),
+        zip_safe=False
     )
