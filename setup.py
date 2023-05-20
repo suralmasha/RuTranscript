@@ -5,6 +5,7 @@
 from setuptools import setup  # , find_packages
 # from shutil import copytree, copy, rmtree
 # from os import path
+import os
 import glob
 
 
@@ -26,7 +27,8 @@ def requirements():
 
 def add_files(path):
     added_files = []
-    for filename in glob.iglob(path + '**/*.*', recursive=True):
+    abs_path = os.path.abspath(path)
+    for filename in glob.iglob(abs_path + '/**/*.*', recursive=True):
         added_files.append(filename)  # .replace(path, '')
     return added_files
 
