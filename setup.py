@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     setup(
         name='ru_transcript',
-        version='0.1.0',
+        # version='0.1.0',
         description='Package that makes a phonetic transcription in russian.',
         long_description=readme(),
         url='https://github.com/suralmasha/RuTranscript',
