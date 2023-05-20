@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: suralmasha - Badasyan Alexandra
 
-from setuptools import setup  # , find_packages
+from setuptools import setup, find_packages
 # from shutil import copytree, copy, rmtree
 # from os import path
 # import glob
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=['ru_transcript'],
+        packages=find_packages(sources_dir),
         include_package_data=True,
         install_requires=requirements(),
         zip_safe=False
