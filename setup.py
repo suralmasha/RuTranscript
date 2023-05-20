@@ -42,10 +42,8 @@ if __name__ == "__main__":
 
     # Prepare temp folders
     rmtree(temp_dir, ignore_errors=True)
-    copytree(path.join(sources_dir, 'data'), path.join(temp_dir, 'ru_transcript', 'data'), copy_function=copy)
-    copytree(path.join(sources_dir, 'tools'), path.join(temp_dir, 'ru_transcript', 'tools'), copy_function=copy)
-    copy(path.join(sources_dir, 'RuTranscript.py'), path.join(temp_dir, 'ru_transcript', 'ru_transcript.py'))
-    f = open(path.join(temp_dir, 'ru_transcript', '__init__.py'), 'w')
+    copytree(path.join(sources_dir, 'src'), path.join(temp_dir, 'src'), copy_function=copy)
+    f = open(path.join(temp_dir, '__init__.py'), 'w')
     f.write('from ru_transcript.src.RuTranscript import RuTranscript'
             '\nfrom ru_transcript.src.tools.allophones_tools import get_allophone_info')
     f.close()
