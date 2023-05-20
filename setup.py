@@ -46,8 +46,8 @@ if __name__ == "__main__":
     copytree(path.join(sources_dir, 'tools'), path.join(temp_dir, 'ru_transcript', 'tools'), copy_function=copy)
     copy(path.join(sources_dir, 'RuTranscript.py'), path.join(temp_dir, 'ru_transcript', 'ru_transcript.py'))
     f = open(path.join(temp_dir, 'ru_transcript', '__init__.py'), 'w')
-    f.write('from ru_transcript.ru_transcript import ru_transcript'
-            '\nfrom ru_transcript.allophones_tools import get_allophone_info')
+    f.write('from ru_transcript.src.RuTranscript import RuTranscript'
+            '\nfrom ru_transcript.src.tools.allophones_tools import get_allophone_info')
     f.close()
 
     setup(

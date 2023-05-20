@@ -15,9 +15,7 @@ For a more detailed description of how the framework works, see the article: htt
 # Installation
 
 ```
->>> git clone https://github.com/suralmasha/RuTranscript
->>> pip install -r requirements.txt
->>> from RuTranscript.src.ru_transcript import RuTranscript
+pip install git+https://github.com/suralmasha/RuTranscript
 ```
 
 # Usage
@@ -26,9 +24,9 @@ Put your text in the appropriate variable (in the example - `text`).
 Pass it to the `RuTranscript()` and use method `transcribe()`.
 
 ```
->>> text = 'Как получить транскрипцию?'
->>> ru_transcript = RuTranscript(text)
->>> ru_transcript.transcribe()
+text = 'Как получить транскрипцию?'
+ru_transcript = RuTranscript(text)
+ru_transcript.transcribe()
 ```
 
 You may define stresses both for one word and for all words in the text. 
@@ -39,19 +37,19 @@ To define where you've putted the stress mark use the parameter `stress_place` (
 **Important!** The number of words in these two texts must match.
 
 ```
->>> text = 'Как получить транскрипцию?'
->>> stressed_text_if_have = 'Как получи+ть транскрипцию?'
->>> ru_transcript = RuTranscript(text, stressed_text_if_have)
->>> ru_transcript.transcribe()
+text = 'Как получить транскрипцию?'
+stressed_text_if_have = 'Как получи+ть транскрипцию?'
+ru_transcript = RuTranscript(text, stressed_text_if_have)
+ru_transcript.transcribe()
 ```
 
 or
 
 ```
->>> text = 'Как получить транскрипцию?'
->>> stressed_text_if_have = 'Как получ+ить транскрипцию?'
->>> ru_transcript = RuTranscript(text, stressed_text_if_have, stress_place='before')
->>> ru_transcript.transcribe()
+text = 'Как получить транскрипцию?'
+stressed_text_if_have = 'Как получ+ить транскрипцию?'
+ru_transcript = RuTranscript(text, stressed_text_if_have, stress_place='before')
+ru_transcript.transcribe()
 ```
 
 Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), 
@@ -60,7 +58,11 @@ punctuation marks inside a sentence are indicated by short pauses (`'|'`).
 You can get a list of **allophones** by using method `get_allophones()`.
 
 ```
->>> print(ru_transcript.get_allophones())
+print(ru_transcript.get_allophones())
+```
+
+Output:
+```
 ['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
 
@@ -68,14 +70,22 @@ You can get a list of **phonemes (main allophones)** by using method `get_phonem
 this is a less detailed sort of transcription.
 
 ```
->>> print(ru_transcript.get_phonemes())
+print(ru_transcript.get_phonemes())
+```
+
+Output:
+```
 ['k', 'a', 'k', 'p', 'o', 'l', 'u', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'a', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡s', 'i', 'j', 'u']
 ```
 
 You can see **how stresses were placed** by using method `get_stressed_text`.
 
 ```
->>> print(ru_transcript.get_stressed_text())
+print(ru_transcript.get_stressed_text())
+```
+
+Output:
+```
 'ка+к получи+ть транскри+пцию'
 ```
 
