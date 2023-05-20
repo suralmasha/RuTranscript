@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: suralmasha - Badasyan Alexandra
 
-from setuptools import setup, find_packages
+from setuptools import setup  # , find_packages
 # from shutil import copytree, copy, rmtree
 # from os import path
-# import glob
+import glob
 
 
 def requirements():
@@ -24,11 +24,11 @@ def requirements():
         return deps
 
 
-# def add_files():
-#    added_files = []
-#    for filename in glob.iglob('temp/' + '**/*.*', recursive=True):
-#        added_files.append(filename.replace('temp/RuTranscript/', ''))
-#    return added_files
+def add_files(path):
+    added_files = []
+    for filename in glob.iglob(path + '**/*.*', recursive=True):
+        added_files.append(filename.replace(path, ''))
+    return added_files
 
 
 def readme():
@@ -65,7 +65,8 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=find_packages(sources_dir),
+        packages=['ru_transcript'],
+        package_data={'ru_transcript': add_files(sources_dir)},
         include_package_data=True,
         install_requires=requirements(),
         zip_safe=False
