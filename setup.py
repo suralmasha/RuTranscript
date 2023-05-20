@@ -27,9 +27,9 @@ def requirements():
 
 def add_files(path):
     added_files = []
-    abs_path = os.path.abspath(path)
-    for filename in glob.iglob(abs_path + '/**/*.*', recursive=True):
-        added_files.append(filename)  # .replace(path, '')
+    for dir_name, _, files in os.walk(path):
+        for filename in files:
+            added_files.append(os.path.join(dir_name, filename))
     return added_files
 
 
