@@ -91,4 +91,4 @@ Output:
 'ка+к получи+ть транскри+пцию'
 ```
 
-You can also find an example of using the framework in `jpt_example.ipynb` or `example.py`.
+You can also find an example of using the framework in `example.py`.
