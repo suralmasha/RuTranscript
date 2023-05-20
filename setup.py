@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: suralmasha - Badasyan Alexandra
-import glob
-import os
 
 from setuptools import setup, find_packages
 
@@ -29,11 +27,6 @@ def readme():
 
 
 if __name__ == "__main__":
-    package_data = []
-    for dirname, _, filenames in os.walk('ru_transcript/data'):
-        for filename in filenames:
-            package_data.append(os.path.join(dirname, filename))
-
     setup(
         name='ru_transcript',
         # version='0.1.0',
@@ -49,8 +42,14 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=find_packages(exclude=['tests', 'example.py', 'jpt_example.ipynb']),
-        package_data={'ru_transcript': package_data},
+        packages=find_packages(exclude=['tests', 'example.py', 'jpt_example.ipynb'],),
+        package_data={'ru_transcript': [
+            'data/alphabet.txt',
+            'data/error_words_stresses_default.txt',
+            'data/irregular_exceptions.xlsx',
+            'data/paired_consonants.txt',
+            'data/sorted_allophones.txt',
+        ]},
         include_package_data=True,
         install_requires=requirements(),
         zip_safe=False
