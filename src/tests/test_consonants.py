@@ -12,8 +12,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('γʷ o s p ə dʲ ɪ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['γʷ', 'o', 's', 'p', 'ə', 'dʲ', 'ɪ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['γʷ', 'o', 's', 'p', 'ə', 'dʲ', 'ɪ'], ru_transcript._allophones_list)
 
     def test_fricative_g_2(self):
         testing_text = 'ах да'
@@ -22,8 +22,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('a γ d ʌ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['a', 'γ', 'd', 'ʌ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['a', 'γ', 'd', 'ʌ'], ru_transcript._allophones_list)
 
     def test_nasal_m_n(self):  # 'м' / 'н' перед губно-зубными согласными
         testing_text = 'амфора'
@@ -32,8 +32,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('a ɱ f ə r ʌ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['a', 'ɱ', 'f', 'ə', 'r', 'ʌ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['a', 'ɱ', 'f', 'ə', 'r', 'ʌ'], ru_transcript._allophones_list)
 
     def test_silent_r(self):  # 'р' перед глухими согласными и в конце слова
         testing_text = 'арфа'
@@ -42,8 +42,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('a r̥ f ʌ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['a', 'r̥', 'f', 'ʌ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['a', 'r̥', 'f', 'ʌ'], ru_transcript._allophones_list)
 
     def test_long_sh(self):  # долгий 'ш', в сочетании 'сш'
         testing_text = 'сшить'
@@ -52,8 +52,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ʂːˠ ɨ tʲ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ʂːˠ', 'ɨ', 'tʲ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ʂːˠ', 'ɨ', 'tʲ'], ru_transcript._allophones_list)
 
     def test_ts(self):  # 'ц'
         testing_text = 'цапля'
@@ -62,8 +62,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('t͡s ɐ. p lʲ æ.', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['t͡s', 'ɐ.', 'p', 'lʲ', 'æ.'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['t͡s', 'ɐ.', 'p', 'lʲ', 'æ.'], ru_transcript._allophones_list)
 
     def test_voiced_ts(self):  # 'ц' перед звонкой согласной
         testing_text = 'плацдарм'
@@ -72,8 +72,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('p l ɐ d̻͡z̪ d a r m', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['p', 'l', 'ɐ', 'd̻͡z̪', 'd', 'a', 'r', 'm'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['p', 'l', 'ɐ', 'd̻͡z̪', 'd', 'a', 'r', 'm'], ru_transcript._allophones_list)
 
     def test_dj(self):  # сочетание 'дж'
         testing_text = 'джунгли'
@@ -82,8 +82,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('d͡ʒᶣ ʉ n ɡ lʲ ɪ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['d͡ʒᶣ', 'ʉ', 'n', 'ɡ', 'lʲ', 'ɪ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['d͡ʒᶣ', 'ʉ', 'n', 'ɡ', 'lʲ', 'ɪ'], ru_transcript._allophones_list)
 
     def test_shch_1(self):  # 'щ'
         testing_text = 'щегол'
@@ -92,8 +92,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ɕː ə ɡʷ o l', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ɕː', 'ə', 'ɡʷ', 'o', 'l'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ɕː', 'ə', 'ɡʷ', 'o', 'l'], ru_transcript._allophones_list)
 
     def test_shch_2(self):  # 'ж' перед глух.согл.
         testing_text = 'мужчина'
@@ -102,8 +102,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('mʷ ʊ ɕː i n ʌ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['mʷ', 'ʊ', 'ɕː', 'i', 'n', 'ʌ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['mʷ', 'ʊ', 'ɕː', 'i', 'n', 'ʌ'], ru_transcript._allophones_list)
 
     def test_shch_3(self):  # сочетания 'сч', 'зч', 'жч'
         testing_text = 'считать'
@@ -112,8 +112,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ɕː ɪ t a tʲ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ɕː', 'ɪ', 't', 'a', 'tʲ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ɕː', 'ɪ', 't', 'a', 'tʲ'], ru_transcript._allophones_list)
 
     def test_ch(self):  # 'ч'
         testing_text = 'течь'
@@ -122,8 +122,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('tʲ e t͡ɕ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['tʲ', 'e', 't͡ɕ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['tʲ', 'e', 't͡ɕ'], ru_transcript._allophones_list)
 
     def test_long_ge_1(self):  # 'ж' долгий
         testing_text = 'жужжать'
@@ -132,8 +132,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ʐʷ ʊ ʑː ɐ. tʲ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ʐʷ', 'ʊ', 'ʑː', 'ɐ.', 'tʲ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ʐʷ', 'ʊ', 'ʑː', 'ɐ.', 'tʲ'], ru_transcript._allophones_list)
 
     def test_long_ge_2(self):  # 'щ' пред звонкой согласной
         testing_text = 'вещдок'
@@ -142,8 +142,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('vʲ ɪ ʑː dʷ o k', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['vʲ', 'ɪ', 'ʑː', 'dʷ', 'o', 'k'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['vʲ', 'ɪ', 'ʑː', 'dʷ', 'o', 'k'], ru_transcript._allophones_list)
 
     def test_long_ge_3(self):  # сочетание 'зж'
         testing_text = 'заезжий'
@@ -152,8 +152,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('z ɐ j e ʑːˠ ɨ j', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['z', 'ɐ', 'j', 'e', 'ʑːˠ', 'ɨ', 'j'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['z', 'ɐ', 'j', 'e', 'ʑːˠ', 'ɨ', 'j'], ru_transcript._allophones_list)
 
     def test_j_1(self):  # 'й'
         testing_text = 'май'
@@ -162,8 +162,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('m a j', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['m', 'a', 'j'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['m', 'a', 'j'], ru_transcript._allophones_list)
 
     def test_j_2(self):  # йотированный гласный после разделительных ъ и ь
         testing_text = 'объявление'
@@ -172,8 +172,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ə bʲ j ɪ v lʲ e nʲ j æ.', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ə', 'bʲ', 'j', 'ɪ', 'v', 'lʲ', 'e', 'nʲ', 'j', 'æ.'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ə', 'bʲ', 'j', 'ɪ', 'v', 'lʲ', 'e', 'nʲ', 'j', 'æ.'], ru_transcript._allophones_list)
 
     def test_j_3(self):  # йотированный гласный между двумя гласными
         testing_text = 'заяц'
@@ -182,8 +182,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('z a j ɪ. t͡s', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['z', 'a', 'j', 'ɪ.', 't͡s'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['z', 'a', 'j', 'ɪ.', 't͡s'], ru_transcript._allophones_list)
 
     def test_j_4(self):  # йотированный гласный перед ударным гласным
         testing_text = 'заезжий'
@@ -192,8 +192,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('z ɐ j e ʑːˠ ɨ j', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['z', 'ɐ', 'j', 'e', 'ʑːˠ', 'ɨ', 'j'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['z', 'ɐ', 'j', 'e', 'ʑːˠ', 'ɨ', 'j'], ru_transcript._allophones_list)
 
     def test_j_5(self):  # йотированный гласный в начале слова
         testing_text = 'яхта'
@@ -202,8 +202,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ʝ æ x t ʌ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ʝ', 'æ', 'x', 't', 'ʌ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ʝ', 'æ', 'x', 't', 'ʌ'], ru_transcript._allophones_list)
 
     def test_j_first(self):  # йот в начале слога
         testing_text = 'я'
@@ -212,8 +212,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('ʝ æ', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['ʝ', 'æ'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['ʝ', 'æ'], ru_transcript._allophones_list)
 
     def test_long_consonant_junction_of_words(self):  # долгий согласный на стыке слов
         testing_text = 'вот так'
@@ -222,8 +222,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('v ɐ tː a k', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['v', 'ɐ', 'tː', 'a', 'k'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['v', 'ɐ', 'tː', 'a', 'k'], ru_transcript._allophones_list)
 
     def test_consonants_stunning_in_the_end_of_a_word(self):
         testing_text = 'всерьёз'
@@ -231,8 +231,8 @@ class TestConsonants(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.transcription)
         self.assertEqual('vʲ sʲ ɪ rʲ jᶣ ɵ s', ru_transcript.transcription)
-        print(testing_text, ru_transcript._allophones)
-        self.assertEqual(['vʲ', 'sʲ', 'ɪ', 'rʲ', 'jᶣ', 'ɵ', 's'], ru_transcript._allophones)
+        print(testing_text, ru_transcript._allophones_list)
+        self.assertEqual(['vʲ', 'sʲ', 'ɪ', 'rʲ', 'jᶣ', 'ɵ', 's'], ru_transcript._allophones_list)
 
 
 if __name__ == '__main__':

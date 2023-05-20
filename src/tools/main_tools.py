@@ -1,25 +1,10 @@
 import re
-from os.path import join, dirname, abspath
 
-import spacy
 import nltk
-from nltk import Tree
 from num2t4ru import num2text
-from stressrnn import StressRNN
-
-from ru_transcript.src.utils.sounds import rus_v
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
-
-ROOT_DIR = dirname(abspath(__file__))
-
-with open(join(ROOT_DIR, '../data/error_words_stresses_default.txt'), encoding='utf-8') as file:
-    error_words_stresses = file.readlines()
-
-stress_default_dict = {}
-for word in error_words_stresses:
-    stress_default_dict[word.replace('+', '').replace('\n', '')] = word
 
 
 def apply_differences(words):
@@ -96,88 +81,6 @@ def text_norm_tok(text: str):
               for section in sections]
 
     return custom_num2text(tokens)
-
-
-stress_rnn = StressRNN()
-
-
-def place_stress(token: str, stress_accuracy_threshold: float):
-    """
-    Places an accent.
-    Args:
-      :param token: token without an accent.
-      :param stress_accuracy_threshold:
-    """
-    token_list = list(token)
-    vowels = []
-    for i, let in enumerate(token):
-        if let == 'ё':
-            token_list.insert(i + 1, '+')
-            return ''.join(token_list)
-        if let in rus_v:
-            vowels.append(i)
-
-    if vowels and len(vowels) == 1:
-        token_list.insert(vowels[0] + 1, '+')
-        return ''.join(token_list)
-    if not vowels:
-        return ''.join(token_list)
-    if token in stress_default_dict.keys():
-        return stress_default_dict[token]
-    # raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-    # f"Add stresses yourselves.\nThere is no stress for the word {token}")
-    return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
-
-
-def replace_stress(token):
-    """
-    Replaces an accent from a place before a stressed vowel to a place after it.
-    Args:
-      token (str): token which needs to be refactored.
-    """
-    plus_index = token.find('+')
-    new_token_split = list(token)
-    new_token_split.remove('+')
-    new_token_split.insert(plus_index + 1, '+')
-    return ''.join(new_token_split)
-
-
-def remove_extra_stresses(string: str):
-    first_plus_index = string.find('+')
-    return string[:first_plus_index + 1] + string[first_plus_index + 1:].replace('+', '')
-
-
-def replace_stress_before(text: list):
-    text_copy = text.copy()
-    for i, char in enumerate(text):
-        if char == '+':
-            text_copy.pop(i)
-            text_copy.insert(i - 1, "+")
-    return text_copy
-
-
-class SyntaxTree:
-    def __init__(self):
-        self.dependency_tree = None
-        self.nlp = spacy.load('ru_core_news_sm')
-
-    def to_nltk_tree(self, node):
-        if node.n_lefts + node.n_rights > 0:
-            return Tree(node, [self.to_nltk_tree(child) for child in node.children])
-
-        return node
-
-    def make_dependency_tree(self, text):
-        """
-        Makes a dependency tree.
-        Args:
-          text (str): original text
-        """
-        doc = self.nlp(text)
-        for sent in doc.sents:
-            self.dependency_tree = self.to_nltk_tree(sent.root)
-
-        return self.dependency_tree
 
 
 adverb_adp = {'после', 'кругом', 'мимо', 'около', 'вокруг', 'напротив', 'поперёк'}

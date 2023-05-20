@@ -1,3 +1,4 @@
+import warnings
 from os.path import join, dirname, abspath
 
 import spacy
@@ -7,11 +8,12 @@ from nltk.stem.snowball import SnowballStemmer
 from tps import find, download
 from tps import modules as md
 
-from ru_transcript.src.utils.main_tools import get_punctuation_dict, text_norm_tok, SyntaxTree, find_clitics, \
-    extract_phrasal_words, apply_differences, place_stress, replace_stress, remove_extra_stresses, replace_stress_before
-from ru_transcript.src.utils.sounds import epi_starterpack, allophones
-from ru_transcript.src.utils.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised,\
-    assimilative_palatalization, long_consonants, vowels, labia_velar, stunning
+from ru_transcript.src.tools.main_tools import get_punctuation_dict, text_norm_tok, find_clitics, extract_phrasal_words, apply_differences
+from ru_transcript.src.tools.stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
+from ru_transcript.src.tools.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, long_consonants, vowels,\
+    labia_velar, stunning, assimilative_palatalization
+from ru_transcript.src.tools.sounds import epi_starterpack, allophones
+from ru_transcript.src.tools.syntax_tree import SyntaxTree
 
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
@@ -68,11 +70,11 @@ class RuTranscript:
         self._stress_place = stress_place
 
         self._phrasal_words_indexes = []
-        self._phonemes = []
         self._letters_list = []
+        self._phonemes_list = []
+        self._allophones_list = [[]] * self._sections_len
         self._transliterated_tokens = [[]] * self._sections_len
         self._phrasal_words = [[]] * self._sections_len
-        self._allophones = [[]] * self._sections_len
         self._stressed_text = [[]] * self._sections_len
 
     def _get_text_and_stressed_text(self, text, stressed_text, replacement_dict):
@@ -88,29 +90,6 @@ class RuTranscript:
 
         return text, stressed_text
 
-    def _lpt(self, section_num):
-        """
-        Letter-phoneme transformations by B.M. Lobanov
-        """
-        ...
-
-    @staticmethod
-    def put_stresses(tokens_list: list, stress_place: str = 'after', stress_accuracy_threshold: float = 0.86):
-        """
-        Puts or replaces stresses.
-
-        :param tokens_list: List of tokens.
-        :param stress_place: 'after' - to place the stress symbol after the stressed vowel,
-            'before' - to place the stress symbol before the stressed vowel.
-        :param stress_accuracy_threshold: A threshold for the accuracy of stress placement for StressRNN.
-        :return: List of tokens.
-        """
-        return [
-            replace_stress(token) if ('+' in token) and (stress_place == 'before')  # need to replace
-            else place_stress(token, stress_accuracy_threshold) if ('+' not in token)  # use StressRNN
-            else token
-            for token in tokens_list]
-
     def _remove_dashes(self, section_num):
         section = self._tokens[section_num]
         a_section = self._stressed_tokens[section_num]
@@ -119,190 +98,215 @@ class RuTranscript:
                                               else remove_extra_stresses(token).replace('-', '')
                                               for token in a_section]
 
+    def _tps(self, section_num):
+        """
+        Makes replaces 'е - э' and 'е - ё'
+        """
+        default_section = self._tokens[section_num]
+        self._tokens[section_num] = [e_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
+        self._tokens[section_num] = [yo_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
+
+        if self._tokens[section_num] != [token.replace('+', '') for token in default_section]:
+            self._stressed_tokens[section_num] = [
+                apply_differences([default_section[i], self._tokens[section_num][i]])
+                for i in range(len(default_section))
+            ]
+
+    def _join_phonemes(self, transliterated_tokens, limit=10000):
+        section_phonemes_list = []
+        joined_tokens = '_'.join(transliterated_tokens)
+        i = 0
+        counter = 0
+        default_len = len(joined_tokens)
+        while i < default_len:
+            if joined_tokens[i] not in ['+', '-']:
+                n = 4
+                if i != default_len - 1:
+                    while (joined_tokens[i: i + n] not in epi_starterpack + ['_', '|', '||', 'γ', 'ʐ']) and (n > 0):
+                        counter += 1
+                        if counter > limit:
+                            raise IndexError('Endless loop')
+                        n -= 1
+                    section_phonemes_list.append(joined_tokens[i: i + n])
+                elif joined_tokens[i] in epi_starterpack + ['||', 'γ']:
+                    section_phonemes_list.append(joined_tokens[i])
+                i += n
+            else:
+                section_phonemes_list.append(joined_tokens[i])
+                i += 1
+
+        section_phonemes_list = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
+
+        n = 0
+        for allophone_index in range(len(section_phonemes_list) - 1):
+            allophone = section_phonemes_list[allophone_index + n]
+            next_allophone = section_phonemes_list[allophone_index + n + 1]
+            if (allophone == 't͡s' and next_allophone == 's') or (allophone == 'd͡ʒ' and next_allophone == 'ʐ'):
+                del section_phonemes_list[allophone_index + n + 1]
+                n -= 1
+
+        return section_phonemes_list
+
+    @staticmethod
+    def add_prestressed_syllable_sign(section: list):
+        section_result = section[:]
+        n = 0
+        for symb_i, symb in enumerate(section):
+            if symb == '+':
+                preavi = [phon_i for phon_i, phon in enumerate(section[:symb_i - 1]) if
+                          allophones[phon]['phon'] == 'V' and '_' not in section[phon_i + n:symb_i]]
+                if preavi:
+                    section_result.insert(preavi[-1] + n + 1, '-')
+                    n += 1
+
+        return section_result
+
+    def _lpt_1(self, section_num):
+        """
+        Letter-phoneme transformation by B.M. Lobanov. Part 1 - Irregular exceptions.
+        """
+        for i, token in enumerate(self._tokens[section_num]):
+            stem = snowball.stem(token)
+            if stem in irregular_exceptions_stems:
+                try:
+                    new_token = irregular_exceptions[token]
+                except KeyError:
+                    ending = token[len(stem):]
+                    dif = - (len(token) - len(stem))
+                    new_token = irregular_exceptions_stems[stem][:dif] + ending
+
+                self._tokens[section_num][i] = new_token
+                accent_index = self._stressed_tokens[section_num][i].index('+')
+                self._stressed_tokens[section_num][i] = new_token[:accent_index] + '+' + new_token[accent_index:]
+
+    def _lpt_2(self, section_num):
+        """
+        Letter-phoneme transformation by B.M. Lobanov. Part 2 - Regular exceptions.
+        """
+        for i, token in enumerate(self._stressed_tokens[section_num]):
+            # adjective endings 'ого его'
+            if token != 'ого+' and (token.replace('+', '').startswith('какого')
+                                    or token.replace('+', '').endswith('ого')
+                                    or token.replace('+', '').endswith('его')):
+                accent_index = token.index('+')
+                token = token.replace('+', '').replace('ого', 'ово').replace('его', 'ево')
+                self._stressed_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
+
+            # 'что' --> 'што'
+            if 'что' in self._stressed_tokens[section_num][i]:
+                self._stressed_tokens[section_num][i] = token.replace('что', 'што')
+
+            # verb endings 'тся ться'
+            if token not in {'заботься', 'отметься'}:
+                if token[-3:] == 'тся':
+                    self._stressed_tokens[section_num][i] = token[:-3] + 'ца'
+                elif token[-4:] == 'ться':
+                    self._stressed_tokens[section_num][i] = token[:-4] + 'ца'
+
+            # noun endings 'ия ие ию'
+            if (token[-2:] in {'ия', 'ие', 'ию'}) and (token[-3] not in {'ц', 'щ'}):
+                if token[-3] not in {'ж', 'ш'}:
+                    self._stressed_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
+                else:
+                    self._stressed_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
+
+            # unpronounceable consonants
+            for sub in first_silent + second_silent:
+                if sub in token:
+                    new_sub = sub.translate(str.maketrans('', '', 'ьъ'))
+                    self._stressed_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
+
+            # combinations with hissing consonants
+            stem = snowball.stem(token)
+            if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
+                self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч',
+                                                                                                            'ч')
+            for key, value in hissing_rd.items():
+                if key in token:
+                    self._stressed_tokens[section_num][i] = token.replace(key, value)
+
+    def _lpt_3(self, section_num):
+        """
+        Letter-phoneme transformation by B.M. Lobanov. Part 3 - Transliteration
+        """
+        self._transliterated_tokens[section_num] = [epi.transliterate(token).replace('6', '').replace('4', '')
+                                                    for token in self._stressed_tokens[section_num]]
+        for i, token in enumerate(self._transliterated_tokens[section_num]):
+            for key, value in non_ipa_symbols.items():
+                if key in token:
+                    token = token.replace(key, value)
+                    self._transliterated_tokens[section_num][i] = token
+
+    def _lpt_4(self, section_num):
+        """
+        Letter-phoneme transformation by B.M. Lobanov. Part 4 - Common Rules
+        """
+        # fricative g
+        for i, token in enumerate(self._transliterated_tokens[section_num]):
+            try:
+                next_token = self._transliterated_tokens[section_num][i + 1]
+            except IndexError:
+                next_token = ' '
+
+            token_let = self._tokens[section_num][i]
+            nlp_token = nlp(token_let)[0]
+            lemma = nlp_token.lemma_
+
+            if lemma in {'ага', 'ого', 'угу', 'господь', 'господи', 'бог'}:
+                self._transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
+            elif token_let in {'ах', 'эх', 'ох', 'ух'}:
+                next_token_allophone = allophones.get(next_token[0], {})
+                if next_token_allophone.get('voice', '') == 'voiced':
+                    self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
+
+        # ---- Join phonemes ----
+        joined_phonemes = self._join_phonemes(self._transliterated_tokens[section_num], limit=10000)
+        self._phonemes_list.append(joined_phonemes)
+
+        # ---- Join letters ----
+        joined_letters = list('_'.join(self._stressed_tokens[section_num]))
+        self._letters_list.append(joined_letters)
+
+        # ---- Continue LPC-4. Common rules ----
+        self._phonemes_list[section_num] = fix_jotised(self._phonemes_list[section_num],
+                                                       self._letters_list[section_num])
+        self._phonemes_list[section_num] = shch(self._phonemes_list[section_num])
+        self._phonemes_list[section_num] = long_ge(self._phonemes_list[section_num])
+        self._phonemes_list[section_num] = assimilative_palatalization(self._tokens[section_num],
+                                                                       self._phonemes_list[section_num])
+        self._phonemes_list[section_num] = long_consonants(self._phonemes_list[section_num])
+        self._phonemes_list[section_num] = stunning(self._phonemes_list[section_num])
+
     def transcribe(self):
-        # ---- TPS ----
         for section_num in range(self._sections_len):
-            default_section = self._tokens[section_num]
-            self._tokens[section_num] = [e_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
-            self._tokens[section_num] = [yo_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
-
-            if self._tokens[section_num] != [token.replace('+', '') for token in default_section]:
-                self._stressed_tokens[section_num] = [
-                    apply_differences([default_section[i], self._tokens[section_num][i]])
-                    for i in range(len(default_section))
-                ]
-
+            self._tps(section_num)
             # ---- Accenting ----
-            self._stressed_tokens[section_num] = self.put_stresses(
+            self._stressed_tokens[section_num] = put_stresses(
                 tokens_list=self._stressed_tokens[section_num],
                 stress_place=self._stress_place,
                 stress_accuracy_threshold=self._stress_accuracy_threshold)
             self._stressed_text[section_num] = self._stressed_tokens[section_num]
-
             # ---- Removing dashes ----
             self._remove_dashes(section_num)
-
             # ---- Phrasal words extraction ----
             dep = syntax_tree.make_dependency_tree(' '.join(self._tokens[section_num]))
             self._phrasal_words_indexes.append(find_clitics(dep, self._tokens[section_num]))
-
-            # ---- LPT-1. Irregular exceptions ----
-            for i, token in enumerate(self._tokens[section_num]):
-                stem = snowball.stem(token)
-                if stem in irregular_exceptions_stems:
-                    try:
-                        new_token = irregular_exceptions[token]
-                    except KeyError:
-                        ending = token[len(stem):]
-                        dif = - (len(token) - len(stem))
-                        new_token = irregular_exceptions_stems[stem][:dif] + ending
-
-                    self._tokens[section_num][i] = new_token
-                    accent_index = self._stressed_tokens[section_num][i].index('+')
-                    self._stressed_tokens[section_num][i] = new_token[:accent_index] + '+' + new_token[accent_index:]
-
-            # ---- LPC-2. Regular exceptions ----
-            for i, token in enumerate(self._stressed_tokens[section_num]):
-                # adjective endings 'ого его'
-                if token != 'ого+' and (token.replace('+', '').startswith('какого')
-                                        or token.replace('+', '').endswith('ого')
-                                        or token.replace('+', '').endswith('его')):
-                    accent_index = token.index('+')
-                    token = token.replace('+', '').replace('ого', 'ово').replace('его', 'ево')
-                    self._stressed_tokens[section_num][i] = token[:accent_index] + '+' + token[accent_index:]
-
-                # 'что' --> 'што'
-                if 'что' in self._stressed_tokens[section_num][i]:
-                    self._stressed_tokens[section_num][i] = token.replace('что', 'што')
-
-                # verb endings 'тся ться'
-                if token not in {'заботься', 'отметься'}:
-                    if token[-3:] == 'тся':
-                        self._stressed_tokens[section_num][i] = token[:-3] + 'ца'
-                    elif token[-4:] == 'ться':
-                        self._stressed_tokens[section_num][i] = token[:-4] + 'ца'
-
-                # noun endings 'ия ие ию'
-                if (token[-2:] in {'ия', 'ие', 'ию'}) and (token[-3] not in {'ц', 'щ'}):
-                    if token[-3] not in {'ж', 'ш'}:
-                        self._stressed_tokens[section_num][i] = token[:-2] + 'ь' + token[-1]
-                    else:
-                        self._stressed_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
-
-                # unpronounceable consonants
-                for sub in first_silent + second_silent:
-                    if sub in token:
-                        new_sub = sub.translate(str.maketrans('', '', 'ьъ'))
-                        self._stressed_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
-
-                # combinations with hissing consonants
-                stem = snowball.stem(token)
-                if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
-                    self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч',
-                                                                                                                'ч')
-                for key, value in hissing_rd.items():
-                    if key in token:
-                        self._stressed_tokens[section_num][i] = token.replace(key, value)
-
-            # ---- LPC-3. Transliteration ----
-            self._transliterated_tokens[section_num] = [epi.transliterate(token).replace('6', '').replace('4', '')
-                                                        for token in self._stressed_tokens[section_num]]
-            for i, token in enumerate(self._transliterated_tokens[section_num]):
-                for key, value in non_ipa_symbols.items():
-                    if key in token:
-                        token = token.replace(key, value)
-                        self._transliterated_tokens[section_num][i] = token
-
-            # ---- LPC-4. Common rules ----
-            # fricative g
-            for i, token in enumerate(self._transliterated_tokens[section_num]):
-                try:
-                    next_token = self._transliterated_tokens[section_num][i + 1]
-                except IndexError:
-                    next_token = ' '
-
-                token_let = self._tokens[section_num][i]
-                nlp_token = nlp(token_let)[0]
-                lemma = nlp_token.lemma_
-
-                if lemma in {'ага', 'ого', 'угу', 'господь', 'господи', 'бог'}:
-                    self._transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
-                elif token_let in {'ах', 'эх', 'ох', 'ух'}:
-                    next_token_allophone = allophones.get(next_token[0], {})
-                    if next_token_allophone.get('voice', '') == 'voiced':
-                        self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
-
-            # ---- Join phonemes ----
-            section_phonemes_list = []
-            joined_tokens = '_'.join(self._transliterated_tokens[section_num])
-            i = 0
-            counter = 0
-            default_len = len(joined_tokens)
-            while i < default_len:
-                if joined_tokens[i] not in ['+', '-']:
-                    n = 4
-                    if i != default_len - 1:
-                        while (joined_tokens[i: i + n] not in epi_starterpack + ['_', '|', '||', 'γ', 'ʐ']) and (n > 0):
-                            counter += 1
-                            if counter > 10000:
-                                raise IndexError('Endless loop')
-                            n -= 1
-                        section_phonemes_list.append(joined_tokens[i: i + n])
-                    elif joined_tokens[i] in epi_starterpack + ['||', 'γ']:
-                        section_phonemes_list.append(joined_tokens[i])
-                    i += n
-                else:
-                    section_phonemes_list.append(joined_tokens[i])
-                    i += 1
-
-            section_phonemes_list = [x for x in section_phonemes_list if x not in ['', 'ʲ']]
-            self._phonemes.append(section_phonemes_list)
-
-            n = 0
-            for allophone_index in range(len(self._phonemes[section_num]) - 1):
-                allophone = self._phonemes[section_num][allophone_index + n]
-                next_allophone = self._phonemes[section_num][allophone_index + n + 1]
-                if (allophone == 't͡s' and next_allophone == 's') or (allophone == 'd͡ʒ' and next_allophone == 'ʐ'):
-                    del self._phonemes[section_num][allophone_index + n + 1]
-                    n -= 1
-
-            # ---- Join letters ----
-            self._letters_list.append(list('_'.join(self._stressed_tokens[section_num])))
-
-            # ---- Continue LPC-4. Common rules ----
-            self._phonemes[section_num] = fix_jotised(self._phonemes[section_num],
-                                                      self._letters_list[section_num])
-            self._phonemes[section_num] = shch(self._phonemes[section_num])
-            self._phonemes[section_num] = long_ge(self._phonemes[section_num])
-            self._phonemes[section_num] = assimilative_palatalization(self._tokens[section_num],
-                                                                      self._phonemes[section_num])
-            self._phonemes[section_num] = long_consonants(self._phonemes[section_num])
-            self._phonemes[section_num] = stunning(self._phonemes[section_num])
-
-            # ---- Allophones ----
-            self._allophones[section_num] = nasal_m_n(self._phonemes[section_num])
-            self._allophones[section_num] = silent_r(self._allophones[section_num])
-            self._allophones[section_num] = voiced_ts(self._allophones[section_num])
-
+            # ---- Letter-phoneme transformation ----
+            self._lpt_1(section_num)
+            self._lpt_2(section_num)
+            self._lpt_3(section_num)
+            self._lpt_4(section_num)
+            # ---- Allophones - consonants ----
+            self._allophones_list[section_num] = nasal_m_n(self._phonemes_list[section_num])
+            self._allophones_list[section_num] = silent_r(self._allophones_list[section_num])
+            self._allophones_list[section_num] = voiced_ts(self._allophones_list[section_num])
             # ---- Extract phrasal words ----
-            self._phrasal_words[section_num] = extract_phrasal_words(self._allophones[section_num],
+            self._phrasal_words[section_num] = extract_phrasal_words(self._allophones_list[section_num],
                                                                      self._phrasal_words_indexes[section_num])
-            # ---- Prestressed syllable ----
-            section = self._phrasal_words[section_num][:]
-            n = 0
-            for symb_i, symb in enumerate(section):
-                if symb == '+':
-                    preavi = [phon_i for phon_i, phon in enumerate(section[:symb_i - 1]) if
-                              allophones[phon]['phon'] == 'V' and '_' not in section[phon_i + n:symb_i]]
-                    if preavi:
-                        self._phrasal_words[section_num].insert(preavi[-1] + n + 1, '-')
-                        n += 1
-
-            #  ---- Vowels ----
-            self._allophones[section_num] = vowels(self._phrasal_words[section_num])
-
-            # ---- Labialization and velarization ----
-            self._allophones[section_num] = labia_velar(self._allophones[section_num])
+            #  ---- Allophones - vowels ----
+            self._phrasal_words[section_num] = self.add_prestressed_syllable_sign(self._phrasal_words[section_num])
+            self._allophones_list[section_num] = vowels(self._phrasal_words[section_num])
+            self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
 
     def _insert_pauses(self, sounds_list: list):
         for i, key in enumerate(self._pause_dict):
@@ -325,8 +329,8 @@ class RuTranscript:
              for section in sounds_list]
         )
 
-    def allophones(self, stress_place: str = None, save_stresses=False, save_spaces=False, save_pauses=False,
-                   stress_symbol='+'):
+    def get_allophones(self, stress_place: str = None, save_stresses: bool = False, save_spaces: bool = False,
+                       save_pauses: bool = False, stress_symbol: str = '+'):
         """
         :param stress_place: 'after' - to place the stress symbol after the stressed vowel,
             'before' - to place the stress symbol before the stressed vowel.
@@ -339,11 +343,17 @@ class RuTranscript:
             and '|' for short pauses (other symbols).
         :return: List of allophones.
         """
+        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+            warnings.warn("The stress symbol intersects with the IPA transcription signs "
+                          "or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n"
+                          "Better don't use signs from the following list "
+                          "['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!")
+
         if save_pauses:
-            self._insert_pauses(self._allophones)
+            self._insert_pauses(self._allophones_list)
 
         escape_symbols = self._get_escape_symbols(save_stresses=save_stresses, save_spaces=save_spaces)
-        res = self._join_sounds(escape_symbols, self._allophones).split()
+        res = self._join_sounds(escape_symbols, self._allophones_list).split()
 
         if stress_place is None:
             stress_place = self._stress_place
@@ -355,8 +365,8 @@ class RuTranscript:
 
         return res
 
-    def phonemes(self, stress_place: str = None, save_stresses: bool = False, save_spaces: bool = False,
-                 save_pauses: bool = False, stress_symbol: str = '+'):
+    def get_phonemes(self, stress_place: str = None, save_stresses: bool = False, save_spaces: bool = False,
+                     save_pauses: bool = False, stress_symbol: str = '+'):
         """
         :param stress_place: 'after' - to place the stress symbol after the stressed vowel,
             'before' - to place the stress symbol before the stressed vowel.
@@ -369,11 +379,17 @@ class RuTranscript:
             and '|' for short pauses (other symbols).
         :return: List of phonemes.
         """
+        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+            warnings.warn("The stress symbol intersects with the IPA transcription signs "
+                          "or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n"
+                          "Better don't use signs from the following list "
+                          "['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!")
+
         if save_pauses:
-            self._insert_pauses(self._phonemes)
+            self._insert_pauses(self._phonemes_list)
 
         escape_symbols = self._get_escape_symbols(save_stresses=save_stresses, save_spaces=save_spaces)
-        res = self._join_sounds(escape_symbols, self._phonemes).split()
+        res = self._join_sounds(escape_symbols, self._phonemes_list).split()
 
         if stress_place is None:
             stress_place = self._stress_place
@@ -385,23 +401,28 @@ class RuTranscript:
 
         return res
 
-    def stressed_text(self, stress_place: str = None, stress_symbol: str = '+'):
+    def get_stressed_text(self, stress_place: str = None, stress_symbol: str = '+'):
         """
         :param stress_place: 'after' - to place the stress symbol after the stressed vowel,
             'before' - to place the stress symbol before the stressed vowel.
         :param stress_symbol: A symbol that you want to indicate the stress.
-            Be careful not to use letters and signs from the following list
-            ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!
+            Be careful not to use signs from the following list ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!
         :return: A text string with stresses.
         """
+        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+            warnings.warn("The stress symbol intersects with the IPA transcription signs "
+                          "or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n"
+                          "Better don't use signs from the following list "
+                          "['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!")
+
         if stress_place is None:
             stress_place = self._stress_place
         if stress_place == 'before':
-            res = ' '.join([' '.join(replace_stress_before(section)) for section in self._stressed_text])
+            res = ' '.join([''.join(replace_stress_before(' '.join(section))) for section in self._stressed_text])
         else:
             res = ' '.join([' '.join(section) for section in self._stressed_text])
 
         if stress_symbol != '+':
-            res = [x.replace('+', stress_symbol) for x in res]
+            res = res.replace('+', stress_symbol)
 
         return res

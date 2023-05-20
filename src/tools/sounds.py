@@ -4,7 +4,7 @@ from collections import defaultdict
 epi_starterpack = 'a b bʲ v vʲ ɡ ɡʲ d dʲ e ʒ z zʲ i j k kʲ l lʲ m mʲ n nʲ o '\
                   'p pʲ r rʲ s sʲ t tʲ u f fʲ x xʲ t͡s t͡ɕ ʂ ɕː ɨ d͡ʒ'.split()
 ru_starterpack = 'ё й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю'.split()
-rus_v = 'а е ё и о у э ю я ы'.split(' ')  # russian vowels
+rus_v = 'а е ё и о у э ю я ы'.split()  # russian vowels
 
 ROOT_DIR = dirname(abspath(__file__))
 
