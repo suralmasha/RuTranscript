@@ -1,6 +1,6 @@
 import spacy
 
-from ru_transcript.src.tools.sounds import allophones, rus_v
+from .sounds import allophones, rus_v
 
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
 

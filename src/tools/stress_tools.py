@@ -2,7 +2,7 @@ from os.path import join, dirname, abspath
 
 from stressrnn import StressRNN
 
-from ru_transcript.src.tools.sounds import rus_v
+from .sounds import rus_v
 
 ROOT_DIR = dirname(abspath(__file__))
 

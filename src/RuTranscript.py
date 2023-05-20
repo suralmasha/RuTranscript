@@ -8,12 +8,13 @@ from nltk.stem.snowball import SnowballStemmer
 from tps import find, download
 from tps import modules as md
 
-from ru_transcript.src.tools.main_tools import get_punctuation_dict, text_norm_tok, find_clitics, extract_phrasal_words, apply_differences
-from ru_transcript.src.tools.stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
-from ru_transcript.src.tools.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, long_consonants, vowels,\
-    labia_velar, stunning, assimilative_palatalization
-from ru_transcript.src.tools.sounds import epi_starterpack, allophones
-from ru_transcript.src.tools.syntax_tree import SyntaxTree
+from .tools.main_tools import get_punctuation_dict, text_norm_tok, find_clitics, extract_phrasal_words, \
+    apply_differences
+from .tools.stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
+from .tools.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, long_consonants, \
+    vowels, labia_velar, stunning, assimilative_palatalization
+from .tools.sounds import epi_starterpack, allophones
+from .tools.syntax_tree import SyntaxTree
 
 snowball = SnowballStemmer('russian')
 nlp = spacy.load('ru_core_news_sm', disable=["tagger", "morphologizer", "attribute_ruler"])
