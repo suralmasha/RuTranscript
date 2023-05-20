@@ -65,7 +65,7 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=['ru_transcript', 'tools'],
+        packages=['ru_transcript'],
         include_package_data=True,
         install_requires=requirements(),
         zip_safe=False
