@@ -43,7 +43,7 @@ if __name__ == "__main__":
         author_email='sashabadasyan@icloud.com',
 
         packages=find_packages(exclude=['tests', 'example.py', 'jpt_example.ipynb']),
-        package_data={'ru_transcript': ['data/*']},
+        package_data={'ru_transcript': ['ru_transcript/data/*']},
         include_package_data=True,
         install_requires=requirements(),
         zip_safe=False
