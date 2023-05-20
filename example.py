@@ -1,10 +1,6 @@
 from ru_transcript.src.RuTranscript import RuTranscript
 
 if __name__ == "__main__":
-    # переписать ридми
-    # сделать сетап
-    # приступить к репе для метрики
-
     text = 'Как получить транскрипцию?'
     ru_transcript = RuTranscript(text)
     ru_transcript.transcribe()
