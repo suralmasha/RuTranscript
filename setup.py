@@ -38,17 +38,17 @@ def readme():
 
 if __name__ == "__main__":
     sources_dir = './src'
-    temp_dir = 'temp'
+    # temp_dir = 'temp'
 
     # Prepare temp folders
-    rmtree(temp_dir, ignore_errors=True)
-    copytree(path.join(sources_dir, 'data'), path.join(temp_dir, 'data'), copy_function=copy)
-    copytree(path.join(sources_dir, 'tools'), path.join(temp_dir, 'tools'), copy_function=copy)
-    copy(path.join(sources_dir, 'RuTranscript.py'), path.join(temp_dir, 'RuTranscript.py'))
-    f = open(path.join(temp_dir, '__init__.py'), 'w')
-    f.write('from ru_transcript.RuTranscript import RuTranscript'
-            '\nfrom ru_transcript.tools.allophones_tools import get_allophone_info')
-    f.close()
+    # rmtree(temp_dir, ignore_errors=True)
+    # copytree(path.join(sources_dir, 'data'), path.join(temp_dir, 'data'), copy_function=copy)
+    # copytree(path.join(sources_dir, 'tools'), path.join(temp_dir, 'tools'), copy_function=copy)
+    # copy(path.join(sources_dir, 'RuTranscript.py'), path.join(temp_dir, 'RuTranscript.py'))
+    # f = open(path.join(temp_dir, '__init__.py'), 'w')
+    # f.write('from ru_transcript.RuTranscript import RuTranscript'
+    #        '\nfrom ru_transcript.tools.allophones_tools import get_allophone_info')
+    # f.close()
 
     setup(
         name='ru_transcript',
@@ -65,8 +65,7 @@ if __name__ == "__main__":
         keywords='nlp russian transcription phonetics linguistic',
         author_email='sashabadasyan@icloud.com',
 
-        packages=find_packages(temp_dir),
-        package_dir={'': temp_dir},
-        package_data={'': add_files()},
+        packages=find_packages(sources_dir),
+        include_package_data=True,
         install_requires=requirements()
     )
