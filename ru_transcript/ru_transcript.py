@@ -12,7 +12,7 @@ from .tools.main_tools import get_punctuation_dict, text_norm_tok, find_clitics,
     apply_differences
 from .tools.stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
 from .tools.allophones_tools import nasal_m_n, silent_r, voiced_ts, shch, long_ge, fix_jotised, long_consonants, \
-    vowels, labia_velar, stunning, assimilative_palatalization
+    vowels, labia_velar, stunning, assimilative_palatalization, first_jot
 from .tools.sounds import epi_starterpack, allophones
 from .tools.syntax_tree import SyntaxTree
 
@@ -298,7 +298,8 @@ class RuTranscript:
             self._lpt_3(section_num)
             self._lpt_4(section_num)
             # ---- Allophones - consonants ----
-            self._allophones_list[section_num] = nasal_m_n(self._phonemes_list[section_num])
+            self._allophones_list[section_num] = first_jot(self._phonemes_list[section_num])
+            self._allophones_list[section_num] = nasal_m_n(self._allophones_list[section_num])
             self._allophones_list[section_num] = silent_r(self._allophones_list[section_num])
             self._allophones_list[section_num] = voiced_ts(self._allophones_list[section_num])
             # ---- Extract phrasal words ----
