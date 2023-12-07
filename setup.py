@@ -2,55 +2,61 @@
 # -*- coding: utf-8 -*-
 # Author: suralmasha - Badasyan Alexandra
 
+import os
 from setuptools import setup, find_packages
-
-
-def requirements():
-    with open('requirements.txt', 'r', encoding='utf-8') as f_requirements:
-        deps = []
-        while True:
-            row = f_requirements.readline()
-            if row == '':
-                break
-            elif row.startswith('--'):
-                continue
-            elif row.startswith('-e'):
-                url, name = row.split('#egg=')
-                row = name.replace('\n', '') + ' @' + url.replace('-e', '')
-            deps.append(row)
-        return deps
-
-
-def readme():
-    with open('README.md', 'r', encoding='utf-8') as f_readme:
-        return f_readme.read()
+from shutil import copytree, copy, rmtree, ignore_patterns
+from os.path import join
 
 
 if __name__ == "__main__":
-    setup(
-        name='ru_transcript',
-        # version='0.1.0',
-        description='Package that makes a phonetic transcription in russian.',
-        long_description=readme(),
-        url='https://github.com/suralmasha/RuTranscript',
-        classifiers=[
-            'Natural Language :: Russian',
-            'Programming Language :: Python :: 3.8',
-            'Topic :: Text Processing :: Linguistic :: NLP'
-        ],
-        author='Badasyan Alexandra',
-        keywords='nlp russian transcription phonetics linguistic',
-        author_email='sashabadasyan@icloud.com',
+    # Package constants
+    PACKAGE_NAME = 'ru_transcript'
+    PACKAGE_VERSION = '1.0'
+    PACKAGE_DESCRIPTION = 'Phonetic transcription in russian'
+    PACKAGE_SOURCES_URL = 'https://github.com/suralmasha/RuTranscript'
 
-        packages=find_packages(exclude=['tests', 'example.py', 'jpt_example.ipynb'],),
-        package_data={'ru_transcript': [
-            'data/alphabet.txt',
-            'data/error_words_stresses_default.txt',
-            'data/irregular_exceptions.xlsx',
-            'data/paired_consonants.txt',
-            'data/sorted_allophones.txt',
-        ]},
+    # Variables
+    sources_dir = './src'
+    temp_dir = 'temp'
+    excluded_files = ignore_patterns('setup.py', '.git', 'dist', 'tests', 'example.py', 'jpt_example.ipynb')
+
+    # Prepare temp folders
+    rmtree(temp_dir, ignore_errors=True)
+    copytree(sources_dir, join(temp_dir, 'ru_transcript'), copy_function=copy, ignore=excluded_files)
+
+    # Read long_description
+    with open('README.md', encoding='utf8') as f:
+        long_description = f.read().splitlines()
+
+    # Read requirements from file excluded comments
+    with open('requirements.txt', encoding='utf8') as f:
+        install_requires = f.read().splitlines()
+
+    # Prepare data files
+    data_files = [join('data', '*.txt'), join('data', '.xlsx')]
+
+    # Classifiers
+    classifiers = [
+        'Natural Language :: Russian',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Text Processing :: Linguistic :: NLP'
+    ]
+
+    # Build package
+    setup(
+        name=PACKAGE_NAME,  # package name
+        version=PACKAGE_VERSION,  # version
+        description=PACKAGE_DESCRIPTION,  # short description
+        long_description=long_description,
+        url=PACKAGE_SOURCES_URL,  # package URL
+        author='Badasyan Alexandra',
+        author_email='sashabadasyan@icloud.com',
+        classifiers=classifiers,
+        keywords='nlp russian transcription phonetics linguistic',
+        install_requires=install_requires,  # list of packages this package depends on
+        packages=find_packages(temp_dir), # return a list of str representing the packages it could find in source dir
+        package_dir={'': temp_dir},  # set up sources dir
+        package_data={'': data_files},  # append all external files to package
         include_package_data=True,
-        install_requires=requirements(),
         zip_safe=False
     )
