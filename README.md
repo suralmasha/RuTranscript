@@ -16,6 +16,7 @@ For a more detailed description of how the framework works, see the article: htt
 
 ```
 pip install git+https://github.com/suralmasha/RuTranscript
+pip install -r requirements.txt
 ```
 
 # Usage
