@@ -1,7 +1,7 @@
 import unittest
 
-from ..ru_transcript import RuTranscript
-from ..ru_transcript.tools.main_tools import text_norm_tok
+from ..src import RuTranscript
+from ..src.tools.main_tools import text_norm_tok
 
 
 class TestModules(unittest.TestCase):

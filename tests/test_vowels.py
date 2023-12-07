@@ -1,6 +1,6 @@
 import unittest
 
-from ..ru_transcript import RuTranscript
+from ..src import RuTranscript
 
 
 class TestVowels(unittest.TestCase):
