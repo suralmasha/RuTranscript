@@ -1,6 +1,6 @@
 import unittest
 
-from ..src import RuTranscript
+from .. import RuTranscript
 
 
 class TestConsonants(unittest.TestCase):
