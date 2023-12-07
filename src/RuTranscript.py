@@ -116,6 +116,7 @@ class RuTranscript:
     def _join_phonemes(self, transliterated_tokens, limit=10000):
         section_phonemes_list = []
         joined_tokens = '_'.join(transliterated_tokens)
+        joined_tokens = joined_tokens.replace('‑', '-')
         i = 0
         counter = 0
         default_len = len(joined_tokens)
@@ -146,6 +147,7 @@ class RuTranscript:
                 del section_phonemes_list[allophone_index + n + 1]
                 n -= 1
 
+        # print(section_phonemes_list)
         return section_phonemes_list
 
     @staticmethod
