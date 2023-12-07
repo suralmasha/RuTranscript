@@ -27,6 +27,7 @@ if __name__ == "__main__":
     # Read long_description
     with open('README.md', encoding='utf8') as f:
         long_description = f.read().splitlines()
+        long_description = '/n'.join(long_description)
 
     # Read requirements from file excluded comments
     with open('requirements.txt', encoding='utf8') as f:
