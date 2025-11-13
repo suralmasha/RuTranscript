@@ -12,6 +12,23 @@ the syllable coincides with the beginning of the word or the end of the syllable
 
 For a more detailed description of how the framework works, see the article: https://www.dialog-21.ru/media/5722/badasyana137.pdf
 
+# Package Building
+## Manual Build
+When new files appear that should be excluded from the build, you need to specify them in `setup.py`
+in the `excluded_files` variable.  
+Build the package by running the command:
+```shell
+  pip install poetry==2.2.0 build==1.3.0  # optional
+  python -m build
+```
+The resulting file will be placed in the` `dist` directory.
+
+## Manual Installation
+To install the package in a project, run the following command:
+```shell
+  pip install --force-reinstall */dist/*.whl
+```
+
 # Installation
 
 ```
@@ -35,8 +52,7 @@ ru_transcript.transcribe()
 You may define stresses both for one word and for all words in the text. 
 To do this, put a stress symbol (preferably '+') before or after the stressed vowel 
 and put the stressed text in an additional variable (in the example - `stressed_text_if_have`). 
-To define where you've putted the stress mark use the parameter `stress_place` (possible values: `'after'` or `'before'`).
-
+To define where you've putted the stress mark use the parameter `stress_place` (possible values: `'after'` or `'before'`).  
 **Important!** The number of words in these two texts must match.
 
 ```
@@ -56,8 +72,7 @@ ru_transcript.transcribe()
 ```
 
 Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), 
-punctuation marks inside a sentence are indicated by short pauses (`'|'`). 
-
+punctuation marks inside a sentence are indicated by short pauses (`'|'`).  
 You can get a list of **allophones** by using method `get_allophones()`.
 
 ```

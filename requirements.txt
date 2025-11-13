@@ -1,9 +1,0 @@
-spacy==3.4.4
-ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.4.0/ru_core_news_sm-3.4.0-py3-none-any.whl
-numpy==1.23.3
-nltk==3.7
-epitran==1.24
-openpyxl==3.1.1
--e git+https://github.com/sovaai/sova-tts-tps@v1.2.0#egg=tps
--e git+https://github.com/Desklop/StressRNN#egg=stressrnn
--e git+https://github.com/seriyps/ru_number_to_text#egg=num2t4ru

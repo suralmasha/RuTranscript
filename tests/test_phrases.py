@@ -1,6 +1,6 @@
 import unittest
 
-from .. import RuTranscript
+from ru_transcript import RuTranscript
 
 
 class TestPhrases(unittest.TestCase):
