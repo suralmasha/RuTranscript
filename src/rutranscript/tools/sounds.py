@@ -1,94 +1,29 @@
 from collections import defaultdict
-from os.path import abspath, dirname, join
+from pathlib import Path
 
-epi_starterpack = [
-    'a',
-    'b',
-    'bʲ',
-    'v',
-    'vʲ',
-    'ɡ',
-    'ɡʲ',
-    'd',
-    'dʲ',
-    'e',
-    'ʒ',
-    'z',
-    'zʲ',
-    'i',
-    'j',
-    'k',
-    'kʲ',
-    'l',
-    'lʲ',
-    'm',
-    'mʲ',
-    'n',
-    'nʲ',
-    'o',
-    'p',
-    'pʲ',
-    'r',
-    'rʲ',
-    's',
-    'sʲ',
-    't',
-    'tʲ',
-    'u',
-    'f',
-    'fʲ',
-    'x',
-    'xʲ',
-    't͡s',
-    't͡ɕ',
-    'ʂ',
-    'ɕː',
-    'ɨ',
-    'd͡ʒ',
-]
-ru_starterpack = [
-    'ё',
-    'й',
-    'ц',
-    'у',
-    'к',
-    'е',
-    'н',
-    'г',
-    'ш',
-    'щ',
-    'з',
-    'х',
-    'ъ',
-    'ф',
-    'ы',
-    'в',
-    'а',
-    'п',
-    'р',
-    'о',
-    'л',
-    'д',
-    'ж',
-    'э',
-    'я',
-    'ч',
-    'с',
-    'м',
-    'и',
-    'т',
-    'ь',
-    'б',
-    'ю',
-]
-rus_v = ['а', 'е', 'ё', 'и', 'о', 'у', 'э', 'ю', 'я', 'ы']  # russian vowels
+root_dor = Path(__file__).resolve().parent.parent
+encoding = 'utf-8'
 
-ROOT_DIR = dirname(abspath(__file__))  # noqa: PTH100, PTH120
+with root_dor.joinpath('data', 'epi_symbols.txt').open(encoding=encoding) as f:
+    epi_symbols = tuple(f.read().split(', '))
+with root_dor.joinpath('data', 'ru_symbols.txt').open(encoding=encoding) as f:
+    ru_symbols = tuple(f.read().split(', '))
+with root_dor.joinpath('data', 'ru_vowel_symbols.txt').open(encoding=encoding) as f:
+    ru_vowel_symbols = tuple(f.read().split(', '))
+with root_dor.joinpath('data', 'alphabet.txt').open(encoding=encoding) as f:
+    alphabet = tuple(f.read().split(', '))
 
-with open(join(ROOT_DIR, '../data/alphabet.txt'), encoding='utf-8') as f:  # noqa: PTH118, PTH123
-    alphabet = f.read().split(', ')
+# Special consonant sets
+with root_dor.joinpath('data', 'zh_sh_ts.txt').open(encoding=encoding) as f:
+    zh_sh_ts = tuple(f.read().split(', '))
+with root_dor.joinpath('data', 'ts.txt').open(encoding=encoding) as f:
+    ts = tuple(f.read().split(', '))
 
-with open(join(ROOT_DIR, '../data/sorted_allophones.txt'), encoding='utf-8') as f:  # noqa: PTH118, PTH123
+# Special vowels sets
+with root_dor.joinpath('data', 'jotised.txt').open(encoding=encoding) as f:
+    jotised = tuple(f.read().split(', '))
+
+with root_dor.joinpath('data', 'sorted_allophones.txt').open(encoding=encoding) as f:
     sorted_phonemes_txt = (line.replace('\n', '') for line in f)
     sorted_phonemes_1 = {}
     for group in sorted_phonemes_txt:
@@ -100,7 +35,7 @@ for key, value in sorted_phonemes_1.items():
     for element in value:
         sorted_phonemes[element].append(key)
 
-with open(join(ROOT_DIR, '../data/paired_consonants.txt'), encoding='utf-8') as f:  # noqa: PTH118, PTH123
+with root_dor.joinpath('data', 'paired_consonants.txt').open(encoding=encoding) as f:
     paired_c_txt = f.read().replace(')', ')_').split('_, ')
     paired_c = {
         voiced.replace('(', ''): silent.replace(')', '')
@@ -188,7 +123,6 @@ class_map = {
 
 for key in allophones:  # noqa: PLC0206
     for group in sorted_phonemes[key]:
-        # experiments
         # experiment = experiment_map.get(group, None)
         # allophones[key]['experiment'] = experiment if experiment is not None else allophones[key]['experiment']
 
@@ -224,31 +158,3 @@ for key in allophones:  # noqa: PLC0206
 
 # symbols
 allophones.update({symbol: {'phon': 'symb'} for symbol in ['+', '-', '|', '||', '_', '']})
-
-# Special consonant sets
-ts = {'t͡s', 't͡sʷ', 't͡sˠ', 'd͡ʒᶣ', 'd͡ʒˠ', 'd̻͡z̪', 'd͡ʒ'}
-zh_sh_ts = {
-    'ʐ',
-    'ʐʷ',
-    'ʐˠ',
-    'ʑː',
-    'ʑːʷ',
-    'ʑːˠ',
-    'ʑʲː',
-    'ʑːᶣ',
-    'ʂ',
-    'ʂʷ',
-    'ʂˠ',
-    'ʂː',
-    'ʂːʷ',
-    'ʂːˠ',
-    't͡s',
-    't͡sʷ',
-    't͡sˠ',
-    'd͡ʒᶣ',
-    'd͡ʒˠ',
-    'd̻͡z̪',
-    'd͡ʒ',
-}
-
-jotised = {'j', 'ʲa', 'ʲo', 'ʲu', 'ʲe'}

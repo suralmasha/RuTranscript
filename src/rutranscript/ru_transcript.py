@@ -14,7 +14,7 @@ from .tools import (
     allophones,
     apply_differences,
     assimilative_palatalization,
-    epi_starterpack,
+    epi_symbols,
     find_clitics,
     first_jot,
     fix_jotised,
@@ -188,13 +188,13 @@ class RuTranscript:
             if joined_tokens[i] not in ['+', '-']:
                 n = 4
                 if i != default_len - 1:
-                    while (joined_tokens[i : i + n] not in [*epi_starterpack, '_', '|', '||', 'γ', 'ʐ']) and (n > 0):
+                    while (joined_tokens[i : i + n] not in [*epi_symbols, '_', '|', '||', 'γ', 'ʐ']) and (n > 0):
                         counter += 1
                         if counter > limit:
                             raise IndexError('Endless loop')  # noqa: TRY003
                         n -= 1
                     section_phonemes_list.append(joined_tokens[i : i + n])
-                elif joined_tokens[i] in [*epi_starterpack, '||', 'γ']:
+                elif joined_tokens[i] in [*epi_symbols, '||', 'γ']:
                     section_phonemes_list.append(joined_tokens[i])
                 i += n
             else:
@@ -362,12 +362,10 @@ class RuTranscript:
             self._phonemes_list[section_num], self._letters_list[section_num]
         )
         self._phonemes_list[section_num] = shch(self._phonemes_list[section_num])
-        self._phonemes_list[section_num] = long_ge(self._phonemes_list[section_num])
-        self._phonemes_list[section_num] = assimilative_palatalization(
-            self._tokens[section_num], self._phonemes_list[section_num]
-        )
-        self._phonemes_list[section_num] = long_consonants(self._phonemes_list[section_num])
-        self._phonemes_list[section_num] = stunning(self._phonemes_list[section_num])
+        long_ge(self._phonemes_list[section_num])
+        assimilative_palatalization(self._tokens[section_num], self._phonemes_list[section_num])
+        long_consonants(self._phonemes_list[section_num])
+        stunning(self._phonemes_list[section_num])
 
     def transcribe(self) -> None:
         """
@@ -395,17 +393,19 @@ class RuTranscript:
             self._lpt_3(section_num)
             self._lpt_4(section_num)
             # ---- Allophones - consonants ----
-            self._allophones_list[section_num] = first_jot(self._phonemes_list[section_num])
-            self._allophones_list[section_num] = nasal_m_n(self._allophones_list[section_num])
-            self._allophones_list[section_num] = silent_r(self._allophones_list[section_num])
-            self._allophones_list[section_num] = voiced_ts(self._allophones_list[section_num])
+            first_jot(self._phonemes_list[section_num])
+            self._allophones_list[section_num] = self._phonemes_list[section_num]
+            nasal_m_n(self._allophones_list[section_num])
+            silent_r(self._allophones_list[section_num])
+            voiced_ts(self._allophones_list[section_num])
             # ---- Extract phrasal words ----
             self._phrasal_words[section_num] = merge_phrasal_words(
                 self._allophones_list[section_num], self._phrasal_words_indexes[section_num]
             )
             #  ---- Allophones - vowels ----
             self._phrasal_words[section_num] = self.add_prestressed_syllable_sign(self._phrasal_words[section_num])
-            self._allophones_list[section_num] = vowels(self._phrasal_words[section_num])
+            vowels(self._phrasal_words[section_num])
+            self._allophones_list[section_num] = self._phrasal_words[section_num]
             self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
 
     def _insert_pauses(self, sounds_list: list) -> None:

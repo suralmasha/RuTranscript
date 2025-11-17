@@ -1,4 +1,4 @@
-from .sounds import allophones, rus_v
+from .sounds import allophones, ru_vowel_symbols
 
 # def is_jotised_vowel(symbol: str) -> bool:
 #     """
@@ -144,7 +144,7 @@ def fix_jotised(phonemes_list_section: list[str], letters_list_section: list[str
                 phonemes_list_section_copy.insert(i + n, 'j')
                 n += 1
 
-            elif previous_let in rus_v:
+            elif previous_let in ru_vowel_symbols:
                 phonemes_list_section_copy.insert(i + n, 'j')
                 n += 1
 

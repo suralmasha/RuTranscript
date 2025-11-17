@@ -19,7 +19,7 @@ from .main_tools import (
     merge_phrasal_words,
     text_norm_tok,
 )
-from .sounds import allophones, epi_starterpack
+from .sounds import allophones, epi_symbols
 from .stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
 from .syntax_tree import SyntaxTree
 
@@ -28,7 +28,7 @@ __all__ = [
     'allophones',
     'apply_differences',
     'assimilative_palatalization',
-    'epi_starterpack',
+    'epi_symbols',
     'find_clitics',
     'first_jot',
     'fix_jotised',

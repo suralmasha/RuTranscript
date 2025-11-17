@@ -2,7 +2,7 @@ from pathlib import Path
 
 from stressrnn import StressRNN
 
-from .sounds import rus_v
+from .sounds import ru_vowel_symbols
 
 ROOT_DIR = Path(__file__).resolve().parent
 
@@ -36,12 +36,12 @@ def place_stress(token: str, stress_accuracy_threshold: float) -> str:
         return ''.join(token_list)
 
     # count vowels
-    vowels_count = sum(1 for let in token if let in rus_v)
+    vowels_count = sum(1 for let in token if let in ru_vowel_symbols)
 
     if vowels_count == 1:
         # only one vowel, stress on it
         for i, let in enumerate(token):
-            if let in rus_v:
+            if let in ru_vowel_symbols:
                 token_list.insert(i + 1, '+')
                 break
         return ''.join(token_list)
