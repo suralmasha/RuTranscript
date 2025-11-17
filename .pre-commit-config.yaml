@@ -1,6 +1,15 @@
 repos:
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.6
-  hooks:
-    - id: ruff
-    - id: ruff-format
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run tests
+        entry: poetry run pytest tests
+        language: system
+        pass_filenames: false
+        always_run: true
