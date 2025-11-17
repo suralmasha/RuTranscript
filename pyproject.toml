@@ -1,5 +1,9 @@
+[build-system]
+requires = ['poetry-core']
+build-backend = 'poetry.core.masonry.api'
+
 [tool.poetry]
-package-mode = false
+package-mode = true
 
 [project]
 name = 'RuTranscript'
@@ -10,7 +14,7 @@ authors = [
 ]
 readme = 'README.md'
 
-[tool.poetry.dependencies]
+[tool.poetry.dependencies]  # TODO: update dependencies
 python = '3.10.*'
 spacy = '3.4.4'
 numpy = '1.23.3'
