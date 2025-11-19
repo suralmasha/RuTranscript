@@ -14,27 +14,27 @@ For a more detailed description of how the framework works, see the article: htt
 
 # Package Building
 ## Manual Build
-When new files appear that should be excluded from the build, you need to specify them in `setup.py`
-in the `excluded_files` variable.  
-Build the package by running the command:
+1. Ensure that all package sources are located under `src/` and correctly declared in the `packages` section of `pyproject.toml`.
+2. Build the package:
 ```shell
   pip install poetry==2.2.0 build==1.3.0  # optional
-  python -m build
+  poetry build
 ```
-The resulting file will be placed in the` `dist` directory.
+3. The generated artifacts (`.whl` and `.tar.gz`) will appear in the `dist/` directory.
 
 ## Manual Installation
-To install the package in a project, run the following command:
+To install the built package into another project:
 ```shell
   pip install --force-reinstall */dist/*.whl
 ```
+(If multiple versions exist, specify the exact file.)
 
-# Installation
+# Installation from Git
 
 ```
 pip install git+https://github.com/suralmasha/RuTranscript
-pip install -r requirements.txt
 ```
+(Or `poetry add` for Poetry-based projects.)
 
 # Usage
 
