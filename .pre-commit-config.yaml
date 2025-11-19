@@ -7,9 +7,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: pytest
-        name: Run tests
-        entry: poetry run pytest tests
+      - id: unit-tests
+      - name: Run unit tests
+        entry: bash -c "PYTHONPATH=src python -m unittest discover -s tests"
         language: system
         pass_filenames: false
         always_run: true
