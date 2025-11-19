@@ -8,7 +8,7 @@ repos:
   - repo: local
     hooks:
       - id: unit-tests
-      - name: Run unit tests
+        name: Run unit tests
         entry: bash -c "PYTHONPATH=src python -m unittest discover -s tests"
         language: system
         pass_filenames: false
