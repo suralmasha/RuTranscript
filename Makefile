@@ -1,4 +1,7 @@
 
+package:
+	poetry build
+
 ruff:
 	poetry run ruff check
 ruff-fix:

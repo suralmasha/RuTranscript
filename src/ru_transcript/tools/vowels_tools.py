@@ -1,17 +1,19 @@
 from .sounds import allophones, zh_sh_ts
 
 
-def get_neighbors(section: list[str], i: int) -> tuple[str, str]:
+def get_vowel_neighbors(section: list[str], i: int) -> tuple[dict[str, str | None], str]:
     """
     Safely get previous and next phonemes from a section.
 
     param section: Full phoneme list.
     param i: Index of the current phoneme.
-    return: Tuple of (previous_phoneme, next_phoneme), or '' if out of range.
+    return: Tuple of previous allophone and stress symbol ('+' or '-'), or ('', '') if out of range.
     """
     prev = section[i - 1] if i > 0 else ''
-    next_ = section[i + 1] if i + 1 < len(section) else ''
-    return prev, next_
+    stress_symbol = section[i + 1] if i + 1 < len(section) else ''
+    prev_allophone = allophones.get(prev, {})
+
+    return prev_allophone, stress_symbol
 
 
 def process_a(section: list[str], i: int) -> str:
@@ -22,14 +24,11 @@ def process_a(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /a/.
     """
-    # Access helpers for neighbors and allophones
-    prev, next_ = get_neighbors(section, i)
-    prev_allo = allophones.get(prev, {})
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
 
-    # Core rules (simplified example, keep your existing logic)
-    if next_ == '+':
-        return 'a' if 'hard' in prev_allo.get('palatalization', '') else 'æ'
-    if next_ == '-':
+    if stress_symbol == '+':
+        return 'a' if 'hard' in prev_allophone.get('palatalization', '') else 'æ'
+    if stress_symbol == '-':
         return 'ɐ'
     return 'ə'
 
@@ -42,12 +41,11 @@ def process_o(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /o/.
     """
-    prev, next_ = get_neighbors(section, i)
-    prev_allo = allophones.get(prev, {})
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
 
-    if next_ == '+':
-        return 'o' if 'hard' in prev_allo.get('palatalization', '') else 'ɵ'
-    if next_ == '-':
+    if stress_symbol == '+':
+        return 'o' if 'hard' in prev_allophone.get('palatalization', '') else 'ɵ'
+    if stress_symbol == '-':
         return 'ɐ'
     return 'ə'
 
@@ -60,12 +58,11 @@ def process_e(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /e/.
     """
-    prev, next_ = get_neighbors(section, i)
-    prev_allo = allophones.get(prev, {})
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
 
-    if next_ == '+':
-        return 'ɛ' if 'hard' in prev_allo.get('palatalization', '') else 'e'
-    if next_ == '-':
+    if stress_symbol == '+':
+        return 'ɛ' if 'hard' in prev_allophone.get('palatalization', '') else 'e'
+    if stress_symbol == '-':
         return 'ᵻ'
     return 'ə'
 
@@ -78,12 +75,11 @@ def process_u(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /u/.
     """
-    prev, next_ = get_neighbors(section, i)
-    prev_allo = allophones.get(prev, {})
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
 
-    if next_ == '+':
-        return 'ʉ' if 'soft' in prev_allo.get('palatalization', '') else 'u'
-    return 'ʊ' if 'hard' in prev_allo.get('palatalization', '') else 'ᵿ'
+    if stress_symbol == '+':
+        return 'ʉ' if 'soft' in prev_allophone.get('palatalization', '') else 'u'
+    return 'ʊ' if 'hard' in prev_allophone.get('palatalization', '') else 'ᵿ'
 
 
 def process_i(section: list[str], i: int) -> str:
@@ -94,10 +90,11 @@ def process_i(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /i/.
     """
-    prev, next_ = get_neighbors(section, i)
-    if prev in zh_sh_ts:
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+
+    if prev_allophone in zh_sh_ts:
         return 'ɨ'
-    if next_ != '+':
+    if stress_symbol != '+':
         return 'ɪ'
     return 'i'
 
@@ -110,11 +107,11 @@ def process_y(section: list[str], i: int) -> str:
     param i: Index of the current vowel.
     return: Context-dependent allophone of /ɨ/.
     """
-    prev, next_ = get_neighbors(section, i)
-    prev_allo = allophones.get(prev, {})
-    if next_ == '+':
-        return 'ɨ̟' if prev_allo.get('place', '') == 'lingual, dental' else 'ɨ'
-    if prev_allo.get('hissing', '') == 'hissing':
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+
+    if stress_symbol == '+':
+        return 'ɨ̟' if prev_allophone.get('place', '') == 'lingual, dental' else 'ɨ'
+    if prev_allophone.get('hissing', '') == 'hissing':
         return 'ə'
     return 'ᵻ'
 

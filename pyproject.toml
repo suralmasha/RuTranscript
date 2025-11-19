@@ -4,6 +4,7 @@ build-backend = 'poetry.core.masonry.api'
 
 [tool.poetry]
 package-mode = true
+packages = [{ include = 'ru_transcript', from = 'src' }]
 
 [project]
 name = 'RuTranscript'
