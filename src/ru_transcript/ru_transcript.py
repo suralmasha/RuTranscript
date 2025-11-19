@@ -24,10 +24,10 @@ from .tools import (
     long_ge,
     merge_phrasal_words,
     nasal_m_n,
+    process_shch,
     put_stresses,
     remove_extra_stresses,
     replace_stress_before,
-    shch,
     silent_r,
     stunning,
     text_norm_tok,
@@ -361,7 +361,7 @@ class RuTranscript:
         self._phonemes_list[section_num] = fix_jotised(
             self._phonemes_list[section_num], self._letters_list[section_num]
         )
-        self._phonemes_list[section_num] = shch(self._phonemes_list[section_num])
+        self._phonemes_list[section_num] = process_shch(self._phonemes_list[section_num])
         long_ge(self._phonemes_list[section_num])
         assimilative_palatalization(self._tokens[section_num], self._phonemes_list[section_num])
         long_consonants(self._phonemes_list[section_num])

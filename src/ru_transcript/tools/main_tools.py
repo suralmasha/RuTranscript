@@ -3,6 +3,8 @@ import re
 import nltk
 from num2t4ru import num2text
 
+from ru_transcript.consts import JOTISED_LETTERS
+
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
 
@@ -132,7 +134,11 @@ def find_clitics(
                 main_word_index = None
 
                 # Proclitic: functor before main word (excluding some vowels)
-                if token.i < len(text) - 1 and text[token.i + 1] in str_dep and text[token.i + 1][0] not in 'еёюяи':
+                if (
+                    token.i < len(text) - 1
+                    and text[token.i + 1] in str_dep
+                    and text[token.i + 1][0] not in JOTISED_LETTERS
+                ):
                     main_word_index = token.i + 1
                 # Enclitic: functor after main word
                 elif token.i > 0 and text[token.i - 1] in str_dep:

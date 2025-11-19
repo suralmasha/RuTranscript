@@ -1,5 +1,9 @@
 import spacy
 
+from ru_transcript.consts import CAN_BE_LONG
+from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
+from ru_transcript.enums import Position
+
 from .sounds import allophones, ts, zh_sh_ts
 
 nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
@@ -44,7 +48,7 @@ def get_allophone_info(allophone: str) -> dict[str, str | None]:
     return allophones[allophone]
 
 
-def shch(section: list[str]) -> list[str]:
+def process_shch(section: list[str]) -> list[str]:
     """
     Merge specific consonant combinations into the long postalveolo-palatal fricative [ɕː].
 
@@ -248,7 +252,7 @@ def long_consonants(section: list[str]) -> None:
         except IndexError:
             next_phon = ''
 
-        if (current_phon[0] in 'ʂbpfkstrlmngdz') and (current_phon == next_phon):
+        if (current_phon[0] in CAN_BE_LONG) and (current_phon == next_phon):
             del section[i + n]
             del section[i + n + add_symb]
             section.insert(i + n, current_phon + 'ː')
@@ -282,264 +286,323 @@ def stunning(segment: list[str]) -> None:
             segment[i] = pair
 
 
-def process_a(  # noqa: PLR0913
-    section: list[str],
-    next_phon: str,
-    i: int,
+def process_posttonic_vowels(
     previous_phon: str,
     previous_allophone: dict[str, str | None],
-    after_next_phon: str,
-) -> None:
+    posttonic_allophones: PosttonicAllophones,
+) -> str:
     """
     ...
 
-    param section:
-    param next_phon:
-    param i:
-    param previous_phon:
-    param previous_allophone:
-    param after_next_phon:
+    :param previous_phon:
+    :param previous_allophone:
+    :param posttonic_allophones: Allophones for phonemes in different positions.
+
+    :return:
     """
-    section_len = len(section)
+    if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
+        result_phon = posttonic_allophones.after_hissing
+    elif 'hard' in previous_allophone.get('palatalization', ''):
+        result_phon = posttonic_allophones.after_hard
+    else:
+        result_phon = posttonic_allophones.after_others
 
-    if (i != section_len - 1) and (next_phon != '_') and (i != 0) and (previous_phon != '_'):  # not last, not first
-        if next_phon == '+':  # ударный (not last, not first)
+    return result_phon
+
+
+def process_first_pretonic_vowels(
+    previous_phon: str,
+    previous_allophone: dict[str, str | None],
+    first_pretonic_allophones: FirstPretonicAllophones,
+) -> str:
+    """
+    ...
+
+    :param previous_phon:
+    :param previous_allophone:
+    :param first_pretonic_allophones: Allophones for phonemes in different positions.
+
+    :return:
+    """
+    if (first_pretonic_allophones.after_zh_sh_ts is not None) and (previous_phon in zh_sh_ts):
+        result_phon = first_pretonic_allophones.after_zh_sh_ts
+    elif (
+        (first_pretonic_allophones.after_hissing is not None) and (previous_allophone.get('hissing', '') == 'hissing')
+    ) or (previous_phon in ts):
+        result_phon = first_pretonic_allophones.after_hissing
+    elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
+        result_phon = first_pretonic_allophones.after_hard
+    else:
+        result_phon = first_pretonic_allophones.after_others
+
+    return result_phon
+
+
+def process_a(
+    next_phon: str,
+    previous_phon: str,
+    previous_allophone: dict[str, str | None],
+    after_next_phon: str,
+    position: Position,
+) -> str | None:
+    """
+    ...
+
+    :param next_phon:
+    :param previous_phon:
+    :param previous_allophone:
+    :param after_next_phon:
+    :param position:
+
+    :return:
+    """
+    result_phon = None
+
+    # not last, not first
+    if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
+        if next_phon == '+':  # ударный stressed (not last, not first)
             if previous_phon in zh_sh_ts:
-                section[i] = 'ɐ.'
+                result_phon = 'ɐ.'
             elif ('hard' in previous_allophone.get('palatalization', '')) and (after_next_phon == 'l'):
-                section[i] = 'ɑ'
+                result_phon = 'ɑ'
             elif 'hard' in previous_allophone.get('palatalization', ''):
-                section[i] = 'a'
+                result_phon = 'a'
             else:
-                section[i] = 'æ'
+                result_phon = 'æ'
 
-        elif next_phon == '-':  # первый предударный (not last, not first)
-            if previous_phon in zh_sh_ts:
-                section[i] = 'ᵻ'
-            elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
-                section[i] = 'ɐ'
-            else:
-                section[i] = 'ɪ'
+        elif next_phon == '-':  # первый предударный first pretonic(not last, not first)
+            result_phon = process_first_pretonic_vowels(
+                previous_phon,
+                previous_allophone,
+                FirstPretonicAllophones(after_zh_sh_ts='ᵻ', after_hard='ɐ', after_others='ɪ'),
+            )
 
         elif (
             (previous_allophone.get('hissing', '')) == 'hissing'
             or (previous_phon in ts)
             or ('hard' in previous_allophone.get('palatalization', ''))
         ) or (previous_allophone['phon'] == 'V'):
-            section[i] = 'ə'
+            result_phon = 'ə'
         else:
-            section[i] = 'ɪ.'
+            result_phon = 'ɪ.'
 
-    elif (i == section_len - 1) or (next_phon == '_'):  # заударные (last)
-        if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            section[i] = 'ə'
-        elif 'hard' in previous_allophone.get('palatalization', ''):
-            section[i] = 'ʌ'
-        else:
-            section[i] = 'æ.'
+    elif (position == Position.LAST) or (next_phon == '_'):  # заударные posttonic (last)
+        result_phon = process_posttonic_vowels(
+            previous_phon,
+            previous_allophone,
+            PosttonicAllophones(after_hissing='ə', after_hard='ʌ', after_others='æ.'),
+        )
 
-    elif next_phon == '-':
-        section[i] = 'ɐ'  # первый предударный (first)
-    elif next_phon != '+':
-        section[i] = 'ə'  # заударные / второй предударный (first)
+    elif next_phon == '-':  # первый предударный first pretonic(first)
+        result_phon = 'ɐ'
+    elif next_phon != '+':  # заударные posttonic / второй предударный second pretonic (first)
+        result_phon = 'ə'
+
+    return result_phon
 
 
 def process_o(
-    section: list[str],
     next_phon: str,
-    i: int,
     previous_phon: str,
     previous_allophone: dict[str, str | None],
-) -> None:
+    position: Position,
+) -> str | None:
     """
     ...
 
-    param section:
-    param next_phon:
-    param i:
-    param previous_phon:
-    param previous_allophone:
+    :param next_phon:
+    :param previous_phon:
+    :param previous_allophone:
+    :param position:
+
+    :return:
     """
-    section_len = len(section)
+    result_phon = None
 
-    if (i != section_len - 1) and (next_phon != '_') and (i != 0) and (previous_phon != '_'):  # not last, not first
-        if next_phon == '+':  # ударный (not last, not first)
+    # not last, not first
+    if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
+        if next_phon == '+':  # ударный stressed (not last, not first)
             if previous_phon in zh_sh_ts:
-                section[i] = 'ɐ.'
+                result_phon = 'ɐ.'
             elif ('soft' in previous_allophone.get('palatalization', '')) or (previous_allophone['phon'] == 'V'):
-                section[i] = 'ɵ'
+                result_phon = 'ɵ'
 
-        elif next_phon == '-':  # первый предударный (not last, not first)
-            if previous_phon in zh_sh_ts:
-                section[i] = 'ᵻ'
-            elif 'hard' in previous_allophone.get('palatalization', ''):
-                section[i] = 'ɐ'
-            else:
-                section[i] = 'ɪ'
+        elif next_phon == '-':  # первый предударный first pretonic (not last, not first)
+            result_phon = process_first_pretonic_vowels(
+                previous_phon,
+                previous_allophone,
+                FirstPretonicAllophones(after_zh_sh_ts='ᵻ', after_hard='ɐ', after_others='ɪ'),
+            )
 
         elif (
             (previous_allophone.get('hissing', '') == 'hissing')
             or (previous_phon in ts)
             or ('hard' in previous_allophone.get('palatalization', ''))
         ) or (previous_allophone['phon'] == 'V'):
-            section[i] = 'ə'
+            result_phon = 'ə'
         else:
-            section[i] = 'ɪ.'
+            result_phon = 'ɪ.'
 
-    elif (i == section_len - 1) or (next_phon == '_'):  # заударные (last)
-        if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            section[i] = 'ə'
-        elif 'hard' in previous_allophone.get('palatalization', ''):
-            section[i] = 'ʌ'
-        else:
-            section[i] = 'æ.'
+    elif (position == Position.LAST) or (next_phon == '_'):  # заударные posttonic (last)
+        result_phon = process_posttonic_vowels(
+            previous_phon,
+            previous_allophone,
+            PosttonicAllophones(after_hissing='ə', after_hard='ʌ', after_others='æ.'),
+        )
+    elif next_phon == '-':  # первый предударный first pretonic (first)
+        result_phon = 'ɐ'
+    elif next_phon != '+':  # заударные posttonic / второй предударный second pretonic (first)
+        result_phon = 'ə'
 
-    elif next_phon == '-':
-        section[i] = 'ɐ'  # первый предударный (first)
-    elif next_phon != '+':
-        section[i] = 'ə'  # заударные / второй предударный (first)
+    return result_phon
 
 
 def process_e(
-    section: list[str],
     next_phon: str,
-    i: int,
     previous_phon: str,
     previous_allophone: dict[str, str | None],
-) -> None:
+    position: Position,
+) -> str | None:
     """
     ...
 
-    param section:
-    param next_phon:
-    param i:
-    param previous_phon:
-    param previous_allophone:
+    :param next_phon:
+    :param previous_phon:
+    :param previous_allophone:
+    :param position:
+
+    :return:
     """
-    section_len = len(section)
+    result_phon = None
 
-    if (i != section_len - 1) and (next_phon != '_') and (i != 0) and (previous_phon != '_'):  # not last, not first
-        if next_phon == '+':  # ударный (not last, not first)
+    # not last, not first
+    if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
+        if next_phon == '+':  # ударный stressed (not last, not first)
             if previous_phon in zh_sh_ts:
-                section[i] = 'ᵻ'
+                result_phon = 'ᵻ'
             elif 'hard' in previous_allophone.get('palatalization', ''):
-                section[i] = 'ɛ'
+                result_phon = 'ɛ'
 
-        elif next_phon == '-':  # первый предударный (not last, not first)
-            if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-                section[i] = 'ə'
-            elif 'hard' in previous_allophone.get('palatalization', ''):
-                section[i] = 'ᵻ'
-            else:
-                section[i] = 'ɪ'
+        elif next_phon == '-':  # первый предударный first pretonic (not last, not first)
+            result_phon = process_first_pretonic_vowels(
+                previous_phon,
+                previous_allophone,
+                FirstPretonicAllophones(after_hissing='ə', after_hard='ᵻ', after_others='ɪ'),
+            )
 
         elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            section[i] = 'ə'
+            result_phon = 'ə'
         elif 'hard' in previous_allophone.get('palatalization', ''):
-            section[i] = 'ᵻ'
+            result_phon = 'ᵻ'
         else:
-            section[i] = 'ɪ.'
+            result_phon = 'ɪ.'
 
-    elif (i == section_len - 1) or (next_phon == '_'):  # заударные (last)
-        if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            section[i] = 'ə'
-        elif 'hard' in previous_allophone.get('palatalization', ''):
-            section[i] = 'ᵻ'
-        else:
-            section[i] = 'æ.'
+    elif (position == Position.LAST) or (next_phon == '_'):  # заударные posttonic (last)
+        result_phon = process_posttonic_vowels(
+            previous_phon,
+            previous_allophone,
+            PosttonicAllophones(after_hissing='ə', after_hard='ᵻ', after_others='æ.'),
+        )
+    elif next_phon == '+':  # ударный stressed (first)
+        result_phon = 'ɛ'
+    elif next_phon == '-':  # первый предударный first pretonic (first)
+        result_phon = 'ᵻ'
+    else:  # заударные posttonic / второй предударный second pretonic (first)
+        result_phon = 'ɪ.'
 
-    elif next_phon == '+':
-        section[i] = 'ɛ'  # ударный (first)
-    elif next_phon == '-':
-        section[i] = 'ᵻ'  # первый предударный (first)
-    else:
-        section[i] = 'ɪ.'  # заударные / второй предударный (first)
+    return result_phon
 
 
 def process_u(
-    section: list[str],
     next_phon: str,
-    i: int,
     previous_allophone: dict[str, str | None],
-) -> None:
+    position: Position,
+) -> str | None:
     """
     ...
 
-    param section:
-    param next_phon:
-    param i:
-    param previous_allophone:
-    """
-    section_len = len(section)
+    :param next_phon:
+    :param previous_allophone:
+    :param position:
 
-    if (i != section_len - 1) and (next_phon != '_'):  # not last
-        if next_phon == '+':  # ударный (not last)
+    :return:
+    """
+    result_phon = None
+
+    if (position != Position.LAST) and (next_phon != '_'):  # not last
+        if next_phon == '+':  # ударный stressed (not last)
             if 'soft' in previous_allophone.get('palatalization', ''):
-                section[i] = 'ʉ'
+                result_phon = 'ʉ'
 
         elif 'hard' in previous_allophone.get('palatalization', ''):
-            section[i] = 'ʊ'
+            result_phon = 'ʊ'
         else:
-            section[i] = 'ᵿ'
+            result_phon = 'ᵿ'
 
     elif 'hard' in previous_allophone.get('palatalization', ''):
-        section[i] = 'ʊ'
+        result_phon = 'ʊ'
     else:
-        section[i] = 'ᵿ'
+        result_phon = 'ᵿ'
+
+    return result_phon
 
 
 def process_i(
-    section: list[str],
     next_phon: str,
-    i: int,
     previous_phon: str,
     previous_allophone: dict[str, str | None],
-) -> None:
+) -> str | None:
     """
     ...
 
-    param section:
-    param next_phon:
-    param i:
-    param previous_phon:
-    param previous_allophone:
+    :param next_phon:
+    :param previous_phon:
+    :param previous_allophone:
+
+    :return:
     """
+    result_phon = None
+
     if previous_allophone['phon'] == 'C':
-        # после ж, ш, ц
-        if previous_phon in zh_sh_ts:
-            section[i] = 'ɨ'
-        elif next_phon != '+':  # безударный
-            section[i] = 'ɪ'
+        if previous_phon in zh_sh_ts:  # после ж, ш, ц
+            result_phon = 'ɨ'
+        elif next_phon != '+':  # безударный unstressed
+            result_phon = 'ɪ'
+
+    return result_phon
 
 
 def process_ii(  # noqa: PLR0913
     section: list[str],
-    next_phon: str,
     i: int,
+    next_phon: str,
     previous_phon: str,
     previous_allophone: dict[str, str | None],
-    after_previous_allophone: dict[str, str | None],
     after_next_allophone: dict[str, str | None],
-) -> None:
+) -> str | None:
     """
     ...
 
     param section:
-    param next_phon:
     param i:
+    param next_phon:
     param previous_phon:
     param previous_allophone:
+    param after_next_allophone:
     """
+    _, after_previous_allophone = get_allophone(section, i - 2)
     section_len = len(section)
 
+    result_phon = None
+
     if (i != section_len - 1) and (next_phon != '_'):  # not last
-        if next_phon == '+':  # ударный (not last)
+        if next_phon == '+':  # ударный stressed (not last)
             if (
                 (previous_phon == 'l')
                 and (section_len > 4)  # noqa: PLR2004
                 and ('lab' in after_previous_allophone.get('place', ''))
             ):
-                section[i] = 'ɯ̟ɨ̟'
+                result_phon = 'ɯ̟ɨ̟'
             elif (
                 previous_allophone.get('place', '') == 'lingual, dental'
                 and after_next_allophone.get('place', '') == 'lingual, velar'
@@ -547,18 +610,20 @@ def process_ii(  # noqa: PLR0913
                 previous_allophone.get('place', '') == 'lingual, palatinоdental'
                 and after_next_allophone.get('place', '') == 'lingual, velar'
             ):
-                section[i] = 'ɨ̟'
+                result_phon = 'ɨ̟'
 
-        # предударный / заунарный (not last)
+        # предударный pretonic / заударный posttonic (not last)
         elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            section[i] = 'ə'
+            result_phon = 'ə'
         else:
-            section[i] = 'ᵻ'
+            result_phon = 'ᵻ'
 
     elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):  # заударный (last)
-        section[i] = 'ə'
+        result_phon = 'ə'
     else:
-        section[i] = 'ᵻ'
+        result_phon = 'ᵻ'
+
+    return result_phon
 
 
 def vowels(section: list[str]) -> None:
@@ -567,27 +632,38 @@ def vowels(section: list[str]) -> None:
 
     param section: List of phonemes in the current word segment (with stress markers +, -).
     """
+    section_len = len(section)
+
     for i, current_phon in enumerate(section):
+        if i == section_len - 1:
+            position = Position.LAST
+        elif i == 0:
+            position = Position.FIRST
+        else:
+            position = Position.MIDDLE
+
         next_phon = get_phon(section, i + 1)
         after_next_phon, after_next_allophone = get_allophone(section, i + 2)
         previous_phon, previous_allophone = get_allophone(section, i - 1)
-        _, after_previous_allophone = get_allophone(section, i - 2)
 
         if current_phon == 'a':
-            process_a(section, next_phon, i, previous_phon, previous_allophone, after_next_phon)
+            result_phon = process_a(next_phon, previous_phon, previous_allophone, after_next_phon, position)
+            section[i] = result_phon if result_phon is not None else section[i]
         elif current_phon == 'o':
-            process_o(section, next_phon, i, previous_phon, previous_allophone)
+            result_phon = process_o(next_phon, previous_phon, previous_allophone, position)
+            section[i] = result_phon if result_phon is not None else section[i]
         elif current_phon == 'e':
-            process_e(section, next_phon, i, previous_phon, previous_allophone)
+            result_phon = process_e(next_phon, previous_phon, previous_allophone, position)
+            section[i] = result_phon if result_phon is not None else section[i]
         elif current_phon == 'u':
-            process_u(section, next_phon, i, previous_allophone)
+            result_phon = process_u(next_phon, previous_allophone, position)
+            section[i] = result_phon if result_phon is not None else section[i]
         elif current_phon == 'i':
-            process_i(section, next_phon, i, previous_phon, previous_allophone)
-
+            result_phon = process_i(next_phon, previous_phon, previous_allophone)
+            section[i] = result_phon if result_phon is not None else section[i]
         elif current_phon == 'ɨ':
-            process_ii(
-                section, next_phon, i, previous_phon, previous_allophone, after_previous_allophone, after_next_allophone
-            )
+            result_phon = process_ii(section, i, next_phon, previous_phon, previous_allophone, after_next_allophone)
+            section[i] = result_phon if result_phon is not None else section[i]
 
 
 def labia_velar(segment: list[str]) -> list[str]:
