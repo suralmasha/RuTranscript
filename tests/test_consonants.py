@@ -186,7 +186,47 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['vʲ', 'sʲ', 'ɪ', 'rʲ', 'jᶣ', 'ɵ', 's'], ru_transcript.get_allophones())
+        self.assertEqual(['fʲ', 'sʲ', 'ɪ', 'rʲ', 'jᶣ', 'ɵ', 's'], ru_transcript.get_allophones())
+
+    def test_voiced_v_before_vowels(self):
+        testing_text = 'в августе'
+        testing_a_text = 'в а+вгусте'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['v', 'a', 'v', 'ɡʷ', 'ʊ', 'sʲ', 'tʲ', 'æ.'], ru_transcript.get_allophones())
+
+    def test_voiced_v_before_voiced_consonants(self):
+        testing_text = 'в доме'
+        testing_a_text = 'в до+ме'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['v', 'dʷ', 'o', 'mʲ', 'æ.'], ru_transcript.get_allophones())
+
+    def test_voiced_v_before_sonorants(self):
+        testing_text = 'в мае'
+        testing_a_text = 'в ма+е'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['v', 'm', 'a', 'j', 'æ.'], ru_transcript.get_allophones())
+
+    def test_long_consonant(self):
+        testing_text = 'ванна'
+        testing_a_text = 'ва+нна'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['v', 'a', 'nː', 'ʌ'], ru_transcript.get_allophones())
+
+    def test_long_consonant_2(self):
+        testing_text = 'компании'
+        testing_a_text = 'компа+нии'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['k', 'ɐ', 'm', 'p', 'a', 'nʲ', 'ɪ', 'i'], ru_transcript.get_allophones())
 
 
 if __name__ == '__main__':

@@ -31,6 +31,7 @@ from .tools import (
     silent_r,
     stunning,
     text_norm_tok,
+    fix_consonant_in_strong_position,
     voiced_ts,
     vowels,
 )
@@ -361,10 +362,11 @@ class RuTranscript:
         self._phonemes_list[section_num] = fix_jotised(
             self._phonemes_list[section_num], self._letters_list[section_num]
         )
+        fix_consonant_in_strong_position(self._phonemes_list[section_num], self._letters_list[section_num])
         self._phonemes_list[section_num] = process_shch(self._phonemes_list[section_num])
         long_ge(self._phonemes_list[section_num])
         assimilative_palatalization(self._tokens[section_num], self._phonemes_list[section_num])
-        long_consonants(self._phonemes_list[section_num])
+        long_consonants(self._phonemes_list[section_num], self._letters_list[section_num])
         stunning(self._phonemes_list[section_num])
 
     def transcribe(self) -> None:

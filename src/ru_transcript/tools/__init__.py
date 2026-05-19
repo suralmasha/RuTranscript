@@ -8,6 +8,7 @@ from .allophones_tools import (
     process_shch,
     silent_r,
     stunning,
+    fix_consonant_in_strong_position,
     voiced_ts,
     vowels,
 )
@@ -47,5 +48,6 @@ __all__ = [
     'stunning',
     'text_norm_tok',
     'voiced_ts',
+    'fix_consonant_in_strong_position',
     'vowels',
 ]

@@ -1,10 +1,11 @@
 import spacy
 
-from ru_transcript.consts import CAN_BE_LONG
+from ru_transcript.consts import CAN_BE_LONG, VOICED_OBSTRUENT_LETTERS
 from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
 from ru_transcript.enums import Position
 
 from .sounds import allophones, ts, zh_sh_ts
+from .utils import is_strong_position, get_next_non_symbol, get_voiced_pair
 
 nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
 
@@ -120,6 +121,41 @@ def nasal_m_n(section: list[str]) -> None:
             elif current in {'mʲ', 'nʲ'}:
                 section[i] = 'ɱʲ'
 
+def fix_consonant_in_strong_position(section: list[str], letters: list[str]) -> None:
+    """
+    Fix automatic devoicing errors made by epitran.
+
+    If a grapheme is a voiced obstruent, but its allophone was automatically
+    transcribed as voiceless, restore the voiced pair in strong position:
+    before a vowel, a voiced consonant, or a sonorant.
+
+    param section: List of phonemes in the input segment.
+    param letters: Corresponding list of graphemes.
+    """
+    for i, current in enumerate(section):
+        current_info = allophones.get(current, {})
+
+        if current_info.get('phon') != 'C':
+            continue
+
+        if current_info.get('voice') != 'voiceless':
+            continue
+
+        current_letter = letters[i].lower() if i < len(letters) else ''
+        if current_letter not in VOICED_OBSTRUENT_LETTERS:
+            continue
+
+        next_phon = get_next_non_symbol(section, i)
+        if next_phon is None:
+            continue
+
+        if not is_strong_position(next_phon):
+            continue
+
+        voiced_pair = get_voiced_pair(current)
+        if voiced_pair is not None:
+            section[i] = voiced_pair
+
 
 def silent_r(section: list[str]) -> None:
     """
@@ -233,30 +269,62 @@ def assimilative_palatalization(tokens_section: list[str], section: list[str]) -
             section[i] = current_phon + 'ʲ'
 
 
-def long_consonants(section: list[str]) -> None:
+def long_consonants(section: list[str], letters: list[str]) -> None:
     """
     Merge identical consecutive consonants into long (geminate) consonants.
 
-    param section: List of phonemes for the current segment.
+    param section: List of phonemes in the input segment.
+    param letters: Corresponding list of graphemes.
     """
-    n = 0
-    section_iter = section[:]
-    for i, current_phon in enumerate(section_iter):
-        add_symb = False
-        try:
-            if allophones[section_iter[i + 1]]['phon'] != 'symb':
-                next_phon = section_iter[i + 1]
-            else:
-                next_phon = section_iter[i + 2]
-                add_symb = True
-        except IndexError:
-            next_phon = ''
+    i = 0
 
-        if (current_phon[0] in CAN_BE_LONG) and (current_phon == next_phon):
-            del section[i + n]
-            del section[i + n + add_symb]
-            section.insert(i + n, current_phon + 'ː')
-            n -= 1
+    while i < len(section) - 1:
+        current = section[i]
+
+        if current not in allophones:
+            i += 1
+            continue
+
+        if allophones[current].get('phon') != 'C':
+            i += 1
+            continue
+
+        if current[0] not in CAN_BE_LONG:
+            i += 1
+            continue
+
+        if current.endswith('ː'):
+            i += 1
+            continue
+
+        # 1. Старый случай: две одинаковые фонемы подряд
+        next_idx = i + 1
+        symb_idx = None
+
+        if next_idx < len(section) and allophones.get(section[next_idx], {}).get('phon') == 'symb':
+            symb_idx = next_idx
+            next_idx += 1
+
+        if next_idx < len(section) and section[next_idx] == current:
+            section[i] = current + 'ː'
+
+            if symb_idx is not None:
+                del section[next_idx]
+                del section[symb_idx]
+            else:
+                del section[next_idx]
+
+            i += 1
+            continue
+
+        # 2. Новый случай: epitran уже схлопнул двойную согласную
+        current_letter = letters[i].lower() if i < len(letters) else ''
+        next_letter = letters[i + 1].lower() if i + 1 < len(letters) else ''
+
+        if current_letter and current_letter == next_letter:
+            section[i] = current + 'ː'
+
+        i += 1
 
 
 def stunning(segment: list[str]) -> None:
@@ -594,6 +662,9 @@ def process_ii(  # noqa: PLR0913
     section_len = len(section)
 
     result_phon = None
+
+    if (previous_allophone['phon'] == 'C') and (previous_phon in zh_sh_ts):  # после ж, ш, ц - epitran корректно обрабатывает
+        return None
 
     if (i != section_len - 1) and (next_phon != '_'):  # not last
         if next_phon == '+':  # ударный stressed (not last)
