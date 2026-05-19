@@ -1,13 +1,13 @@
+import importlib
 import warnings
 from pathlib import Path
 
 import epitran
+import nltk
 import spacy
 from nltk.stem.snowball import SnowballStemmer
 from openpyxl import load_workbook
 from openpyxl.workbook.workbook import Workbook
-from tps import download, find
-from tps import modules as md
 
 from ._panphon_encoding import patch_panphon_resource_encoding
 from .consts import (
@@ -51,6 +51,24 @@ from .tools import (
 )
 
 patch_panphon_resource_encoding()
+
+_nltk_download = nltk.download
+
+
+def _skip_punkt_download(package: str, *args: object, **kwargs: object) -> bool:
+    if package == 'punkt':
+        return False
+    return _nltk_download(package, *args, **kwargs)
+
+
+try:
+    nltk.download = _skip_punkt_download
+    _tps = importlib.import_module('tps')
+    md = importlib.import_module('tps.modules')
+    download = _tps.download
+    find = _tps.find
+finally:
+    nltk.download = _nltk_download
 
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
 nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
