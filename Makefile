@@ -3,6 +3,10 @@ package:
 	poetry build
 
 ruff:
+	poetry run ruff format
+	poetry run ruff check --fix
+
+ruff-check:
 	poetry run ruff check
 ruff-fix:
 	poetry run ruff check --fix
