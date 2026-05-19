@@ -53,6 +53,10 @@ class TestModules(unittest.TestCase):
         print(testing_text, res)
         self.assertEqual([['синтез', 'речи', '-', 'это', 'увлекательно']], res)
 
+    def test_join_phonemes_rejects_unknown_symbol(self):
+        with self.assertRaisesRegex(ValueError, "Unknown symbol found in transcription: 'w'"):
+            RuTranscript._join_phonemes(['unknown'])
+
     def test_error_stress(self):
         testing_text = 'литературнохудожественный'
         ru_transcript = RuTranscript(testing_text)
