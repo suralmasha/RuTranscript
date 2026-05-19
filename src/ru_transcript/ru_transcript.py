@@ -9,6 +9,7 @@ from openpyxl.workbook.workbook import Workbook
 from tps import download, find
 from tps import modules as md
 
+from ._panphon_encoding import patch_panphon_resource_encoding
 from .consts import (
     EPITRAN_RUSSIAN_CYRILLIC,
     FIRST_SILENT,
@@ -48,6 +49,8 @@ from .tools import (
     voiced_ts,
     vowels,
 )
+
+patch_panphon_resource_encoding()
 
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
 nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
