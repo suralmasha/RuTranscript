@@ -213,7 +213,7 @@ def merge_phrasal_words(phonemes: list[str], indexes: set[tuple[int, int]]) -> l
                 phrasal_words.insert(enclitic_index + n + enclitic_cache.count(main_word_index), enclitic + main_word)
                 n -= 1
 
-        except Exception:  # noqa: PERF203, S112
+        except Exception:  # noqa: S112
             continue
 
     phrasal_words_result = []

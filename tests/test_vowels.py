@@ -347,7 +347,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['t', 'a', 'n', 't͡s', 'ə'], ru_transcript.get_allophones())
+        self.assertEqual(['t', 'a', 'n', 't͡sˠ', 'ɨ'], ru_transcript.get_allophones())
 
     def test_jotised_1(self):
         testing_text = 'бульон'

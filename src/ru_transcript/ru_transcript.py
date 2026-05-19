@@ -9,6 +9,19 @@ from openpyxl.workbook.workbook import Workbook
 from tps import download, find
 from tps import modules as md
 
+from .consts import (
+    EPITRAN_RUSSIAN_CYRILLIC,
+    FIRST_SILENT,
+    HISSING_IOTATED_IE,
+    HISSING_REGRESSIVE_DEVOICING,
+    NON_IPA_SYMBOLS,
+    RUSSIAN_LANGUAGE,
+    SECOND_SILENT,
+    SPACY_DISABLED_PIPELINES,
+    SPACY_RUSSIAN_MODEL,
+    TPS_PLANE_MODE,
+)
+from .exceptions import UnknownTranscriptionSymbolError
 from .tools import (
     SyntaxTree,
     allophones,
@@ -17,6 +30,7 @@ from .tools import (
     epi_symbols,
     find_clitics,
     first_jot,
+    fix_consonant_in_strong_position,
     fix_jotised,
     get_punctuation_dict,
     labia_velar,
@@ -35,8 +49,8 @@ from .tools import (
     vowels,
 )
 
-snowball = SnowballStemmer('russian')
-nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
+snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
+nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
 
 ROOT_DIR: Path = Path(__file__).resolve().parent
 wb: Workbook = load_workbook(ROOT_DIR / 'data' / 'irregular_exceptions.xlsx')
@@ -45,11 +59,7 @@ sheet = wb.active
 irregular_exceptions = {sheet[f'A{i}'].value: sheet[f'B{i}'].value for i in range(2, sheet.max_row + 1)}
 irregular_exceptions_stems = {snowball.stem(ex): pron for ex, pron in irregular_exceptions.items()}
 
-epi = epitran.Epitran('rus-Cyrl')
-second_silent = ['стн', 'стл', 'здн', 'рдн', 'нтск', 'ндск', 'лвств']
-first_silent = ['лнц', 'дц', 'вств']
-hissing_rd = {'сш': 'шш', 'зш': 'шш', 'сж': 'жж', 'сч': 'щ'}
-non_ipa_symbols = {'t͡ɕʲ': 't͡ɕ', 'ʂʲː': 'ʂ', 'ɕːʲ': 'ɕː', 'ʒ': 'ʐ', 'd͡ʐ': 'd͡ʒ'}
+epi = epitran.Epitran(EPITRAN_RUSSIAN_CYRILLIC)
 
 try:
     yo_dict = find('yo.dict', raise_exception=True)
@@ -61,8 +71,8 @@ try:
 except FileNotFoundError:
     e_dict = download('e.dict')
 
-e_replacer = md.Replacer([e_dict, 'plane'])
-yo_replacer = md.Replacer([yo_dict, 'plane'])
+e_replacer = md.Replacer([e_dict, TPS_PLANE_MODE])
+yo_replacer = md.Replacer([yo_dict, TPS_PLANE_MODE])
 syntax_tree = SyntaxTree()
 
 
@@ -170,32 +180,27 @@ class RuTranscript:
             ]
 
     @staticmethod
-    def _join_phonemes(transliterated_tokens: list[str], limit: int = 10000) -> list[str]:
+    def _join_phonemes(transliterated_tokens: list[str]) -> list[str]:
         """
         Join transliterated tokens into a list of phonemes.
 
         param transliterated_tokens: List of tokens to convert into phonemes.
-        param limit: Maximum allowed iterations to prevent endless loops.
         return: List of phonemes.
         """
         section_phonemes_list = []
         joined_tokens = '_'.join(transliterated_tokens)
         joined_tokens = joined_tokens.replace('‑', '-')
+        known_phonemes = {*epi_symbols, '_', '|', '||', 'γ', 'ʐ'}
         i = 0
-        counter = 0
         default_len = len(joined_tokens)
         while i < default_len:
             if joined_tokens[i] not in ['+', '-']:
-                n = 4
-                if i != default_len - 1:
-                    while (joined_tokens[i : i + n] not in [*epi_symbols, '_', '|', '||', 'γ', 'ʐ']) and (n > 0):
-                        counter += 1
-                        if counter > limit:
-                            raise IndexError('Endless loop')  # noqa: TRY003
-                        n -= 1
-                    section_phonemes_list.append(joined_tokens[i : i + n])
-                elif joined_tokens[i] in [*epi_symbols, '||', 'γ']:
-                    section_phonemes_list.append(joined_tokens[i])
+                n = min(4, default_len - i)
+                while n > 0 and joined_tokens[i : i + n] not in known_phonemes:
+                    n -= 1
+                if n == 0:
+                    raise UnknownTranscriptionSymbolError(joined_tokens[i])
+                section_phonemes_list.append(joined_tokens[i : i + n])
                 i += n
             else:
                 section_phonemes_list.append(joined_tokens[i])
@@ -295,7 +300,7 @@ class RuTranscript:
                     self._stressed_tokens[section_num][i] = token[:-2] + 'й' + token[-1]
 
             # unpronounceable consonants
-            for sub in first_silent + second_silent:
+            for sub in FIRST_SILENT + SECOND_SILENT:
                 if sub in token:
                     new_sub = sub.translate(str.maketrans('', '', 'ьъ'))
                     self._stressed_tokens[section_num][i] = token.translate(str.maketrans(sub, new_sub))
@@ -304,7 +309,7 @@ class RuTranscript:
             stem = snowball.stem(token)
             if ('зч' in token or 'тч' in token or 'дч' in token) and (stem[-3:] == 'чик' or stem[-3:] == 'чиц'):
                 self._stressed_tokens[section_num][i] = token.replace('зч', 'щ').replace('тч', 'ч').replace('дч', 'ч')
-            for key, value in hissing_rd.items():
+            for key, value in HISSING_REGRESSIVE_DEVOICING.items():
                 if key in token:
                     self._stressed_tokens[section_num][i] = token.replace(key, value)
 
@@ -319,9 +324,13 @@ class RuTranscript:
             epi.transliterate(token).replace('6', '').replace('4', '') for token in self._stressed_tokens[section_num]
         ]
         for i, token in enumerate(self._transliterated_tokens[section_num]):
-            for key, value in non_ipa_symbols.items():
+            for key, value in NON_IPA_SYMBOLS.items():
                 if key in token:
                     token = token.replace(key, value)  # noqa: PLW2901
+                    self._transliterated_tokens[section_num][i] = token
+            for key, value in HISSING_IOTATED_IE.items():
+                if token.endswith(key):
+                    token = token[: -len(key)] + value  # noqa: PLW2901
                     self._transliterated_tokens[section_num][i] = token
 
     def _lpt_4(self, section_num: int) -> None:
@@ -350,7 +359,7 @@ class RuTranscript:
                     self._transliterated_tokens[section_num][i] = token.replace('x', 'γ', 1)
 
         # ---- Join phonemes ----
-        joined_phonemes = self._join_phonemes(self._transliterated_tokens[section_num], limit=10000)
+        joined_phonemes = self._join_phonemes(self._transliterated_tokens[section_num])
         self._phonemes_list.append(joined_phonemes)
 
         # ---- Join letters ----
@@ -361,10 +370,11 @@ class RuTranscript:
         self._phonemes_list[section_num] = fix_jotised(
             self._phonemes_list[section_num], self._letters_list[section_num]
         )
+        fix_consonant_in_strong_position(self._phonemes_list[section_num], self._letters_list[section_num])
         self._phonemes_list[section_num] = process_shch(self._phonemes_list[section_num])
         long_ge(self._phonemes_list[section_num])
         assimilative_palatalization(self._tokens[section_num], self._phonemes_list[section_num])
-        long_consonants(self._phonemes_list[section_num])
+        long_consonants(self._phonemes_list[section_num], self._letters_list[section_num])
         stunning(self._phonemes_list[section_num])
 
     def transcribe(self) -> None:

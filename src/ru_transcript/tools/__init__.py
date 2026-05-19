@@ -1,6 +1,7 @@
 from .allophones_tools import (
     assimilative_palatalization,
     first_jot,
+    fix_consonant_in_strong_position,
     labia_velar,
     long_consonants,
     long_ge,
@@ -31,6 +32,7 @@ __all__ = [
     'epi_symbols',
     'find_clitics',
     'first_jot',
+    'fix_consonant_in_strong_position',
     'fix_jotised',
     'get_punctuation_dict',
     'labia_velar',

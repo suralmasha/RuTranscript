@@ -1,15 +1,6 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.6
-    hooks:
-      - id: ruff
-      - id: ruff-format
-
-  - repo: local
-    hooks:
-      - id: unit-tests
-        name: Run unit tests
-        entry: bash -c "PYTHONPATH=src python -m unittest discover -s tests"
-        language: system
-        pass_filenames: false
-        always_run: true
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.0
+  hooks:
+    - id: ruff
+    - id: ruff-format

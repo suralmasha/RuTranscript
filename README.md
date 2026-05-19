@@ -12,29 +12,48 @@ the syllable coincides with the beginning of the word or the end of the syllable
 
 For a more detailed description of how the framework works, see the article: https://www.dialog-21.ru/media/5722/badasyana137.pdf
 
-# Package Building
-## Manual Build
-1. Ensure that all package sources are located under `src/` and correctly declared in the `packages` section of `pyproject.toml`.
-2. Build the package:
-```shell
-  pip install poetry==2.2.0 build==1.3.0  # optional
-  poetry build
-```
-3. The generated artifacts (`.whl` and `.tar.gz`) will appear in the `dist/` directory.
+# Requirements
 
-## Manual Installation
-To install the built package into another project:
-```shell
-  pip install --force-reinstall */dist/*.whl
-```
-(If multiple versions exist, specify the exact file.)
+- Python 3.12
+- Poetry, if you want to build the package or install development dependencies
+
+The package is not published to a package registry at the moment. Install it from Git or build it locally from a cloned repository.
 
 # Installation from Git
 
-```
+```shell
 pip install git+https://github.com/suralmasha/RuTranscript
 ```
-(Or `poetry add` for Poetry-based projects.)
+
+For Poetry-based projects:
+
+```shell
+poetry add git+https://github.com/suralmasha/RuTranscript
+```
+
+# Package Building
+
+## Manual Build
+
+1. Ensure that all package sources are located under `src/` and correctly declared in the `packages` section of `pyproject.toml`.
+2. Build the package:
+
+```shell
+pip install poetry==2.2.0 build==1.3.0  # optional
+make package
+```
+
+3. The generated artifacts (`.whl` and `.tar.gz`) will appear in the `dist/` directory.
+
+## Manual Installation
+
+To install the built package into another project:
+
+```shell
+pip install --force-reinstall */dist/*.whl
+```
+
+If multiple versions exist, specify the exact wheel file.
 
 # Usage
 
@@ -108,3 +127,30 @@ Output:
 ```
 
 You can also find an example of using the framework in `example.py`.
+
+# Development
+
+Install dependencies:
+
+```shell
+poetry install --with dev,test
+```
+
+Run tests:
+
+```shell
+make test
+```
+
+Run linting and formatting checks:
+
+```shell
+make ruff-check
+make ruff-format-check
+```
+
+# Version 2.0.0 Note
+
+Version 2.0.0 updates the project to Python 3.12 and refreshes dependencies. The newer `epitran` version changes parts of the generated Russian transcription output, so the transcription and allophone processing logic was updated for compatibility.
+
+If you use exact transcription output in tests or downstream processing, review the output after upgrading.
