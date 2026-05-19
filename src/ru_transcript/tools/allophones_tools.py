@@ -1,11 +1,11 @@
 import spacy
 
-from ru_transcript.consts import CAN_BE_LONG, VOICED_OBSTRUENT_LETTERS
+from ru_transcript.consts import CAN_BE_LONG, CONSONANT_LETTERS, VOICED_OBSTRUENT_LETTERS
 from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
 from ru_transcript.enums import Position
 
 from .sounds import allophones, ts, zh_sh_ts
-from .utils import is_strong_position, get_next_non_symbol, get_voiced_pair
+from .utils import get_next_non_symbol, get_voiced_pair, is_strong_position
 
 nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
 
@@ -120,6 +120,7 @@ def nasal_m_n(section: list[str]) -> None:
                 section[i] = 'ɱ'
             elif current in {'mʲ', 'nʲ'}:
                 section[i] = 'ɱʲ'
+
 
 def fix_consonant_in_strong_position(section: list[str], letters: list[str]) -> None:
     """
@@ -276,55 +277,52 @@ def long_consonants(section: list[str], letters: list[str]) -> None:
     param section: List of phonemes in the input segment.
     param letters: Corresponding list of graphemes.
     """
-    i = 0
+    result = []
+    consumed_indexes = set()
 
-    while i < len(section) - 1:
-        current = section[i]
-
-        if current not in allophones:
-            i += 1
+    for i, current in enumerate(section):
+        if i in consumed_indexes:
             continue
 
-        if allophones[current].get('phon') != 'C':
-            i += 1
+        current_result_idx = len(result)
+
+        if (
+            current not in allophones
+            or allophones[current].get('phon') != 'C'
+            or current[0] not in CAN_BE_LONG
+            or current.endswith('ː')
+        ):
+            result.append(current)
             continue
 
-        if current[0] not in CAN_BE_LONG:
-            i += 1
-            continue
+        replacement = current
 
-        if current.endswith('ː'):
-            i += 1
-            continue
+        # 1. Старый случай: две одинаковые фонемы подряд, возможно через границу слова
+        symb_idx = i + 1 if allophones.get(get_phon(section, i + 1), {}).get('phon') == 'symb' else None
+        next_idx = symb_idx + 1 if symb_idx is not None else i + 1
 
-        # 1. Старый случай: две одинаковые фонемы подряд
-        next_idx = i + 1
-        symb_idx = None
-
-        if next_idx < len(section) and allophones.get(section[next_idx], {}).get('phon') == 'symb':
-            symb_idx = next_idx
-            next_idx += 1
-
-        if next_idx < len(section) and section[next_idx] == current:
-            section[i] = current + 'ː'
+        if get_phon(section, next_idx) == current:
+            replacement = current + 'ː'
+            consumed_indexes.add(next_idx)
 
             if symb_idx is not None:
-                del section[next_idx]
-                del section[symb_idx]
-            else:
-                del section[next_idx]
+                consumed_indexes.add(symb_idx)
 
-            i += 1
+            result.append(replacement)
             continue
 
         # 2. Новый случай: epitran уже схлопнул двойную согласную
-        current_letter = letters[i].lower() if i < len(letters) else ''
-        next_letter = letters[i + 1].lower() if i + 1 < len(letters) else ''
+        current_letter = letters[current_result_idx].lower() if current_result_idx < len(letters) else ''
+        next_letter = letters[current_result_idx + 1].lower() if current_result_idx + 1 < len(letters) else ''
 
-        if current_letter and current_letter == next_letter:
-            section[i] = current + 'ː'
+        next_allophone = allophones.get(get_phon(section, next_idx), {})
 
-        i += 1
+        if current_letter in CONSONANT_LETTERS and current_letter == next_letter and next_allophone.get('phon') != 'C':
+            replacement = current + 'ː'
+
+        result.append(replacement)
+
+    section[:] = result
 
 
 def stunning(segment: list[str]) -> None:
@@ -663,7 +661,9 @@ def process_ii(  # noqa: PLR0913
 
     result_phon = None
 
-    if (previous_allophone['phon'] == 'C') and (previous_phon in zh_sh_ts):  # после ж, ш, ц - epitran корректно обрабатывает
+    if (previous_allophone['phon'] == 'C') and (
+        previous_phon in zh_sh_ts
+    ):  # после ж, ш, ц - epitran корректно обрабатывает
         return None
 
     if (i != section_len - 1) and (next_phon != '_'):  # not last
@@ -684,8 +684,9 @@ def process_ii(  # noqa: PLR0913
                 result_phon = 'ɨ̟'
 
         # предударный pretonic / заударный posttonic (not last)
-        elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
-            result_phon = 'ə'
+        elif (previous_allophone.get('hissing') == 'hissing') or (previous_phon in ts):
+            # безударный /ɨ/ не редуцируется до [ə] после шипящих и ц
+            result_phon = 'ɨ'
         else:
             result_phon = 'ᵻ'
 

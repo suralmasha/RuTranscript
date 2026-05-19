@@ -141,7 +141,7 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['ə', 'bʲ', 'j', 'ɪ', 'v', 'lʲ', 'e', 'nʲ', 'j', 'æ.'], ru_transcript.get_allophones())
 
-    def test_j_3(self):  # йотированный гласный между двумя гласными
+    def test_j_3(self):  # йот между двумя гласными
         testing_text = 'заяц'
         testing_a_text = 'за+яц'
         ru_transcript = RuTranscript(testing_text, testing_a_text)
@@ -149,7 +149,7 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['z', 'a', 'j', 'ɪ.', 't͡s'], ru_transcript.get_allophones())
 
-    def test_j_4(self):  # йотированный гласный перед ударным гласным
+    def test_j_4(self):  # йот перед ударным гласным
         testing_text = 'заезжий'
         testing_a_text = 'зае+зжий'
         ru_transcript = RuTranscript(testing_text, testing_a_text)
