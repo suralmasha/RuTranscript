@@ -53,13 +53,21 @@ class TestConsonants(unittest.TestCase):
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['t͡s', 'ɐ.', 'p', 'lʲ', 'æ.'], ru_transcript.get_allophones())
 
+    def test_velarized_lateral(self):  # твёрдое 'л'
+        testing_text = 'лук лес пол'
+        testing_a_text = 'лу+к ле+с по+л'
+        ru_transcript = RuTranscript(testing_text, testing_a_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['ɫʷ', 'u', 'k', 'lʲ', 'e', 's', 'pʷ', 'o', 'ɫ'], ru_transcript.get_allophones())
+
     def test_voiced_ts(self):  # 'ц' перед звонкой согласной
         testing_text = 'плацдарм'
         testing_a_text = 'плацда+рм'
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['p', 'l', 'ɐ', 'd̻͡z̪', 'd', 'a', 'r', 'm'], ru_transcript.get_allophones())
+        self.assertEqual(['p', 'ɫ', 'ɐ', 'd̻͡z̪', 'd', 'a', 'r', 'm'], ru_transcript.get_allophones())
 
     def test_dj(self):  # сочетание 'дж'
         testing_text = 'джунгли'
@@ -75,7 +83,7 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['ɕː', 'ə', 'ɡʷ', 'o', 'l'], ru_transcript.get_allophones())
+        self.assertEqual(['ɕː', 'ə', 'ɡʷ', 'o', 'ɫ'], ru_transcript.get_allophones())
 
     def test_shch_2(self):  # 'ж' перед глух.согл.
         testing_text = 'мужчина'

@@ -72,7 +72,10 @@ You may define stresses both for one word and for all words in the text.
 To do this, put a stress symbol (preferably '+') before or after the stressed vowel 
 and put the stressed text in an additional variable (in the example - `stressed_text_if_have`). 
 To define where you've putted the stress mark use the parameter `stress_place` (possible values: `'after'` or `'before'`).  
-**Important!** The number of words in these two texts must match.
+Automatic stress placement may be unreliable in ambiguous or context-dependent cases, so mark the stress manually when
+the intended pronunciation is important.
+
+**Important!** The number of words in these two texts must match, except for the clitic case described below.
 
 ```
 text = 'Как получить транскрипцию?'
@@ -100,7 +103,7 @@ print(ru_transcript.get_allophones())
 
 Output:
 ```
-['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
+['k', 'a', 'k', 'p', 'ə', 'ɫʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
 
 You can get a list of **phonemes (main allophones)** by using method `get_phonemes()` - 
@@ -126,7 +129,44 @@ Output:
 'ка+к получи+ть транскри+пцию'
 ```
 
-You can also find an example of using the framework in `example.py`.
+You can also find an example of using the framework in `scripts/example.py`.
+
+To manually check stress placement for a word or phrase, use `scripts/check_stress.py`.  
+To manually check allophone information, use `scripts/get_info.py`.
+
+## Clitic stress
+
+If you need to explicitly stress a clitic inside a phrasal word, write the clitic and its host word together in
+`stressed_text_if_have` and put the stress only on the clitic:
+
+```
+text = 'Муха по полю пошла'
+stressed_text_if_have = 'Муха по+полю пошла'
+ru_transcript = RuTranscript(text, stressed_text_if_have)
+ru_transcript.transcribe()
+
+print(ru_transcript.get_allophones())
+```
+
+Output:
+```
+['mʷ', 'u', 'x', 'ʌ', 'pʷ', 'o', 'p', 'ə', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a']
+```
+
+Without logical stress on the clitic, place stress on the host word instead:
+
+```
+stressed_text_if_have = 'Муха по по+лю пошла'
+ru_transcript = RuTranscript(text, stressed_text_if_have)
+ru_transcript.transcribe()
+
+print(ru_transcript.get_allophones())
+```
+
+Output:
+```
+['mʷ', 'u', 'x', 'ʌ', 'p', 'ɐ', 'pʷ', 'o', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a']
+```
 
 # Development
 

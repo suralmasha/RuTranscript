@@ -20,11 +20,13 @@ from .consts import (
     SECOND_SILENT,
     SPACY_DISABLED_PIPELINES,
     SPACY_RUSSIAN_MODEL,
+    STRESS_ACCURACY_THRESHOLD,
     TPS_PLANE_MODE,
 )
 from .exceptions import UnknownTranscriptionSymbolError
 from .tools import (
     SyntaxTree,
+    align_stressed_tokens_with_text,
     allophones,
     apply_differences,
     assimilative_palatalization,
@@ -46,6 +48,7 @@ from .tools import (
     silent_r,
     stunning,
     text_norm_tok,
+    velarized_lateral,
     voiced_ts,
     vowels,
 )
@@ -110,7 +113,7 @@ class RuTranscript:
         stressed_text: str | None = None,
         stress_place: str = 'after',
         replacement_dict: dict | None = None,
-        stress_accuracy_threshold: float = 0.86,
+        stress_accuracy_threshold: float = STRESS_ACCURACY_THRESHOLD,
     ) -> None:
         """
         Make a phonetic transcription in russian using IPA.
@@ -140,6 +143,7 @@ class RuTranscript:
         self._transliterated_tokens = [[]] * self._sections_len
         self._phrasal_words = [[]] * self._sections_len
         self._stressed_text = [[]] * self._sections_len
+        self._stressed_clitic_indexes = [set() for _ in range(self._sections_len)]
 
     @staticmethod
     def _get_text_and_stressed_text(
@@ -241,14 +245,13 @@ class RuTranscript:
         return section_phonemes_list
 
     @staticmethod
-    def add_prestressed_syllable_sign(section: list[str]) -> list[str]:
+    def add_prestressed_syllable_sign(section: list[str]) -> None:
         """
         Insert a prestressed syllable mark ('-') before a stressed vowel.
 
         param section: List of phonemes with stress markers ('+').
-        return: List of phonemes with prestressed syllable marks added.
         """
-        section_result = section[:]
+        result = section[:]
         n = 0
         for symb_i, symb in enumerate(section):
             if symb == '+':
@@ -258,10 +261,10 @@ class RuTranscript:
                     if allophones[phon]['phon'] == 'V' and '_' not in section[phon_i + n : symb_i]
                 ]
                 if preavi:
-                    section_result.insert(preavi[-1] + n + 1, '-')
+                    result.insert(preavi[-1] + n + 1, '-')
                     n += 1
 
-        return section_result
+        section[:] = result
 
     def _lpt_1(self, section_num: int) -> None:
         """
@@ -412,12 +415,18 @@ class RuTranscript:
                 stress_place=self._stress_place,
                 stress_accuracy_threshold=self._stress_accuracy_threshold,
             )
-            self._stressed_text[section_num] = self._stressed_tokens[section_num]
             # ---- Removing dashes ----
             self._remove_dashes(section_num)
             # ---- Phrasal words extraction ----
             dep = syntax_tree.make_dependency_tree(' '.join(self._tokens[section_num]))
             self._phrasal_words_indexes.append(find_clitics(dep, self._tokens[section_num]))
+            clitic_indexes = {clitic_index for _, clitic_index in self._phrasal_words_indexes[section_num]}
+            self._stressed_tokens[section_num], self._stressed_clitic_indexes[section_num] = (
+                align_stressed_tokens_with_text(
+                    self._tokens[section_num], self._stressed_tokens[section_num], clitic_indexes
+                )
+            )
+            self._stressed_text[section_num] = self._stressed_tokens[section_num]
             # ---- Letter-phoneme transformation ----
             self._lpt_1(section_num)
             self._lpt_2(section_num)
@@ -431,13 +440,16 @@ class RuTranscript:
             voiced_ts(self._allophones_list[section_num])
             # ---- Extract phrasal words ----
             self._phrasal_words[section_num] = merge_phrasal_words(
-                self._allophones_list[section_num], self._phrasal_words_indexes[section_num]
+                self._allophones_list[section_num],
+                self._phrasal_words_indexes[section_num],
+                self._stressed_clitic_indexes[section_num],
             )
             #  ---- Allophones - vowels ----
-            self._phrasal_words[section_num] = self.add_prestressed_syllable_sign(self._phrasal_words[section_num])
+            self.add_prestressed_syllable_sign(self._phrasal_words[section_num])
             vowels(self._phrasal_words[section_num])
             self._allophones_list[section_num] = self._phrasal_words[section_num]
             self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
+            velarized_lateral(self._allophones_list[section_num])
 
     def _insert_pauses(self, sounds_list: list) -> None:
         """

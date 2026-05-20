@@ -1,6 +1,7 @@
 import unittest
 
 from ru_transcript import RuTranscript, text_norm_tok
+from ru_transcript.tools.stress_tools import place_stress
 
 
 class TestModules(unittest.TestCase):
@@ -25,6 +26,10 @@ class TestModules(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_stressed_text())
         self.assertEqual('ка+к получи+ть транскри+пцию', ru_transcript.get_stressed_text())
+
+    def test_place_stress_warns_when_stress_is_ambiguous(self):
+        with self.assertWarnsRegex(UserWarning, 'Please specify the stress manually'):
+            self.assertEqual('полю', place_stress('полю'))
 
     def test_replace_e(self):
         testing_text = 'синтез речи в библиотеке'

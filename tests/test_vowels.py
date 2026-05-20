@@ -19,7 +19,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['p', 'ɑ', 'l', 'k', 'ʌ'], ru_transcript.get_allophones())
+        self.assertEqual(['p', 'ɑ', 'ɫ', 'k', 'ʌ'], ru_transcript.get_allophones())
 
     def test_vowel_a_3(self):  # Ударный не после твёрдого согласного
         testing_text = 'пять'
@@ -51,7 +51,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['tʲ', 'ɪ', 'ʐ', 'ɐ.', 'lˠ', 'ᵻ', 'j'], ru_transcript.get_allophones())
+        self.assertEqual(['tʲ', 'ɪ', 'ʐ', 'ɐ.', 'ɫ', 'ᵻ', 'j'], ru_transcript.get_allophones())
 
     def test_vowel_a_7(self):  # Предударный после шипящих и 'ц'
         testing_text = 'жалеть'
@@ -107,7 +107,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['o', 'b', 'l', 'ə', 'k', 'ʌ'], ru_transcript.get_allophones())
+        self.assertEqual(['o', 'b', 'ɫ', 'ə', 'k', 'ʌ'], ru_transcript.get_allophones())
 
     def test_vowel_o_2(self):  # Ударный не после твёрдого согласного
         testing_text = 'тётя'
@@ -155,7 +155,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['m', 'ə', 'l', 'ɐ', 'kʷ', 'o'], ru_transcript.get_allophones())
+        self.assertEqual(['m', 'ə', 'ɫ', 'ɐ', 'kʷ', 'o'], ru_transcript.get_allophones())
 
     def test_vowel_o_8(self):  # II предударный или заударный после твёрдого согласного в финальном слоге
         testing_text = 'озеро'
@@ -179,7 +179,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['ʂ', 'ə', 'k', 'ɐ', 'l', 'a', 't'], ru_transcript.get_allophones())
+        self.assertEqual(['ʂ', 'ə', 'k', 'ɐ', 'ɫ', 'a', 't'], ru_transcript.get_allophones())
 
     def test_vowel_e_1(self):  # Ударный после твёрдого согласного или в начале слова
         testing_text = 'это'
@@ -227,7 +227,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['pʲ', 'e', 'pʲ', 'ɪ.', 'l'], ru_transcript.get_allophones())
+        self.assertEqual(['pʲ', 'e', 'pʲ', 'ɪ.', 'ɫ'], ru_transcript.get_allophones())
 
     def test_vowel_e_7(self):  # Предударный, II предударный или заударный после шипящих и 'ц'
         testing_text = 'шелестеть'
@@ -331,7 +331,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['p', 'lˠ', 'ɯ̟ɨ̟', 'tʲ'], ru_transcript.get_allophones())
+        self.assertEqual(['p', 'ɫ', 'ɯ̟ɨ̟', 'tʲ'], ru_transcript.get_allophones())
 
     def test_vowel_ii_4(self):  # Предударный, II предударный или заударный не после 'ц'
         testing_text = 'чтобы'

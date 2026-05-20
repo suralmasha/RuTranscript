@@ -9,11 +9,13 @@ from .allophones_tools import (
     process_shch,
     silent_r,
     stunning,
+    velarized_lateral,
     voiced_ts,
     vowels,
 )
 from .fix_jotised import fix_jotised
 from .main_tools import (
+    align_stressed_tokens_with_text,
     apply_differences,
     find_clitics,
     get_punctuation_dict,
@@ -26,6 +28,7 @@ from .syntax_tree import SyntaxTree
 
 __all__ = [
     'SyntaxTree',
+    'align_stressed_tokens_with_text',
     'allophones',
     'apply_differences',
     'assimilative_palatalization',
@@ -48,6 +51,7 @@ __all__ = [
     'silent_r',
     'stunning',
     'text_norm_tok',
+    'velarized_lateral',
     'voiced_ts',
     'vowels',
 ]

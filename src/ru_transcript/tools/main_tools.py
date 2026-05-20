@@ -150,14 +150,100 @@ def find_clitics(
     return indexes
 
 
-def merge_phrasal_words(phonemes: list[str], indexes: set[tuple[int, int]]) -> list[str]:
+def split_token_by_words(token: str, words: list[str]) -> list[str]:
+    """
+    Split a stressed token by word lengths while preserving stress marks.
+
+    param token: Stressed token that may contain '+' marks.
+    param words: Text words matching the token without stress marks.
+    return: Stressed token parts aligned to the given words.
+    """
+    result = []
+    token_index = 0
+
+    for word in words:
+        part = []
+        letters_seen = 0
+        while token_index < len(token) and (letters_seen < len(word) or token[token_index] == '+'):
+            char = token[token_index]
+            part.append(char)
+            token_index += 1
+            if char != '+':
+                letters_seen += 1
+        result.append(''.join(part))
+
+    return result
+
+
+def align_stressed_tokens_with_text(
+    tokens: list[str], stressed_tokens: list[str], clitic_indexes: set[int]
+) -> tuple[list[str], set[int]]:
+    """
+    Expand stressed tokens that join a clitic and its host into separate text tokens.
+
+    param tokens: Normalized text tokens.
+    param stressed_tokens: Normalized stressed text tokens.
+    param clitic_indexes: Token indexes detected as clitics.
+    return: Aligned stressed tokens and indexes of clitics explicitly stressed in fused spelling.
+    """
+    aligned = []
+    fused_stressed_clitic_indexes = set()
+    token_index = 0
+    stressed_index = 0
+
+    while token_index < len(tokens) and stressed_index < len(stressed_tokens):
+        stressed_token = stressed_tokens[stressed_index]
+        clean_stressed_token = stressed_token.replace('+', '')
+
+        if clean_stressed_token == tokens[token_index]:
+            aligned.append(stressed_token)
+            token_index += 1
+            stressed_index += 1
+            continue
+
+        words = []
+        clean_words = ''
+        split_end = token_index
+        while split_end < len(tokens) and len(clean_words) < len(clean_stressed_token):
+            words.append(tokens[split_end])
+            clean_words += tokens[split_end]
+            split_end += 1
+            if clean_words == clean_stressed_token:
+                parts = split_token_by_words(stressed_token, words)
+                aligned.extend(parts)
+                has_non_clitic_stress = any(
+                    '+' in part and part_index not in clitic_indexes
+                    for part_index, part in enumerate(parts, start=token_index)
+                )
+                for part_index, part in enumerate(parts, start=token_index):
+                    if part_index in clitic_indexes and '+' in part and not has_non_clitic_stress:
+                        fused_stressed_clitic_indexes.add(part_index)
+                token_index = split_end
+                stressed_index += 1
+                break
+        else:
+            aligned.append(stressed_token)
+            token_index += 1
+            stressed_index += 1
+
+    aligned.extend(stressed_tokens[stressed_index:])
+    return aligned, fused_stressed_clitic_indexes
+
+
+def merge_phrasal_words(
+    phonemes: list[str], indexes: set[tuple[int, int]], stressed_clitic_indexes: set[int] | None = None
+) -> list[str]:
     """
     Merge clitics with their main words in a phoneme list.
 
     param phonemes: List of phonemes with '_' representing spaces.
     param indexes: Set of tuples (main_word_index, clitic_index) indicating clitic relationships.
+    param stressed_clitic_indexes: Token indexes of clitics whose stress should be preserved.
     return: A new phoneme list where clitics are joined with their main words.
     """
+    if stressed_clitic_indexes is None:
+        stressed_clitic_indexes = set()
+
     tokens_list = []
     start_token_index = 0
 
@@ -186,7 +272,9 @@ def merge_phrasal_words(phonemes: list[str], indexes: set[tuple[int, int]]) -> l
                 main_word_cache.append(main_word_index)
                 proclitic_index = tuple_indexes[1]
 
-                proclitic = [x for x in tokens_list[proclitic_index] if x != '+']
+                proclitic = tokens_list[proclitic_index]
+                if proclitic_index not in stressed_clitic_indexes:
+                    proclitic = [x for x in proclitic if x != '+']
                 phrasal_words.remove(tokens_list[proclitic_index])
                 phrasal_words.remove(main_word)
                 if proclitic_index == 1:
@@ -207,7 +295,9 @@ def merge_phrasal_words(phonemes: list[str], indexes: set[tuple[int, int]]) -> l
                 enclitic_index = tuple_indexes[1]
                 enclitic_cache.append(enclitic_index)
 
-                enclitic = [x for x in tokens_list[enclitic_index] if x != '+']
+                enclitic = tokens_list[enclitic_index]
+                if enclitic_index not in stressed_clitic_indexes:
+                    enclitic = [x for x in enclitic if x != '+']
                 phrasal_words.remove(tokens_list[enclitic_index])
                 phrasal_words.remove(main_word)
                 phrasal_words.insert(enclitic_index + n + enclitic_cache.count(main_word_index), enclitic + main_word)

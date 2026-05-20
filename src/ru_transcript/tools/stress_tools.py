@@ -1,7 +1,9 @@
+import warnings
 from pathlib import Path
 
 from stressrnn import StressRNN
 
+from ..consts import STRESS_ACCURACY_THRESHOLD
 from .sounds import ru_vowel_symbols
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -17,7 +19,7 @@ for word in error_words_stresses:
 stress_rnn = StressRNN()
 
 
-def place_stress(token: str, stress_accuracy_threshold: float) -> str:
+def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_THRESHOLD) -> str:
     """
     Place an accent (stress) in a Russian word.
 
@@ -30,8 +32,7 @@ def place_stress(token: str, stress_accuracy_threshold: float) -> str:
 
     token_list = list(token)
 
-    if 'ё' in token:
-        # ё всегда ударная
+    if 'ё' in token:  # always stressed
         token_list.insert(token.index('ё') + 1, '+')
         return ''.join(token_list)
 
@@ -50,9 +51,14 @@ def place_stress(token: str, stress_accuracy_threshold: float) -> str:
         # no vowels, return as is
         return ''.join(token_list)
 
-    # raise ValueError("Unfortunately, the automatic stress placement function is not yet available. "
-    # f"Add stresses yourselves.\nThere is no stress for the word {token}")
-    return stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+    stressed_token = stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+    if '+' not in stressed_token:
+        warnings.warn(
+            f'Stress was not added to the word "{token}" because it cannot be placed unambiguously. '
+            'Please specify the stress manually.',
+            stacklevel=2,
+        )
+    return stressed_token
 
 
 def replace_stress(token: str) -> str:
@@ -100,7 +106,7 @@ def replace_stress_before(text: str | list[str]) -> list[str]:
 
 
 def put_stresses(
-    tokens_list: list[str], stress_place: str = 'after', stress_accuracy_threshold: float = 0.86
+    tokens_list: list[str], stress_place: str = 'after', stress_accuracy_threshold: float = STRESS_ACCURACY_THRESHOLD
 ) -> list[str]:
     """
     Put or replaces stresses in tokens.
