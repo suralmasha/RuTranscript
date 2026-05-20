@@ -59,7 +59,7 @@ class TestConsonants(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['ɫ', 'u', 'k', 'lʲ', 'e', 's', 'pʷ', 'o', 'ɫ'], ru_transcript.get_allophones())
+        self.assertEqual(['ɫʷ', 'u', 'k', 'lʲ', 'e', 's', 'pʷ', 'o', 'ɫ'], ru_transcript.get_allophones())
 
     def test_voiced_ts(self):  # 'ц' перед звонкой согласной
         testing_text = 'плацдарм'

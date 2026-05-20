@@ -11,7 +11,7 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'ɫ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
+        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'ɫʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
                           'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ'], ru_transcript.get_allophones())
 
     def test_readme_comma(self):

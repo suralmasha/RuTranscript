@@ -51,7 +51,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['tʲ', 'ɪ', 'ʐ', 'ɐ.', 'ɫ', 'ᵻ', 'j'], ru_transcript.get_allophones())
+        self.assertEqual(['tʲ', 'ɪ', 'ʐ', 'ɐ.', 'ɫˠ', 'ᵻ', 'j'], ru_transcript.get_allophones())
 
     def test_vowel_a_7(self):  # Предударный после шипящих и 'ц'
         testing_text = 'жалеть'
@@ -331,7 +331,7 @@ class TestVowels(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['p', 'ɫ', 'ɯ̟ɨ̟', 'tʲ'], ru_transcript.get_allophones())
+        self.assertEqual(['p', 'ɫˠ', 'ɯ̟ɨ̟', 'tʲ'], ru_transcript.get_allophones())
 
     def test_vowel_ii_4(self):  # Предударный, II предударный или заударный не после 'ц'
         testing_text = 'чтобы'
