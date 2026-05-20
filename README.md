@@ -100,7 +100,7 @@ print(ru_transcript.get_allophones())
 
 Output:
 ```
-['k', 'a', 'k', 'p', 'ə', 'ɫ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
+['k', 'a', 'k', 'p', 'ə', 'ɫʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
 
 You can get a list of **phonemes (main allophones)** by using method `get_phonemes()` - 

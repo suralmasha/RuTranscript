@@ -1,8 +1,9 @@
 from ru_transcript import RuTranscript
 
 if __name__ == '__main__':
-    text = 'Муха по полю пошла'
-    stressed_text_if_have = 'М+уха п+о полю пошл+а?'
+    text = 'Как получить транскрипцию?'
+    stressed_text_if_have = 'Как получ+ить транскрипцию?'
+
     ru_transcript = RuTranscript(text, stressed_text_if_have)
     ru_transcript.transcribe()
 
