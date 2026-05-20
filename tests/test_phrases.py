@@ -158,13 +158,40 @@ class TestPhrases(unittest.TestCase):
         self.assertEqual(['d', 'ɐ', 'e', 't', 'ə', 'ʐ', 'ə', 'pʲ', 'ɪ', 's', 'a', 'tʲ', 'ɪ.', 'lʲ'],
                          ru_transcript.get_allophones())
 
-    def test_clitic(self):
+    def test_clitic_with_host_word_stress(self):
         testing_text = 'Муха по полю пошла'
         stressed_text = 'Муха по по+лю пошла'
         ru_transcript = RuTranscript(testing_text, stressed_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['mʷ', 'u', 'x', 'ʌ', 'p', 'ɐ', 'pʷ', 'o', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a'],
+                         ru_transcript.get_allophones())
+
+    def test_clitic_with_fused_clitic_stress(self):
+        testing_text = 'Муха по полю пошла'
+        stressed_text = 'Муха по+полю пошла'
+        ru_transcript = RuTranscript(testing_text, stressed_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['mʷ', 'u', 'x', 'ʌ', 'pʷ', 'o', 'p', 'ə', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a'],
+                         ru_transcript.get_allophones())
+
+    def test_split_clitic_stress_removed(self):
+        testing_text = 'Муха по лесу пошла'
+        stressed_text = 'Муха по ле+су пошла'
+        ru_transcript = RuTranscript(testing_text, stressed_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['mʷ', 'u', 'x', 'ʌ', 'p', 'ɐ', 'lʲ', 'e', 'sʷ', 'ʊ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a'],
+                         ru_transcript.get_allophones())
+
+    def test_fused_clitic_stress_preserved(self):
+        testing_text = 'Муха по лесу пошла'
+        stressed_text = 'Муха по+лесу пошла'
+        ru_transcript = RuTranscript(testing_text, stressed_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['mʷ', 'u', 'x', 'ʌ', 'pʷ', 'o', 'lʲ', 'ɪ.', 'sʷ', 'ʊ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a'],
                          ru_transcript.get_allophones())
 
 

@@ -26,6 +26,7 @@ from .consts import (
 from .exceptions import UnknownTranscriptionSymbolError
 from .tools import (
     SyntaxTree,
+    align_stressed_tokens_with_text,
     allophones,
     apply_differences,
     assimilative_palatalization,
@@ -142,6 +143,7 @@ class RuTranscript:
         self._transliterated_tokens = [[]] * self._sections_len
         self._phrasal_words = [[]] * self._sections_len
         self._stressed_text = [[]] * self._sections_len
+        self._stressed_clitic_indexes = [set() for _ in range(self._sections_len)]
 
     @staticmethod
     def _get_text_and_stressed_text(
@@ -413,12 +415,18 @@ class RuTranscript:
                 stress_place=self._stress_place,
                 stress_accuracy_threshold=self._stress_accuracy_threshold,
             )
-            self._stressed_text[section_num] = self._stressed_tokens[section_num]
             # ---- Removing dashes ----
             self._remove_dashes(section_num)
             # ---- Phrasal words extraction ----
             dep = syntax_tree.make_dependency_tree(' '.join(self._tokens[section_num]))
             self._phrasal_words_indexes.append(find_clitics(dep, self._tokens[section_num]))
+            clitic_indexes = {clitic_index for _, clitic_index in self._phrasal_words_indexes[section_num]}
+            self._stressed_tokens[section_num], self._stressed_clitic_indexes[section_num] = (
+                align_stressed_tokens_with_text(
+                    self._tokens[section_num], self._stressed_tokens[section_num], clitic_indexes
+                )
+            )
+            self._stressed_text[section_num] = self._stressed_tokens[section_num]
             # ---- Letter-phoneme transformation ----
             self._lpt_1(section_num)
             self._lpt_2(section_num)
@@ -432,7 +440,9 @@ class RuTranscript:
             voiced_ts(self._allophones_list[section_num])
             # ---- Extract phrasal words ----
             self._phrasal_words[section_num] = merge_phrasal_words(
-                self._allophones_list[section_num], self._phrasal_words_indexes[section_num]
+                self._allophones_list[section_num],
+                self._phrasal_words_indexes[section_num],
+                self._stressed_clitic_indexes[section_num],
             )
             #  ---- Allophones - vowels ----
             self.add_prestressed_syllable_sign(self._phrasal_words[section_num])
