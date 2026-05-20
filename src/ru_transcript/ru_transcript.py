@@ -47,6 +47,7 @@ from .tools import (
     silent_r,
     stunning,
     text_norm_tok,
+    velarized_lateral,
     voiced_ts,
     vowels,
 )
@@ -438,6 +439,7 @@ class RuTranscript:
             vowels(self._phrasal_words[section_num])
             self._allophones_list[section_num] = self._phrasal_words[section_num]
             self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
+            velarized_lateral(self._allophones_list[section_num])
 
     def _insert_pauses(self, sounds_list: list) -> None:
         """

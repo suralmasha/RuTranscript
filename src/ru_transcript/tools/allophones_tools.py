@@ -756,6 +756,7 @@ def labia_velar(segment: list[str]) -> list[str]:
             and (current_allophone.get('round', '') == 'round')
             and (previous_phon != '_')
             and (previous_allophone['phon'] == 'C')
+            # and ('labial' not in previous_allophone.get('place', ''))
             and ('ʷ' not in previous_phon)
             and ('ᶣ' not in previous_phon)
         ):
@@ -797,3 +798,21 @@ def labia_velar(segment: list[str]) -> list[str]:
             result_segment.append(current_phon)
 
     return result_segment
+
+
+def velarized_lateral(segment: list[str]) -> None:
+    """
+    Represent hard Russian /l/ as the velarized lateral sonorant [ɫ].
+
+    The replacement is applied after labialization and velarization rules, so
+    vowel-processing contexts can still use the existing hard /l/ variants.
+    """
+    hard_lateral_map = {
+        'l': 'ɫ',
+        'lʷ': 'ɫ',
+        'lˠ': 'ɫ',
+        'lː': 'ɫː',
+        'lːʷ': 'ɫː',
+    }
+    for i, current_phon in enumerate(segment):
+        segment[i] = hard_lateral_map.get(current_phon, current_phon)

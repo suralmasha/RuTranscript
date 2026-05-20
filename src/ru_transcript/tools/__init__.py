@@ -9,6 +9,7 @@ from .allophones_tools import (
     process_shch,
     silent_r,
     stunning,
+    velarized_lateral,
     voiced_ts,
     vowels,
 )
@@ -48,6 +49,7 @@ __all__ = [
     'silent_r',
     'stunning',
     'text_norm_tok',
+    'velarized_lateral',
     'voiced_ts',
     'vowels',
 ]

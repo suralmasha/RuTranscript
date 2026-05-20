@@ -11,7 +11,7 @@ class TestPhrases(unittest.TestCase):
         ru_transcript = RuTranscript(testing_text, testing_a_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'lʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
+        self.assertEqual(['k', 'a', 'k', 'p', 'ə', 'ɫ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ',
                           'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ'], ru_transcript.get_allophones())
 
     def test_readme_comma(self):
@@ -45,7 +45,7 @@ class TestPhrases(unittest.TestCase):
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['n', 'ɐ', 'p', 'rʷ', 'o', 'tʲ', 'ɪ', 'v', 'a', 'ɡ', 'nʲ', 'ɪ', 'i', 'f', 'r', 'a', 'n',
-                          't͡s', 'ə', 'v', 'nˠ', 'ᵻ', 'ᵿ', 'mʲ', 'ɪ', 'nʲ', 'æ', 'bˠ', 'ɨ', 'l', 'ʌ', 'sʲ', 'i', 'lʲ',
+                          't͡s', 'ə', 'v', 'nˠ', 'ᵻ', 'ᵿ', 'mʲ', 'ɪ', 'nʲ', 'æ', 'bˠ', 'ɨ', 'ɫ', 'ʌ', 'sʲ', 'i', 'lʲ',
                           'n', 'ə', 'j', 'æ.', 'ɐ', 'rʷ', 'u', 'ʐ', 'j', 'æ.', 'vʲ', 'e', 'ʐ', 'lʲ', 'ɪ', 'v', 'ə',
                           'sʲ', 'tʲ'], ru_transcript.get_allophones())
 
@@ -106,18 +106,18 @@ class TestPhrases(unittest.TestCase):
         print(testing_text, ru_transcript.get_allophones())
         self.assertEqual(['x', 'ɐ', 'tʲ', 'æ', 'n', 'ə', 'i', 'bʷ', 'o', 'lʲ', 'ɪ.', 'j', 'æ.', 't͡ɕᶣ', 'ᵿ', 'dʷ', 'o',
                           'vʲ', 'ɪ', 'ɕː', 'nˠ', 'ᵻ', 'j', 'æ.', 'ɪ.', 'p', 'ɐ', 'tʲ', 'i', 'rʷ', 'ʊ', 'jᶣ', 'ᵿ', 'ɕː',
-                          'ɪ', 'j', 'æ.', 'p', 'ɐ', 'd', 'rʷ', 'o', 'b', 'n', 'ə', 'sʲ', 'tʲ', 'ɪ', 'l', 'a', 'ɡʲ',
+                          'ɪ', 'j', 'æ.', 'p', 'ɐ', 'd', 'rʷ', 'o', 'b', 'n', 'ə', 'sʲ', 'tʲ', 'ɪ', 'ɫ', 'a', 'ɡʲ',
                           'ɪ.', 'r', 'n', 'ɐ', 'j', 'ʐˠ', 'ɨ', 'zʲ', 'nʲ', 'ɪ', 'ʝ', 'æ', 'k', 'a', 'k', 'ɡ', 'ə', 'v',
                           'ɐ', 'rʲ', 'i', 't͡s', 'ə', 'ə', 'pʷ', 'ʊ',
-                          'sʲ', 'tʲ', 'i', 'l'], ru_transcript.get_allophones())
+                          'sʲ', 'tʲ', 'i', 'ɫ'], ru_transcript.get_allophones())
 
     def test_yo(self):
         testing_text = 'елка для ее ежика перышка подвел конек мед.'
         ru_transcript = RuTranscript(testing_text)
         ru_transcript.transcribe()
         print(testing_text, ru_transcript.get_allophones())
-        self.assertEqual(['ʝᶣ', 'ɵ', 'l', 'k', 'ʌ', 'd', 'lʲ', 'æ', 'j', 'ɪ', 'jᶣ', 'ɵ', 'jᶣ', 'ɵ', 'ʐˠ', 'ɨ', 'k', 'ʌ',
-                          'pᶣ', 'ɵ', 'rˠ', 'ᵻ', 'ʂ', 'k', 'ʌ', 'p', 'ɐ', 'd', 'vᶣ', 'ɵ', 'l', 'k', 'ɐ', 'nᶣ', 'ɵ', 'kʲ',
+        self.assertEqual(['ʝᶣ', 'ɵ', 'ɫ', 'k', 'ʌ', 'd', 'lʲ', 'æ', 'j', 'ɪ', 'jᶣ', 'ɵ', 'jᶣ', 'ɵ', 'ʐˠ', 'ɨ', 'k', 'ʌ',
+                          'pᶣ', 'ɵ', 'rˠ', 'ᵻ', 'ʂ', 'k', 'ʌ', 'p', 'ɐ', 'd', 'vᶣ', 'ɵ', 'ɫ', 'k', 'ɐ', 'nᶣ', 'ɵ', 'kʲ',
                           'mᶣ', 'ɵ', 't'], ru_transcript.get_allophones())
 
     def test_dashes(self):
