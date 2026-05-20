@@ -158,6 +158,15 @@ class TestPhrases(unittest.TestCase):
         self.assertEqual(['d', 'ɐ', 'e', 't', 'ə', 'ʐ', 'ə', 'pʲ', 'ɪ', 's', 'a', 'tʲ', 'ɪ.', 'lʲ'],
                          ru_transcript.get_allophones())
 
+    def test_clitic(self):
+        testing_text = 'Муха по полю пошла'
+        stressed_text = 'Муха по по+лю пошла'
+        ru_transcript = RuTranscript(testing_text, stressed_text)
+        ru_transcript.transcribe()
+        print(testing_text, ru_transcript.get_allophones())
+        self.assertEqual(['mʷ', 'u', 'x', 'ʌ', 'p', 'ɐ', 'pʷ', 'o', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a'],
+                         ru_transcript.get_allophones())
+
 
 if __name__ == '__main__':
     unittest.main()
