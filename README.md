@@ -128,7 +128,7 @@ Output:
 
 You can also find an example of using the framework in `scripts/example.py`.
 
-To manually check stress placement for a word or phrase, use `scripts/check_stress.py`.
+To manually check stress placement for a word or phrase, use `scripts/check_stress.py`.  
 To manually check allophone information, use `scripts/get_info.py`.
 
 # Development
