@@ -807,6 +807,6 @@ def velarized_lateral(segment: list[str]) -> None:
     The replacement is applied after labialization and velarization rules, so
     vowel-processing contexts can still use the existing hard /l/ variants.
     """
-    hard_lateral_map = {'l': 'ɫ', 'lʷ': 'ɫʷ', 'lˠ': 'ɫˠ', 'lː': 'ɫː', 'lːʷ': 'ɫːʷ'}
+    hard_lateral_map = {'l': 'ɫ', 'lʷ': 'ɫʷ', 'lˠ': 'ɫ', 'lː': 'ɫː', 'lːʷ': 'ɫːʷ'}
     for i, current_phon in enumerate(segment):
         segment[i] = hard_lateral_map.get(current_phon, current_phon)
