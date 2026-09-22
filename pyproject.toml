@@ -8,27 +8,41 @@ packages = [{ include = 'ru_transcript', from = 'src' }]
 
 [project]
 name = 'RuTranscript'
-version = '2.0.1'
+version = '2.1.0'
 description = 'A tool for phonetic transcription in russian'
 authors = [
     { name = 'Alexandra Badasyan', email = 'sashabadasyan@icloud.com' },
 ]
 readme = 'README.md'
-requires-python = '==3.12.*'
+license = 'MIT'
+license-files = ['LICENSE']
+requires-python = '>=3.11,<3.13'
+keywords = ['russian', 'phonetics', 'transcription', 'ipa', 'nlp']
+classifiers = [
+    'Natural Language :: Russian',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Text Processing :: Linguistic',
+]
 dynamic = ['dependencies']
+
+[project.urls]
+Repository = 'https://github.com/suralmasha/RuTranscript'
+Issues = 'https://github.com/suralmasha/RuTranscript/issues'
 
 [tool.poetry.dependencies]
 spacy = '3.8.14'
 numpy = '1.26.4'
 nltk = '3.9.4'
 epitran = '1.35.1'
-openpyxl = '3.1.5'
 onnxruntime = '1.25.1'
 setuptools = '80.9.0'
 ru-core-news-sm = { url = 'https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.8.0/ru_core_news_sm-3.8.0-py3-none-any.whl' }
 tps = { git = 'https://github.com/sovaai/sova-tts-tps.git', tag = 'v1.2.0' }
-stressrnn = { git = 'https://github.com/Desklop/StressRNN.git' }
-num2t4ru = { git = 'https://github.com/seriyps/ru_number_to_text.git' }
+stressrnn = { git = 'https://github.com/Desklop/StressRNN.git', rev = '0afefac146033b41ef558ac356989c87ef764c79' }
+num2t4ru = { git = 'https://github.com/seriyps/ru_number_to_text.git', rev = '3b9ccdb36bb744341ee7bec9c50b51198259c648' }
 
 [dependency-groups]
 test = ['tqdm==4.67.3']
@@ -36,7 +50,7 @@ dev = ['ruff==0.15.12', 'pre-commit==4.6.0']
 
 [tool.ruff]
 line-length = 120
-exclude = ['**/tests/**']
+exclude = ['**/tests/**', 'src/ru_transcript/data_constants.py']
 
 [tool.ruff.format]
 quote-style = 'single'

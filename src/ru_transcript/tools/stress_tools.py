@@ -3,8 +3,8 @@ from pathlib import Path
 
 from stressrnn import StressRNN
 
-from ..consts import STRESS_ACCURACY_THRESHOLD
-from .sounds import ru_vowel_symbols
+from ru_transcript.consts import STRESS_ACCURACY_THRESHOLD
+from ru_transcript.data_constants import RU_VOWEL_SYMBOLS
 
 ROOT_DIR = Path(__file__).resolve().parent
 
@@ -37,12 +37,12 @@ def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_
         return ''.join(token_list)
 
     # count vowels
-    vowels_count = sum(1 for let in token if let in ru_vowel_symbols)
+    vowels_count = sum(1 for let in token if let in RU_VOWEL_SYMBOLS)
 
     if vowels_count == 1:
         # only one vowel, stress on it
         for i, let in enumerate(token):
-            if let in ru_vowel_symbols:
+            if let in RU_VOWEL_SYMBOLS:
                 token_list.insert(i + 1, '+')
                 break
         return ''.join(token_list)

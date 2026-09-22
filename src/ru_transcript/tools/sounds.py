@@ -1,34 +1,16 @@
+import json
 from collections import defaultdict
 from pathlib import Path
+
+from ru_transcript.data_constants import ALPHABET, EPI_SYMBOLS
+
+epi_symbols = EPI_SYMBOLS
 
 root_dor = Path(__file__).resolve().parent.parent
 encoding = 'utf-8'
 
-with root_dor.joinpath('data', 'epi_symbols.txt').open(encoding=encoding) as f:
-    epi_symbols = tuple(f.read().split(', '))
-with root_dor.joinpath('data', 'ru_symbols.txt').open(encoding=encoding) as f:
-    ru_symbols = tuple(f.read().split(', '))
-with root_dor.joinpath('data', 'ru_vowel_symbols.txt').open(encoding=encoding) as f:
-    ru_vowel_symbols = tuple(f.read().split(', '))
-with root_dor.joinpath('data', 'alphabet.txt').open(encoding=encoding) as f:
-    alphabet = tuple(f.read().split(', '))
-
-# Special consonant sets
-with root_dor.joinpath('data', 'zh_sh_ts.txt').open(encoding=encoding) as f:
-    zh_sh_ts = tuple(f.read().split(', '))
-with root_dor.joinpath('data', 'ts.txt').open(encoding=encoding) as f:
-    ts = tuple(f.read().split(', '))
-
-# Special vowels sets
-with root_dor.joinpath('data', 'jotised.txt').open(encoding=encoding) as f:
-    jotised = tuple(f.read().split(', '))
-
-with root_dor.joinpath('data', 'sorted_allophones.txt').open(encoding=encoding) as f:
-    sorted_phonemes_txt = (line.replace('\n', '') for line in f)
-    sorted_phonemes_1 = {}
-    for group in sorted_phonemes_txt:
-        group_name, phonemes = group.split(' = ')
-        sorted_phonemes_1[group_name] = phonemes.split(', ')
+with root_dor.joinpath('data', 'sorted_allophones.json').open(encoding=encoding) as f:
+    sorted_phonemes_1 = json.load(f)
 
 sorted_phonemes = defaultdict(list)
 for key, value in sorted_phonemes_1.items():
@@ -56,7 +38,7 @@ allophones = {
         'hissing': None,
         'class': None,
     }
-    for key in alphabet
+    for key in ALPHABET
 }
 # vowels
 # row
@@ -117,7 +99,7 @@ class_map = {
 # allophones = {key: {'phon': 'V', 'row': None, 'rise': None, 'round': None, 'class': 'vowel', 'experiment': None} if
 # 'total_v' in sorted_phonemes[key] else {'phon': 'C', 'place': None, 'manner': None,
 # 'palatalization': None, 'voice': None, 'pair': None, 'hissing': None, 'class': None,
-# 'experiment': None} for key in alphabet}
+# 'experiment': None} for key in ALPHABET}
 # experiment_map = {'complex_experiment': 'complex', 'rare_experiment': 'rare',
 # 'random_vowels_experiment': 'random_vowel', 'long_consonants_experiment': 'long_consonant'}
 

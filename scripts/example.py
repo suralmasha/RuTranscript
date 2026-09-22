@@ -1,3 +1,4 @@
+# ruff: noqa: INP001, T201
 from ru_transcript import RuTranscript
 
 if __name__ == '__main__':

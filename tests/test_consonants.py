@@ -4,7 +4,6 @@ from ru_transcript import RuTranscript
 
 
 class TestConsonants(unittest.TestCase):
-
     def test_fricative_g_1(self):
         testing_text = 'господи'
         testing_a_text = 'го+споди'

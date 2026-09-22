@@ -1,12 +1,21 @@
 import re
+from functools import lru_cache
 
 import nltk
 from num2t4ru import num2text
 
-from ru_transcript.consts import JOTISED_LETTERS
+from ru_transcript.data_constants import JOTISED_LETTERS
 
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger_ru')
+
+PUNCTUATION = frozenset('.,:;()—|?!…')
+LONG_PAUSE_PUNCTUATION = frozenset('.?!…')
+SECTION_SPLIT_RE = re.compile(r'[.?!,:;()—…]')
+SPACE_RE = re.compile(r'\s+')
+TOKEN_CLEANUP_TABLE = str.maketrans('', '', r'.,\|/;:()*&^%$#@?![]{}"—…«»')
+ADVERB_ADP = frozenset({'после', 'кругом', 'мимо', 'около', 'вокруг', 'напротив', 'поперёк'})
+FUNCTORS_POS = frozenset({'CCONJ', 'PART', 'ADP'})
 
 
 def apply_differences(words: list[str]) -> str:
@@ -45,17 +54,15 @@ def get_punctuation_dict(text: str) -> dict[int, str]:
     return: Dictionary where keys are 1-based indices of punctuation marks,
             and values are '||' for sentence-ending punctuation or '|' for minor pauses.
     """
-    punctuation = r'.,:;()\—\|\?\!…'
-    pause_dict = {}
+    return {
+        punctuation_index: '||' if char in LONG_PAUSE_PUNCTUATION else '|'
+        for punctuation_index, char in enumerate((char for char in text if char in PUNCTUATION), start=1)
+    }
 
-    i = 1
-    for char in text:
-        if char in punctuation:
-            pause_type = '||' if char in '.?!…' else '|'
-            pause_dict[i] = pause_type
-            i += 1
 
-    return pause_dict
+@lru_cache(maxsize=512)
+def _num2text_words(word: str) -> tuple[str, ...]:
+    return tuple(num2text(int(word)).split())
 
 
 def custom_num2text(tokens: list[list[str]]) -> list[list[str]]:
@@ -66,16 +73,11 @@ def custom_num2text(tokens: list[list[str]]) -> list[list[str]]:
     return: A new list of token lists where numeric strings are replaced by words.
     """
     tokens_normal = []
-    cache = {}
-
     for section_tokens in tokens:
-        section_normal = []
+        section_normal: list[str] = []
         for word in section_tokens:
             if word.isnumeric():
-                # Use cached conversion if available
-                if word not in cache:
-                    cache[word] = num2text(int(word))
-                section_normal.extend(cache[word].split())
+                section_normal.extend(_num2text_words(word))
             else:
                 section_normal.append(word)
         tokens_normal.append(section_normal)
@@ -90,19 +92,12 @@ def text_norm_tok(text: str) -> list[list[str]]:
     param text: Input text string.
     return: A list of token lists (sections), with numbers converted to words.
     """
-    sections = re.split(r'[.?!,:;()—…]', text)
-    sections = [re.sub(r'\s+', ' ', w) for w in sections if w != '']
-    sections = [re.sub(r'\s$', '', w) for w in sections if w != '']
-    sections = [re.sub(r'^\s', '', w) for w in sections if w != '']
+    sections = [SPACE_RE.sub(' ', section).strip() for section in SECTION_SPLIT_RE.split(text)]
+    sections = [section for section in sections if section]
 
-    tokens = [
-        [re.sub(r'[,.\\|/;:()*&^%$#@?!\[\]{}\"—…«»]', '', word) for word in section.split()] for section in sections
-    ]
+    tokens = [[word.translate(TOKEN_CLEANUP_TABLE) for word in section.split()] for section in sections]
 
     return custom_num2text(tokens)
-
-
-adverb_adp = {'после', 'кругом', 'мимо', 'около', 'вокруг', 'напротив', 'поперёк'}
 
 
 def find_clitics(
@@ -117,10 +112,8 @@ def find_clitics(
                     If None, a new set is created.
     return: Set of tuples representing clitic relationships.
     """
-    if indexes is None:
-        indexes = set()
+    result = set() if indexes is None else indexes
 
-    functors_pos = {'CCONJ', 'PART', 'ADP'}
     str_dep = str(dep)
 
     # Only process nodes with more than one token
@@ -128,16 +121,16 @@ def find_clitics(
         for token in dep:
             if isinstance(token, nltk.tree.Tree):
                 # Recurse into subtrees
-                indexes = find_clitics(token, text, indexes)
-            elif token.pos_ in functors_pos and token.text not in adverb_adp:
+                result = find_clitics(token, text, result)
+            elif token.pos_ in FUNCTORS_POS and token.text not in ADVERB_ADP:
                 clitic_index = token.i
                 main_word_index = None
 
                 # Proclitic: functor before main word (excluding some vowels)
                 if (
-                    token.i < len(text) - 1
-                    and text[token.i + 1] in str_dep
-                    and text[token.i + 1][0] not in JOTISED_LETTERS
+                    (token.i < len(text) - 1)
+                    and (text[token.i + 1] in str_dep)
+                    and (text[token.i + 1][0] not in JOTISED_LETTERS)
                 ):
                     main_word_index = token.i + 1
                 # Enclitic: functor after main word
@@ -145,9 +138,9 @@ def find_clitics(
                     main_word_index = token.i - 1
 
                 if main_word_index is not None:
-                    indexes.add((main_word_index, clitic_index))
+                    result.add((main_word_index, clitic_index))
 
-    return indexes
+    return result
 
 
 def split_token_by_words(token: str, words: list[str]) -> list[str]:
@@ -244,14 +237,12 @@ def merge_phrasal_words(
     if stressed_clitic_indexes is None:
         stressed_clitic_indexes = set()
 
-    tokens_list = []
+    tokens_list: list[list[str]] = []
     start_token_index = 0
-
-    for i, current_phon in enumerate(phonemes):
+    for index, current_phon in enumerate(phonemes):
         if current_phon == '_':
-            tokens_list.append(phonemes[start_token_index:i])
-            start_token_index = i + 1
-
+            tokens_list.append(phonemes[start_token_index:index])
+            start_token_index = index + 1
     tokens_list.append(phonemes[start_token_index:])
 
     phrasal_words = tokens_list[:]

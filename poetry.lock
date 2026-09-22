@@ -599,18 +599,6 @@ requests = "*"
 dev = ["ruff"]
 
 [[package]]
-name = "et-xmlfile"
-version = "2.0.0"
-description = "An implementation of lxml.xmlfile for the standard library"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "et_xmlfile-2.0.0-py3-none-any.whl", hash = "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa"},
-    {file = "et_xmlfile-2.0.0.tar.gz", hash = "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54"},
-]
-
-[[package]]
 name = "filelock"
 version = "3.29.0"
 description = "A platform independent file lock."
@@ -1239,7 +1227,7 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/seriyps/ru_number_to_text.git"
-reference = "HEAD"
+reference = "3b9ccdb36bb744341ee7bec9c50b51198259c648"
 resolved_reference = "3b9ccdb36bb744341ee7bec9c50b51198259c648"
 
 [[package]]
@@ -1331,21 +1319,6 @@ protobuf = "*"
 [package.extras]
 quantization = ["ml_dtypes"]
 symbolic = ["sympy"]
-
-[[package]]
-name = "openpyxl"
-version = "3.1.5"
-description = "A Python library to read/write Excel 2010 xlsx/xlsm files"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2"},
-    {file = "openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050"},
-]
-
-[package.dependencies]
-et-xmlfile = "*"
 
 [[package]]
 name = "packaging"
@@ -1784,7 +1757,7 @@ fast = ["DAWG2 (>=0.9.0,<1.0.0)"]
 type = "git"
 url = "https://github.com/pymorphy2-fork/pymorphy2"
 reference = "master"
-resolved_reference = "a8599e1731ffb1ebfb3f6c00eeac5f19f5c7a836"
+resolved_reference = "4ae2041cd31228cbb45cb4b508483b81a1009d17"
 
 [[package]]
 name = "pymorphy2-dicts-ru"
@@ -2432,7 +2405,7 @@ pymorphy2 = {git = "https://github.com/pymorphy2-fork/pymorphy2", rev = "master"
 [package.source]
 type = "git"
 url = "https://github.com/Desklop/StressRNN.git"
-reference = "HEAD"
+reference = "0afefac146033b41ef558ac356989c87ef764c79"
 resolved_reference = "0afefac146033b41ef558ac356989c87ef764c79"
 
 [[package]]
@@ -2861,5 +2834,5 @@ dev = ["pytest", "setuptools"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = "==3.12.*"
-content-hash = "dbf4f1c18525b873cb752c79baac6287a8f4d69b16dd59d343f6c9630ec3248e"
+python-versions = ">=3.11,<3.13"
+content-hash = "9ae8793bf012ca2a050884ec13742f8315ba0f81808188f7f8a84ec5d27aa5d9"
