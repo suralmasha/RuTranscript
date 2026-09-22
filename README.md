@@ -1,196 +1,184 @@
 # RuTranscript
 
-This package was created in order to make a phonetic transcription in russian. 
-The library is based on the literary norm of phonetic transcription for the Russian language and uses symbols 
-of the International Phonetic Alphabet. Transcription takes into account the allocation of allophones. 
-The resulting library can be used in automatic speech recognition and synthesis tasks.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22900230.svg)](https://doi.org/10.5281/zenodo.22900230)
 
-At the moment, there is no functional for division into syllables in this framework, due to its variability. 
-Therefore, allophones that depend on the place in the syllable 
-(for example, *j* at the beginning of the syllable - *ʝ*) are allocated only in cases where the beginning of 
-the syllable coincides with the beginning of the word or the end of the syllable coincides with the end of the word.
+RuTranscript converts **Russian text** into a **phonetic transcription** based on the literary pronunciation norm. It
+provides both detailed allophone sequences and simplified phoneme sequences using symbols from the **International
+Phonetic Alphabet** (IPA).
 
-For a more detailed description of how the framework works, see the article: https://www.dialog-21.ru/media/5722/badasyana137.pdf
+The library is intended for speech technology, linguistic analysis, and pronunciation-related experiments.
 
-# Requirements
+## Features
 
-- Python 3.12
-- Poetry, if you want to build the package or install development dependencies
+- Automatic stress placement with support for manually specified stress
+- Detailed allophone transcription
+- Simplified phoneme transcription
+- Context-dependent consonant and vowel transformations
+- Pause markers derived from punctuation
+- Explicit handling of stressed clitics
 
-The package is not published to a package registry at the moment. Install it from Git or build it locally from a cloned repository.
+## Requirements
 
-# Installation from Git
+- Python 3.11 or 3.12
+- Git, because some dependencies are installed from Git repositories
+- Poetry for development and package building
 
-```shell
-pip install git+https://github.com/suralmasha/RuTranscript
-```
+The package is not currently published to a package registry.
 
-For Poetry-based projects:
+## Installation
 
-```shell
-poetry add git+https://github.com/suralmasha/RuTranscript
-```
-
-# Package Building
-
-## Manual Build
-
-1. Ensure that all package sources are located under `src/` and correctly declared in the `packages` section of `pyproject.toml`.
-2. Build the package:
+Install the latest version from GitHub:
 
 ```shell
-pip install poetry==2.2.0 build==1.3.0  # optional
-make package
+python -m pip install "git+https://github.com/suralmasha/RuTranscript.git"
 ```
 
-3. The generated artifacts (`.whl` and `.tar.gz`) will appear in the `dist/` directory.
-
-## Manual Installation
-
-To install the built package into another project:
+For Poetry projects:
 
 ```shell
-pip install --force-reinstall */dist/*.whl
+poetry add "git+https://github.com/suralmasha/RuTranscript.git"
 ```
 
-If multiple versions exist, specify the exact wheel file.
+## Quick start
 
-# Usage
-
-Put your text in the appropriate variable (in the example - `text`). 
-Pass it to the `RuTranscript()` and use method `transcribe()`.
-
-```
+```python
 from ru_transcript import RuTranscript
 
-text = 'Как получить транскрипцию?'
-ru_transcript = RuTranscript(text)
-ru_transcript.transcribe()
+transcription = RuTranscript('Как получить транскрипцию?')
+transcription.transcribe()
+
+print(transcription.get_allophones())
+print(transcription.get_phonemes())
+print(transcription.get_stressed_text())
 ```
 
-You may define stresses both for one word and for all words in the text. 
-To do this, put a stress symbol (preferably '+') before or after the stressed vowel 
-and put the stressed text in an additional variable (in the example - `stressed_text_if_have`). 
-To define where you've putted the stress mark use the parameter `stress_place` (possible values: `'after'` or `'before'`).  
-Automatic stress placement may be unreliable in ambiguous or context-dependent cases, so mark the stress manually when
-the intended pronunciation is important.
+Example allophone output:
 
-**Important!** The number of words in these two texts must match, except for the clitic case described below.
-
-```
-text = 'Как получить транскрипцию?'
-stressed_text_if_have = 'Как получи+ть транскрипцию?'
-ru_transcript = RuTranscript(text, stressed_text_if_have)
-ru_transcript.transcribe()
-```
-
-or
-
-```
-text = 'Как получить транскрипцию?'
-stressed_text_if_have = 'Как получ+ить транскрипцию?'
-ru_transcript = RuTranscript(text, stressed_text_if_have, stress_place='before')
-ru_transcript.transcribe()
-```
-
-Pauses are arranged according to punctuation: the end of a sentence is indicated by a long pause (`'||'`), 
-punctuation marks inside a sentence are indicated by short pauses (`'|'`).  
-You can get a list of **allophones** by using method `get_allophones()`.
-
-```
-print(ru_transcript.get_allophones())
-```
-
-Output:
-```
+```text
 ['k', 'a', 'k', 'p', 'ə', 'ɫʷ', 'ʊ', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'ɐ', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡sˠ', 'ɨ', 'jᶣ', 'ᵿ']
 ```
 
-You can get a list of **phonemes (main allophones)** by using method `get_phonemes()` - 
-this is a less detailed sort of transcription.
+Example phoneme output:
 
-```
-print(ru_transcript.get_phonemes())
-```
-
-Output:
-```
+```text
 ['k', 'a', 'k', 'p', 'o', 'l', 'u', 't͡ɕ', 'i', 'tʲ', 't', 'r', 'a', 'n', 's', 'k', 'rʲ', 'i', 'p', 't͡s', 'i', 'j', 'u']
 ```
 
-You can see **how stresses were placed** by using method `get_stressed_text`.
+## Manual stress
 
+Automatic stress placement can be unreliable for ambiguous or context-dependent words. When pronunciation matters,
+provide the same text with `+` next to each known stressed vowel:
+
+```python
+from ru_transcript import RuTranscript
+
+text = 'Как получить транскрипцию?'
+stressed_text = 'Как получи+ть транскрипцию?'
+
+transcription = RuTranscript(text, stressed_text)
+transcription.transcribe()
 ```
-print(ru_transcript.get_stressed_text())
+
+By default, the stress mark follows the vowel. To place it before the vowel, set `stress_place='before'`:
+
+```python
+transcription = RuTranscript(
+    text,
+    'Как получ+ить транскрипцию?',
+    stress_place='before',
+)
 ```
 
-Output:
-```
-'ка+к получи+ть транскри+пцию'
-```
+The original text and the manually stressed text must contain the same words, except when explicitly marking clitic
+stress.
 
-You can also find an example of using the framework in `scripts/example.py`.
+### Clitic stress
 
-To manually check stress placement for a word or phrase, use `scripts/check_stress.py`.  
-To manually check allophone information, use `scripts/get_info.py`.
+To place logical stress on a clitic, join it to its host word in the manually stressed text:
 
-## Clitic stress
-
-If you need to explicitly stress a clitic inside a phrasal word, write the clitic and its host word together in
-`stressed_text_if_have` and put the stress only on the clitic:
-
-```
+```python
 text = 'Муха по полю пошла'
-stressed_text_if_have = 'Муха по+полю пошла'
-ru_transcript = RuTranscript(text, stressed_text_if_have)
-ru_transcript.transcribe()
+stressed_text = 'Муха по+полю пошла'
 
-print(ru_transcript.get_allophones())
+transcription = RuTranscript(text, stressed_text)
+transcription.transcribe()
 ```
 
-Output:
-```
-['mʷ', 'u', 'x', 'ʌ', 'pʷ', 'o', 'p', 'ə', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a']
-```
+Without logical stress on the clitic, keep the words separate and place stress on the host word:
 
-Without logical stress on the clitic, place stress on the host word instead:
-
-```
-stressed_text_if_have = 'Муха по по+лю пошла'
-ru_transcript = RuTranscript(text, stressed_text_if_have)
-ru_transcript.transcribe()
-
-print(ru_transcript.get_allophones())
+```python
+stressed_text = 'Муха по по+лю пошла'
 ```
 
-Output:
-```
-['mʷ', 'u', 'x', 'ʌ', 'p', 'ɐ', 'pʷ', 'o', 'lᶣ', 'ᵿ', 'p', 'ɐ', 'ʂ', 'ɫ', 'a']
+## Output options
+
+Sentence-ending punctuation produces the long pause marker `||`. Punctuation inside a sentence produces the short pause
+marker `|`. Pauses, spaces, and stress marks can be preserved in the result:
+
+```python
+allophones = transcription.get_allophones(
+    stress_place='before',
+    save_stresses=True,
+    save_spaces=True,
+    save_pauses=True,
+    stress_symbol='+',
+)
 ```
 
-# Development
+The repository also contains small examples:
 
-Install dependencies:
+- `scripts/example.py` demonstrates the primary API.
+- `scripts/check_stress.py` displays automatic stress placement.
+- `scripts/get_info.py` displays information about an allophone.
+
+## Limitations
+
+- RuTranscript does not split words into syllables because Russian syllabification is variable. Syllable-dependent
+  allophones are therefore identified only when a syllable boundary coincides with a word boundary.
+- Automatic stress placement should be reviewed for ambiguous words and domain-specific vocabulary.
+- Exact transcription output can change when linguistic dependencies are updated. Review downstream snapshots and
+  expected values when upgrading.
+
+## Development
+
+Clone the repository and install all development dependencies:
 
 ```shell
+git clone https://github.com/suralmasha/RuTranscript.git
+cd RuTranscript
 poetry install --with dev,test
 ```
 
-Run tests:
+Run the test suite:
 
 ```shell
 make test
 ```
 
-Run linting and formatting checks:
+Format the code and apply safe Ruff fixes:
 
 ```shell
-make ruff-check
-make ruff-format-check
+make ruff
 ```
 
-# Version 2.0.0 Note
+Build the wheel and source distribution in `dist/`:
 
-Version 2.0.0 updates the project to Python 3.12 and refreshes dependencies. The newer `epitran` version changes parts of the generated Russian transcription output, so the transcription and allophone processing logic was updated for compatibility.
+```shell
+make package
+```
 
-If you use exact transcription output in tests or downstream processing, review the output after upgrading.
+Contributions are welcome through GitHub issues and pull requests.
+
+## Research
+
+The transcription rules and design are described in the
+[project paper](https://doi.org/10.5281/zenodo.22900230) published in the proceedings of Dialogue 2022.
+
+If you use RuTranscript in research, cite the paper and link to this repository:
+
+> Badasyan, A. A. (2022). *Разработка библиотеки для получения фонетической транскрипции для русского языка*.
+> Dialogue 2022 (Dialog-21). https://doi.org/10.5281/zenodo.22900230
+
+## License
+
+RuTranscript is distributed under the [MIT License](LICENSE).
