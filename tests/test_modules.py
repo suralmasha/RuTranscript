@@ -5,7 +5,6 @@ from ru_transcript.tools.stress_tools import place_stress
 
 
 class TestModules(unittest.TestCase):
-
     def test_stress_one_syllable(self):
         testing_text = 'нос'
         ru_transcript = RuTranscript(testing_text)
@@ -47,7 +46,7 @@ class TestModules(unittest.TestCase):
 
     def test_replace_user_dict(self):
         testing_text = 'TTS - это увлекательно'
-        ru_transcript = RuTranscript(testing_text, replacement_dict={"tts": "синтез речи"})
+        ru_transcript = RuTranscript(testing_text, replacement_dict={'tts': 'синтез речи'})
         ru_transcript.transcribe()
         print(testing_text, ru_transcript._tokens)
         self.assertEqual([['синтэз', 'речи'], ['это', 'увлекательно']], ru_transcript._tokens)

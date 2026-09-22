@@ -4,7 +4,6 @@ from ru_transcript import RuTranscript
 
 
 class TestVowels(unittest.TestCase):
-
     def test_vowel_a_1(self):  # Ударный после твёрдого согласного
         testing_text = 'трава'
         testing_a_text = 'трава+'
