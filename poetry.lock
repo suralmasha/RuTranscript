@@ -1227,7 +1227,7 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/seriyps/ru_number_to_text.git"
-reference = "HEAD"
+reference = "3b9ccdb36bb744341ee7bec9c50b51198259c648"
 resolved_reference = "3b9ccdb36bb744341ee7bec9c50b51198259c648"
 
 [[package]]
@@ -1757,7 +1757,7 @@ fast = ["DAWG2 (>=0.9.0,<1.0.0)"]
 type = "git"
 url = "https://github.com/pymorphy2-fork/pymorphy2"
 reference = "master"
-resolved_reference = "a8599e1731ffb1ebfb3f6c00eeac5f19f5c7a836"
+resolved_reference = "4ae2041cd31228cbb45cb4b508483b81a1009d17"
 
 [[package]]
 name = "pymorphy2-dicts-ru"
@@ -2405,7 +2405,7 @@ pymorphy2 = {git = "https://github.com/pymorphy2-fork/pymorphy2", rev = "master"
 [package.source]
 type = "git"
 url = "https://github.com/Desklop/StressRNN.git"
-reference = "HEAD"
+reference = "0afefac146033b41ef558ac356989c87ef764c79"
 resolved_reference = "0afefac146033b41ef558ac356989c87ef764c79"
 
 [[package]]
@@ -2834,5 +2834,5 @@ dev = ["pytest", "setuptools"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = "==3.12.*"
-content-hash = "a35832232810f7bf62e6fd0f4dbd23f5157f6b656e90cc92f0b375b14125c699"
+python-versions = ">=3.11,<3.13"
+content-hash = "9ae8793bf012ca2a050884ec13742f8315ba0f81808188f7f8a84ec5d27aa5d9"
