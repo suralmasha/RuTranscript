@@ -1,0 +1,64 @@
+name: Publish resources to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish
+        required: true
+        default: resources-v1.0.0
+  release:
+    types: [published]
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'resources-v')
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Build packages
+        run: |
+          python -m pip install poetry==2.2.1
+          test "resources-v$(poetry --directory resources version -s)" = "$RELEASE_TAG"
+          poetry build
+          cd resources
+          poetry build
+
+      - name: Test built packages
+        run: |
+          python -m venv release-venv
+          release-venv/bin/python -m pip install dist/*.whl resources/dist/*.whl
+          release-venv/bin/python -c "from ru_transcript import RuTranscript; value = RuTranscript('Синтез речи'); value.transcribe(); assert value.get_stressed_text() == 'си+нтэз ре+чи'"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: python-resource-distributions
+          path: resources/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/rutranscript-resources
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: python-resource-distributions
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
