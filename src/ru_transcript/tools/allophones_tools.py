@@ -1,4 +1,5 @@
 import spacy
+from rutranscript_resources import spacy_model_path
 
 from ru_transcript.data_constants import CAN_BE_LONG, CONSONANT_LETTERS, TS, VOICED_OBSTRUENT_LETTERS, ZH_SH_TS
 from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
@@ -7,7 +8,7 @@ from ru_transcript.enums import Position
 from .sounds import allophones
 from .utils import get_next_non_symbol, get_voiced_pair, is_strong_position
 
-nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
+nlp = spacy.load(spacy_model_path(), disable=['tagger', 'morphologizer', 'attribute_ruler'])
 
 
 def get_phon(segment: list[str], i: int) -> str:

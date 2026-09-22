@@ -30,6 +30,9 @@ class TestModules(unittest.TestCase):
         with self.assertWarnsRegex(UserWarning, 'Please specify the stress manually'):
             self.assertEqual('полю', place_stress('полю'))
 
+    def test_text_norm_tok_converts_number(self):
+        self.assertEqual([['две', 'тысячи', 'двадцать', 'два']], text_norm_tok('2022'))
+
     def test_replace_e(self):
         testing_text = 'синтез речи в библиотеке'
         ru_transcript = RuTranscript(testing_text)

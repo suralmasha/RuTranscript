@@ -1,11 +1,10 @@
-import importlib
 import warnings
 from functools import lru_cache
 
 import epitran
-import nltk
 import spacy
 from nltk.stem.snowball import SnowballStemmer
+from rutranscript_resources import e_dictionary_path, spacy_model_path, yo_dictionary_path
 
 from ._panphon_encoding import patch_panphon_resource_encoding
 from .consts import (
@@ -18,9 +17,7 @@ from .consts import (
     RUSSIAN_LANGUAGE,
     SECOND_SILENT,
     SPACY_DISABLED_PIPELINES,
-    SPACY_RUSSIAN_MODEL,
     STRESS_ACCURACY_THRESHOLD,
-    TPS_PLANE_MODE,
 )
 from .data_constants import IRREGULAR_EXCEPTIONS, KNOWN_PHONEMES
 from .exceptions import UnknownTranscriptionSymbolError
@@ -36,6 +33,7 @@ from .tools import (
     fix_jotised,
     get_punctuation_dict,
     labia_velar,
+    load_replacements,
     long_consonants,
     long_ge,
     merge_phrasal_words,
@@ -44,6 +42,8 @@ from .tools import (
     put_stresses,
     remove_extra_stresses,
     replace_stress_before,
+    replace_text,
+    replace_word,
     silent_r,
     stunning,
     text_norm_tok,
@@ -54,26 +54,8 @@ from .tools import (
 
 patch_panphon_resource_encoding()
 
-_nltk_download = nltk.download
-
-
-def _skip_punkt_download(package: str, *args: object, **kwargs: object) -> bool:
-    if package == 'punkt':
-        return False
-    return _nltk_download(package, *args, **kwargs)
-
-
-try:
-    nltk.download = _skip_punkt_download
-    _tps = importlib.import_module('tps')
-    md = importlib.import_module('tps.modules')
-    download = _tps.download
-    find = _tps.find
-finally:
-    nltk.download = _nltk_download
-
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
-nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
+nlp = spacy.load(spacy_model_path(), disable=SPACY_DISABLED_PIPELINES)
 
 
 @lru_cache(maxsize=1)
@@ -83,20 +65,9 @@ def _load_irregular_exceptions() -> tuple[dict[str, str], dict[str, str]]:
 
 
 epi = epitran.Epitran(EPITRAN_RUSSIAN_CYRILLIC)
-
-try:
-    yo_dict = find('yo.dict', raise_exception=True)
-except FileNotFoundError:
-    yo_dict = download('yo.dict')
-
-try:
-    e_dict = find('e.dict', raise_exception=True)
-except FileNotFoundError:
-    e_dict = download('e.dict')
-
-e_replacer = md.Replacer([e_dict, TPS_PLANE_MODE])
-yo_replacer = md.Replacer([yo_dict, TPS_PLANE_MODE])
-syntax_tree = SyntaxTree()
+e_replacements = load_replacements(e_dictionary_path())
+yo_replacements = load_replacements(yo_dictionary_path())
+syntax_tree = SyntaxTree(spacy_model_path())
 
 
 class RuTranscript:
@@ -167,9 +138,8 @@ class RuTranscript:
         )
 
         if replacement_dict is not None:
-            user_replacer = md.Replacer([replacement_dict, 'plane'])
-            text = user_replacer(text)
-            stressed_text = user_replacer(stressed_text)
+            text = replace_text(text, replacement_dict)
+            stressed_text = replace_text(stressed_text, replacement_dict)
 
         return text, stressed_text
 
@@ -187,15 +157,19 @@ class RuTranscript:
             for token in a_section
         ]
 
-    def _tps(self, section_num: int) -> None:
+    def _apply_pronunciation_dictionaries(self, section_num: int) -> None:
         """
         Replace 'е - э' and 'е - ё' in tokens of the specified section and update stressed tokens.
 
         param section_num: Index of the section to process.
         """
         default_section = self._tokens[section_num]
-        self._tokens[section_num] = [e_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
-        self._tokens[section_num] = [yo_replacer(token.replace('+', '')) for token in self._tokens[section_num]]
+        self._tokens[section_num] = [
+            replace_word(token.replace('+', ''), e_replacements) for token in self._tokens[section_num]
+        ]
+        self._tokens[section_num] = [
+            replace_word(token.replace('+', ''), yo_replacements) for token in self._tokens[section_num]
+        ]
 
         if self._tokens[section_num] != [token.replace('+', '') for token in default_section]:
             self._stressed_tokens[section_num] = [
@@ -411,7 +385,7 @@ class RuTranscript:
         return: None. Updates internal token, stressed token, phoneme, and allophone lists in place.
         """
         for section_num in range(self._sections_len):
-            self._tps(section_num)
+            self._apply_pronunciation_dictionaries(section_num)
             # ---- Accenting ----
             self._stressed_tokens[section_num] = put_stresses(
                 tokens_list=self._stressed_tokens[section_num],

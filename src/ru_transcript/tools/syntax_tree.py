@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import spacy
 from nltk import Tree
 from spacy.tokens import Token
@@ -6,10 +8,14 @@ from spacy.tokens import Token
 class SyntaxTree:
     """SyntaxTree with an NLP model and empty dependency tree."""
 
-    def __init__(self) -> None:
-        """Initialize SyntaxTree."""
+    def __init__(self, model_path: Path) -> None:
+        """
+        Инициализировать синтаксическое дерево.
+
+        :param model_path: Путь к модели spaCy.
+        """
         self.dependency_tree = None
-        self.nlp = spacy.load('ru_core_news_sm')
+        self.nlp = spacy.load(model_path)
 
     def to_nltk_tree(self, node: Token) -> Tree | Token:
         """
