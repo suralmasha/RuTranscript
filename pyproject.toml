@@ -22,7 +22,6 @@ spacy = '3.8.14'
 numpy = '1.26.4'
 nltk = '3.9.4'
 epitran = '1.35.1'
-openpyxl = '3.1.5'
 onnxruntime = '1.25.1'
 setuptools = '80.9.0'
 ru-core-news-sm = { url = 'https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.8.0/ru_core_news_sm-3.8.0-py3-none-any.whl' }
@@ -36,7 +35,7 @@ dev = ['ruff==0.15.12', 'pre-commit==4.6.0']
 
 [tool.ruff]
 line-length = 120
-exclude = ['**/tests/**']
+exclude = ['**/tests/**', 'src/ru_transcript/data_constants.py']
 
 [tool.ruff.format]
 quote-style = 'single'

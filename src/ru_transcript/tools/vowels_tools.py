@@ -1,30 +1,32 @@
-from .sounds import allophones, zh_sh_ts
+from ru_transcript.data_constants import ZH_SH_TS
+
+from .sounds import allophones
 
 
-def get_vowel_neighbors(section: list[str], i: int) -> tuple[dict[str, str | None], str]:
+def get_vowel_neighbors(section: list[str], index: int) -> tuple[dict[str, str | None], str]:
     """
     Safely get previous and next phonemes from a section.
 
     param section: Full phoneme list.
-    param i: Index of the current phoneme.
+    param index: Index of the current phoneme.
     return: Tuple of previous allophone and stress symbol ('+' or '-'), or ('', '') if out of range.
     """
-    prev = section[i - 1] if i > 0 else ''
-    stress_symbol = section[i + 1] if i + 1 < len(section) else ''
+    prev = section[index - 1] if index > 0 else ''
+    stress_symbol = section[index + 1] if index + 1 < len(section) else ''
     prev_allophone = allophones.get(prev, {})
 
     return prev_allophone, stress_symbol
 
 
-def process_a(section: list[str], i: int) -> str:
+def process_a(section: list[str], index: int) -> str:
     """
     Determine the allophone of /a/ depending on stress, neighboring consonants, and position.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /a/.
     """
-    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, index)
 
     if stress_symbol == '+':
         return 'a' if 'hard' in prev_allophone.get('palatalization', '') else 'æ'
@@ -33,15 +35,15 @@ def process_a(section: list[str], i: int) -> str:
     return 'ə'
 
 
-def process_o(section: list[str], i: int) -> str:
+def process_o(section: list[str], index: int) -> str:
     """
     Determine the allophone of /o/ depending on stress and surrounding context.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /o/.
     """
-    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, index)
 
     if stress_symbol == '+':
         return 'o' if 'hard' in prev_allophone.get('palatalization', '') else 'ɵ'
@@ -50,15 +52,15 @@ def process_o(section: list[str], i: int) -> str:
     return 'ə'
 
 
-def process_e(section: list[str], i: int) -> str:
+def process_e(section: list[str], index: int) -> str:
     """
     Determine the allophone of /e/ depending on stress, softness, and context.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /e/.
     """
-    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, index)
 
     if stress_symbol == '+':
         return 'ɛ' if 'hard' in prev_allophone.get('palatalization', '') else 'e'
@@ -67,15 +69,15 @@ def process_e(section: list[str], i: int) -> str:
     return 'ə'
 
 
-def process_u(section: list[str], i: int) -> str:
+def process_u(section: list[str], index: int) -> str:
     """
     Determine the allophone of /u/ depending on stress and palatalization.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /u/.
     """
-    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, index)
 
     if stress_symbol == '+':
         return 'ʉ' if 'soft' in prev_allophone.get('palatalization', '') else 'u'
@@ -87,27 +89,27 @@ def process_i(section: list[str], i: int) -> str:
     Determine the allophone of /i/ depending on preceding consonant and stress.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /i/.
     """
     prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
 
-    if prev_allophone in zh_sh_ts:
+    if prev_allophone in ZH_SH_TS:
         return 'ɨ'
     if stress_symbol != '+':
         return 'ɪ'
     return 'i'
 
 
-def process_y(section: list[str], i: int) -> str:
+def process_y(section: list[str], index: int) -> str:
     """
     Determine the allophone of /ɨ/ depending on stress and adjacent consonants.
 
     param section: Full phoneme list.
-    param i: Index of the current vowel.
+    param index: Index of the current vowel.
     return: Context-dependent allophone of /ɨ/.
     """
-    prev_allophone, stress_symbol = get_vowel_neighbors(section, i)
+    prev_allophone, stress_symbol = get_vowel_neighbors(section, index)
 
     if stress_symbol == '+':
         return 'ɨ̟' if prev_allophone.get('place', '') == 'lingual, dental' else 'ɨ'

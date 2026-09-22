@@ -1,10 +1,10 @@
 import spacy
 
-from ru_transcript.consts import CAN_BE_LONG, CONSONANT_LETTERS, VOICED_OBSTRUENT_LETTERS
+from ru_transcript.data_constants import CAN_BE_LONG, CONSONANT_LETTERS, TS, VOICED_OBSTRUENT_LETTERS, ZH_SH_TS
 from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
 from ru_transcript.enums import Position
 
-from .sounds import allophones, ts, zh_sh_ts
+from .sounds import allophones
 from .utils import get_next_non_symbol, get_voiced_pair, is_strong_position
 
 nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
@@ -366,7 +366,7 @@ def process_posttonic_vowels(
 
     :return:
     """
-    if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
+    if (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in TS):
         result_phon = posttonic_allophones.after_hissing
     elif 'hard' in previous_allophone.get('palatalization', ''):
         result_phon = posttonic_allophones.after_hard
@@ -390,11 +390,11 @@ def process_first_pretonic_vowels(
 
     :return:
     """
-    if (first_pretonic_allophones.after_zh_sh_ts is not None) and (previous_phon in zh_sh_ts):
+    if (first_pretonic_allophones.after_zh_sh_ts is not None) and (previous_phon in ZH_SH_TS):
         result_phon = first_pretonic_allophones.after_zh_sh_ts
     elif (
         (first_pretonic_allophones.after_hissing is not None) and (previous_allophone.get('hissing', '') == 'hissing')
-    ) or (previous_phon in ts):
+    ) or (previous_phon in TS):
         result_phon = first_pretonic_allophones.after_hissing
     elif (previous_allophone['phon'] == 'C') and ('hard' in previous_allophone['palatalization']):
         result_phon = first_pretonic_allophones.after_hard
@@ -427,7 +427,7 @@ def process_a(
     # not last, not first
     if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
         if next_phon == '+':  # ударный stressed (not last, not first)
-            if previous_phon in zh_sh_ts:
+            if previous_phon in ZH_SH_TS:
                 result_phon = 'ɐ.'
             elif ('hard' in previous_allophone.get('palatalization', '')) and (after_next_phon == 'l'):
                 result_phon = 'ɑ'
@@ -445,7 +445,7 @@ def process_a(
 
         elif (
             (previous_allophone.get('hissing', '')) == 'hissing'
-            or (previous_phon in ts)
+            or (previous_phon in TS)
             or ('hard' in previous_allophone.get('palatalization', ''))
         ) or (previous_allophone['phon'] == 'V'):
             result_phon = 'ə'
@@ -488,7 +488,7 @@ def process_o(
     # not last, not first
     if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
         if next_phon == '+':  # ударный stressed (not last, not first)
-            if previous_phon in zh_sh_ts:
+            if previous_phon in ZH_SH_TS:
                 result_phon = 'ɐ.'
             elif ('soft' in previous_allophone.get('palatalization', '')) or (previous_allophone['phon'] == 'V'):
                 result_phon = 'ɵ'
@@ -502,7 +502,7 @@ def process_o(
 
         elif (
             (previous_allophone.get('hissing', '') == 'hissing')
-            or (previous_phon in ts)
+            or (previous_phon in TS)
             or ('hard' in previous_allophone.get('palatalization', ''))
         ) or (previous_allophone['phon'] == 'V'):
             result_phon = 'ə'
@@ -544,7 +544,7 @@ def process_e(
     # not last, not first
     if position not in (Position.LAST, Position.FIRST) and (next_phon != '_') and (previous_phon != '_'):
         if next_phon == '+':  # ударный stressed (not last, not first)
-            if previous_phon in zh_sh_ts:
+            if previous_phon in ZH_SH_TS:
                 result_phon = 'ᵻ'
             elif 'hard' in previous_allophone.get('palatalization', ''):
                 result_phon = 'ɛ'
@@ -556,7 +556,7 @@ def process_e(
                 FirstPretonicAllophones(after_hissing='ə', after_hard='ᵻ', after_others='ɪ'),
             )
 
-        elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):
+        elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in TS):
             result_phon = 'ə'
         elif 'hard' in previous_allophone.get('palatalization', ''):
             result_phon = 'ᵻ'
@@ -630,7 +630,7 @@ def process_i(
     result_phon = None
 
     if previous_allophone['phon'] == 'C':
-        if previous_phon in zh_sh_ts:  # после ж, ш, ц
+        if previous_phon in ZH_SH_TS:  # после ж, ш, ц
             result_phon = 'ɨ'
         elif next_phon != '+':  # безударный unstressed
             result_phon = 'ɪ'
@@ -662,7 +662,7 @@ def process_ii(  # noqa: PLR0913
     result_phon = None
 
     if (previous_allophone['phon'] == 'C') and (
-        previous_phon in zh_sh_ts
+        previous_phon in ZH_SH_TS
     ):  # после ж, ш, ц - epitran корректно обрабатывает
         return None
 
@@ -684,13 +684,13 @@ def process_ii(  # noqa: PLR0913
                 result_phon = 'ɨ̟'
 
         # предударный pretonic / заударный posttonic (not last)
-        elif (previous_allophone.get('hissing') == 'hissing') or (previous_phon in ts):
+        elif (previous_allophone.get('hissing') == 'hissing') or (previous_phon in TS):
             # безударный /ɨ/ не редуцируется до [ə] после шипящих и ц
             result_phon = 'ɨ'
         else:
             result_phon = 'ᵻ'
 
-    elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in ts):  # заударный (last)
+    elif (previous_allophone.get('hissing', '') == 'hissing') or (previous_phon in TS):  # заударный (last)
         result_phon = 'ə'
     else:
         result_phon = 'ᵻ'

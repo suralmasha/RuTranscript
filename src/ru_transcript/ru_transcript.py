@@ -1,13 +1,11 @@
 import importlib
 import warnings
-from pathlib import Path
+from functools import lru_cache
 
 import epitran
 import nltk
 import spacy
 from nltk.stem.snowball import SnowballStemmer
-from openpyxl import load_workbook
-from openpyxl.workbook.workbook import Workbook
 
 from ._panphon_encoding import patch_panphon_resource_encoding
 from .consts import (
@@ -16,6 +14,7 @@ from .consts import (
     HISSING_IOTATED_IE,
     HISSING_REGRESSIVE_DEVOICING,
     NON_IPA_SYMBOLS,
+    RESERVED_STRESS_SYMBOLS,
     RUSSIAN_LANGUAGE,
     SECOND_SILENT,
     SPACY_DISABLED_PIPELINES,
@@ -23,6 +22,7 @@ from .consts import (
     STRESS_ACCURACY_THRESHOLD,
     TPS_PLANE_MODE,
 )
+from .data_constants import IRREGULAR_EXCEPTIONS, KNOWN_PHONEMES
 from .exceptions import UnknownTranscriptionSymbolError
 from .tools import (
     SyntaxTree,
@@ -30,7 +30,6 @@ from .tools import (
     allophones,
     apply_differences,
     assimilative_palatalization,
-    epi_symbols,
     find_clitics,
     first_jot,
     fix_consonant_in_strong_position,
@@ -76,12 +75,12 @@ finally:
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
 nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
 
-ROOT_DIR: Path = Path(__file__).resolve().parent
-wb: Workbook = load_workbook(ROOT_DIR / 'data' / 'irregular_exceptions.xlsx')
 
-sheet = wb.active
-irregular_exceptions = {sheet[f'A{i}'].value: sheet[f'B{i}'].value for i in range(2, sheet.max_row + 1)}
-irregular_exceptions_stems = {snowball.stem(ex): pron for ex, pron in irregular_exceptions.items()}
+@lru_cache(maxsize=1)
+def _load_irregular_exceptions() -> tuple[dict[str, str], dict[str, str]]:
+    irregular_exceptions_stems = {snowball.stem(ex): pron for ex, pron in IRREGULAR_EXCEPTIONS.items()}
+    return IRREGULAR_EXCEPTIONS, irregular_exceptions_stems
+
 
 epi = epitran.Epitran(EPITRAN_RUSSIAN_CYRILLIC)
 
@@ -137,12 +136,12 @@ class RuTranscript:
         self._stress_place = stress_place
 
         self._phrasal_words_indexes = []
-        self._letters_list = []
-        self._phonemes_list = []
-        self._allophones_list = [[]] * self._sections_len
-        self._transliterated_tokens = [[]] * self._sections_len
-        self._phrasal_words = [[]] * self._sections_len
-        self._stressed_text = [[]] * self._sections_len
+        self._letters_list = [[] for _ in range(self._sections_len)]
+        self._phonemes_list = [[] for _ in range(self._sections_len)]
+        self._allophones_list = [[] for _ in range(self._sections_len)]
+        self._transliterated_tokens = [[] for _ in range(self._sections_len)]
+        self._phrasal_words = [[] for _ in range(self._sections_len)]
+        self._stressed_text = [[] for _ in range(self._sections_len)]
         self._stressed_clitic_indexes = [set() for _ in range(self._sections_len)]
 
     @staticmethod
@@ -160,9 +159,9 @@ class RuTranscript:
         param replacement_dict: Optional dictionary for custom replacements.
         return: Tuple of normalized text and stressed text.
         """
-        text = ' '.join(['—' if word == '-' else word for word in text.replace('\n', ' ').lower().split()])
+        text = ' '.join('—' if word == '-' else word for word in text.replace('\n', ' ').lower().split())
         stressed_text = (
-            ' '.join(['—' if word == '-' else word for word in stressed_text.replace('\n', ' ').lower().split()])
+            ' '.join('—' if word == '-' else word for word in stressed_text.replace('\n', ' ').lower().split())
             if stressed_text is not None
             else text
         )
@@ -215,13 +214,12 @@ class RuTranscript:
         section_phonemes_list = []
         joined_tokens = '_'.join(transliterated_tokens)
         joined_tokens = joined_tokens.replace('‑', '-')
-        known_phonemes = {*epi_symbols, '_', '|', '||', 'γ', 'ʐ'}
         i = 0
         default_len = len(joined_tokens)
         while i < default_len:
             if joined_tokens[i] not in ['+', '-']:
                 n = min(4, default_len - i)
-                while n > 0 and joined_tokens[i : i + n] not in known_phonemes:
+                while n > 0 and joined_tokens[i : i + n] not in KNOWN_PHONEMES:
                     n -= 1
                 if n == 0:
                     raise UnknownTranscriptionSymbolError(joined_tokens[i])
@@ -273,6 +271,8 @@ class RuTranscript:
         param section_num: Index of the section to process.
         return: None. Updates `_tokens` and `_stressed_tokens` in place.
         """
+        irregular_exceptions, irregular_exceptions_stems = _load_irregular_exceptions()
+
         for i, token in enumerate(self._tokens[section_num]):
             stem = snowball.stem(token)
             if stem in irregular_exceptions_stems:
@@ -365,6 +365,10 @@ class RuTranscript:
         return: None. Updates `_transliterated_tokens` in place.
         """
         # fricative g
+        lemmas = [
+            doc[0].lemma_ if doc else token
+            for token, doc in zip(self._tokens[section_num], nlp.pipe(self._tokens[section_num]), strict=True)
+        ]
         for i, token in enumerate(self._transliterated_tokens[section_num]):
             try:
                 next_token = self._transliterated_tokens[section_num][i + 1]
@@ -372,8 +376,7 @@ class RuTranscript:
                 next_token = ' '  # noqa: S105
 
             token_let = self._tokens[section_num][i]
-            nlp_token = nlp(token_let)[0]
-            lemma = nlp_token.lemma_
+            lemma = lemmas[i]
 
             if lemma in {'ага', 'ого', 'угу', 'господь', 'господи', 'бог'}:
                 self._transliterated_tokens[section_num][i] = token.replace('ɡ', 'γ', 1)
@@ -384,11 +387,11 @@ class RuTranscript:
 
         # ---- Join phonemes ----
         joined_phonemes = self._join_phonemes(self._transliterated_tokens[section_num])
-        self._phonemes_list.append(joined_phonemes)
+        self._phonemes_list[section_num] = joined_phonemes
 
         # ---- Join letters ----
         joined_letters = list('_'.join(self._stressed_tokens[section_num]))
-        self._letters_list.append(joined_letters)
+        self._letters_list[section_num] = joined_letters
 
         # ---- Continue LPC-4. Common rules ----
         self._phonemes_list[section_num] = fix_jotised(
@@ -451,15 +454,17 @@ class RuTranscript:
             self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
             velarized_lateral(self._allophones_list[section_num])
 
-    def _insert_pauses(self, sounds_list: list) -> None:
+    def _insert_pauses(self, sounds_list: list) -> list:
         """
         Insert pauses into the sounds list according to the pause dictionary.
 
         param sounds_list: List of phonemes or allophones where pauses will be inserted.
-        return: None. Modifies sounds_list in place.
+        return: A copy of the sounds list with pauses inserted.
         """
+        sounds_with_pauses = sounds_list.copy()
         for i, key in enumerate(self._pause_dict):
-            sounds_list.insert(i + key, self._pause_dict[key])
+            sounds_with_pauses.insert(i + key, self._pause_dict[key])
+        return sounds_with_pauses
 
     @staticmethod
     def _get_escape_symbols(save_stresses: bool = False, save_spaces: bool = False) -> list[str]:
@@ -516,7 +521,7 @@ class RuTranscript:
             and '|' for short pauses (other symbols).
         :return: List of allophones.
         """
-        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+        if stress_symbol in RESERVED_STRESS_SYMBOLS:
             warnings.warn(
                 'The stress symbol intersects with the IPA transcription signs '
                 'or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n'
@@ -525,11 +530,10 @@ class RuTranscript:
                 stacklevel=2,
             )
 
-        if save_pauses:
-            self._insert_pauses(self._allophones_list)
+        allophones_list = self._insert_pauses(self._allophones_list) if save_pauses else self._allophones_list
 
         escape_symbols = self._get_escape_symbols(save_stresses=save_stresses, save_spaces=save_spaces)
-        res = self._join_sounds(escape_symbols, self._allophones_list).split()
+        res = self._join_sounds(escape_symbols, allophones_list).split()
 
         if stress_place is None:
             stress_place = self._stress_place
@@ -563,7 +567,7 @@ class RuTranscript:
             and '|' for short pauses (other symbols).
         :return: List of phonemes.
         """
-        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+        if stress_symbol in RESERVED_STRESS_SYMBOLS:
             warnings.warn(
                 'The stress symbol intersects with the IPA transcription signs '
                 'or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n'
@@ -572,11 +576,10 @@ class RuTranscript:
                 stacklevel=2,
             )
 
-        if save_pauses:
-            self._insert_pauses(self._phonemes_list)
+        phonemes_list = self._insert_pauses(self._phonemes_list) if save_pauses else self._phonemes_list
 
         escape_symbols = self._get_escape_symbols(save_stresses=save_stresses, save_spaces=save_spaces)
-        res = self._join_sounds(escape_symbols, self._phonemes_list).split()
+        res = self._join_sounds(escape_symbols, phonemes_list).split()
 
         if stress_place is None:
             stress_place = self._stress_place
@@ -598,7 +601,7 @@ class RuTranscript:
             Be careful not to use signs from the following list ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']!
         :return: A text string with stresses.
         """
-        if stress_symbol in ['.', '_', '-', 'ʲ', 'ᶣ', 'ʷ', 'ˠ', 'ː', '͡']:
+        if stress_symbol in RESERVED_STRESS_SYMBOLS:
             warnings.warn(
                 'The stress symbol intersects with the IPA transcription signs '
                 'or the internal sighs of the framework.\nIt may cause an unpredictable behaviour.\n'
