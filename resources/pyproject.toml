@@ -1,0 +1,33 @@
+[build-system]
+requires = ['poetry-core==2.2.1']
+build-backend = 'poetry.core.masonry.api'
+
+[tool.poetry]
+package-mode = true
+packages = [{ include = 'rutranscript_resources', from = 'src' }]
+include = [{ path = 'src/rutranscript_resources/data', format = ['sdist', 'wheel'] }]
+
+[project]
+name = 'rutranscript-resources'
+version = '1.0.0'
+description = 'Versioned linguistic resources for RuTranscript'
+authors = [
+    { name = 'Alexandra Badasyan', email = 'sashabadasyan@icloud.com' },
+]
+readme = 'README.md'
+license = 'MIT AND Apache-2.0'
+license-files = ['LICENSE', 'licenses/*']
+requires-python = '>=3.11,<3.13'
+keywords = ['russian', 'phonetics', 'nlp', 'linguistic-resources']
+classifiers = [
+    'Natural Language :: Russian',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Text Processing :: Linguistic',
+]
+
+[project.urls]
+Repository = 'https://github.com/suralmasha/RuTranscript'
+Issues = 'https://github.com/suralmasha/RuTranscript/issues'
