@@ -11,8 +11,4 @@ This package is installed automatically with RuTranscript and is not intended as
 - StressRNN ONNX model and exception dictionary from the pinned upstream revision, licensed under Apache-2.0.
 - SOVA-TTS TPS `yo.dict` and `e.dict`, kept unchanged from the upstream distribution.
 
-Redistribution terms for the two SOVA-TTS dictionaries are being clarified in
-[sovaai/sova-tts-tps#3](https://github.com/sovaai/sova-tts-tps/issues/3). This package must not be published until the
-maintainers confirm the applicable license.
-
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for exact sources and checksums.
