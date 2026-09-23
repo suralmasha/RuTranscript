@@ -22,6 +22,7 @@ from .main_tools import (
     merge_phrasal_words,
     text_norm_tok,
 )
+from .nlp import get_nlp
 from .replacement import load_replacements, replace_text, replace_word
 from .sounds import allophones, epi_symbols
 from .stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
@@ -38,6 +39,7 @@ __all__ = [
     'first_jot',
     'fix_consonant_in_strong_position',
     'fix_jotised',
+    'get_nlp',
     'get_punctuation_dict',
     'labia_velar',
     'load_replacements',

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import warnings
+from functools import lru_cache
 from pathlib import Path
 
 from rutranscript_resources import stress_dictionary_path, stress_model_path
@@ -18,7 +21,11 @@ stress_default_dict = {}
 for word in error_words_stresses:
     stress_default_dict[word.replace('+', '').replace('\n', '')] = word.replace('\n', '')
 
-stress_predictor = StressPredictor(stress_model_path(), stress_dictionary_path())
+
+@lru_cache(maxsize=1)
+def get_stress_predictor() -> StressPredictor:
+    """Load and cache the stress prediction model."""
+    return StressPredictor(stress_model_path(), stress_dictionary_path())
 
 
 def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_THRESHOLD) -> str:
@@ -53,7 +60,7 @@ def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_
         # no vowels, return as is
         return ''.join(token_list)
 
-    stressed_token = stress_predictor.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+    stressed_token = get_stress_predictor().put_stress(token, accuracy_threshold=stress_accuracy_threshold)
     if '+' not in stressed_token:
         warnings.warn(
             f'Stress was not added to the word "{token}" because it cannot be placed unambiguously. '

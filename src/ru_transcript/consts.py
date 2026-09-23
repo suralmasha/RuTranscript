@@ -1,6 +1,5 @@
 RUSSIAN_LANGUAGE = 'russian'
 EPITRAN_RUSSIAN_CYRILLIC = 'rus-Cyrl'
-SPACY_DISABLED_PIPELINES = ('tagger', 'morphologizer', 'attribute_ruler')
 STRESS_ACCURACY_THRESHOLD = 0.86
 SECOND_SILENT = ('стн', 'стл', 'здн', 'рдн', 'нтск', 'ндск', 'лвств')
 FIRST_SILENT = ('лнц', 'дц', 'вств')
