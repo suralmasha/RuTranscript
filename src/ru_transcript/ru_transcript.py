@@ -54,6 +54,7 @@ from .tools import (
 
 patch_panphon_resource_encoding()
 
+# TODO: Загружать spaCy и ONNX-модели лениво и переиспользовать единый экземпляр spaCy.
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
 nlp = spacy.load(spacy_model_path(), disable=SPACY_DISABLED_PIPELINES)
 
