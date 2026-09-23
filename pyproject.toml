@@ -50,7 +50,7 @@ dev = ['ruff==0.15.12', 'pre-commit==4.6.0']
 
 [tool.ruff]
 line-length = 120
-exclude = ['**/tests/**', 'src/ru_transcript/data_constants.py']
+exclude = ['src/ru_transcript/data_constants.py']
 
 [tool.ruff.format]
 quote-style = 'single'
@@ -60,6 +60,9 @@ select = ['F', 'E', 'W', 'I', 'N', 'D', 'UP', 'YTT', 'ANN', 'ASYNC', 'S', 'B', '
     'G', 'INP', 'PIE', 'T20', 'PYI', 'Q', 'RSE', 'RET', 'SLF', 'SIM', 'TID', 'TC', 'INT', 'ARG', 'PTH', 'PD', 'PL',
     'TRY', 'FLY', 'NPY', 'FAST', 'PERF', 'FURB', 'RUF']
 ignore = ['D100', 'D104', 'COM812', 'RUF001', 'RUF002', 'RUF003']
+
+[tool.ruff.lint.per-file-ignores]
+'tests/**/*.py' = ['ANN', 'D', 'S101', 'S603', 'SLF001']
 
 [tool.ruff.lint.pydocstyle]
 convention = 'pep257'

@@ -8,11 +8,9 @@ test:
 ruff:
 	poetry run ruff format
 	poetry run ruff check --fix
-
 ruff-check:
 	poetry run ruff format --check
 	poetry run ruff check
-
 ruff-unsafe-fix:
 	poetry run ruff check --fix --unsafe-fixes
 
