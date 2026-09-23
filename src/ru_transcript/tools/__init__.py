@@ -22,6 +22,7 @@ from .main_tools import (
     merge_phrasal_words,
     text_norm_tok,
 )
+from .nlp import get_nlp
 from .sounds import allophones, epi_symbols
 from .stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
 from .syntax_tree import SyntaxTree
@@ -37,6 +38,7 @@ __all__ = [
     'first_jot',
     'fix_consonant_in_strong_position',
     'fix_jotised',
+    'get_nlp',
     'get_punctuation_dict',
     'labia_velar',
     'long_consonants',
@@ -45,7 +47,6 @@ __all__ = [
     'nasal_m_n',
     'process_shch',
     'put_stresses',
-    'remove_extra_stresses',
     'remove_extra_stresses',
     'replace_stress_before',
     'silent_r',

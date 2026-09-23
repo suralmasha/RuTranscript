@@ -246,36 +246,32 @@ def merge_phrasal_words(
     tokens_list.append(phonemes[start_token_index:])
 
     phrasal_words = tokens_list[:]
-    n = 0
-    main_word_cache = []
-    enclitic_cache = []
+    offset = 0
+    main_word_cache: list[int] = []
+    enclitic_cache: list[int] = []
 
-    for tuple_indexes in indexes:
+    for main_word_index, clitic_index in sorted(indexes, key=lambda relation: relation[1]):
         try:
-            main_word_index = tuple_indexes[0]
-
-            if tuple_indexes[1] > main_word_index:  # проклитика
+            if clitic_index > main_word_index:  # проклитика
                 main_word = (
-                    phrasal_words[main_word_index + n]
+                    phrasal_words[main_word_index + offset]
                     if main_word_index in main_word_cache
                     else tokens_list[main_word_index]
                 )
                 main_word_cache.append(main_word_index)
-                proclitic_index = tuple_indexes[1]
-
-                proclitic = tokens_list[proclitic_index]
-                if proclitic_index not in stressed_clitic_indexes:
-                    proclitic = [x for x in proclitic if x != '+']
-                phrasal_words.remove(tokens_list[proclitic_index])
+                clitic = tokens_list[clitic_index]
+                if clitic_index not in stressed_clitic_indexes:
+                    clitic = [phoneme for phoneme in clitic if phoneme != '+']
+                phrasal_words.remove(tokens_list[clitic_index])
                 phrasal_words.remove(main_word)
-                if proclitic_index == 1:
-                    phrasal_words.insert(0, main_word + proclitic)
+                if clitic_index == 1:
+                    phrasal_words.insert(0, main_word + clitic)
                 else:
                     phrasal_words.insert(
-                        proclitic_index - main_word_cache.count(main_word_index), main_word + proclitic
+                        clitic_index - main_word_cache.count(main_word_index),
+                        main_word + clitic,
                     )
-                n -= 1
-
+                offset -= 1
             else:  # энклитика
                 main_word = (
                     phrasal_words[main_word_index - enclitic_cache.count(main_word_index)]
@@ -283,23 +279,22 @@ def merge_phrasal_words(
                     else tokens_list[main_word_index]
                 )
                 main_word_cache.append(main_word_index)
-                enclitic_index = tuple_indexes[1]
-                enclitic_cache.append(enclitic_index)
-
-                enclitic = tokens_list[enclitic_index]
-                if enclitic_index not in stressed_clitic_indexes:
-                    enclitic = [x for x in enclitic if x != '+']
-                phrasal_words.remove(tokens_list[enclitic_index])
+                enclitic_cache.append(clitic_index)
+                clitic = tokens_list[clitic_index]
+                if clitic_index not in stressed_clitic_indexes:
+                    clitic = [phoneme for phoneme in clitic if phoneme != '+']
+                phrasal_words.remove(tokens_list[clitic_index])
                 phrasal_words.remove(main_word)
-                phrasal_words.insert(enclitic_index + n + enclitic_cache.count(main_word_index), enclitic + main_word)
-                n -= 1
-
-        except Exception:  # noqa: S112
+                phrasal_words.insert(
+                    clitic_index + offset + enclitic_cache.count(main_word_index),
+                    clitic + main_word,
+                )
+                offset -= 1
+        except (IndexError, ValueError):
             continue
 
-    phrasal_words_result = []
+    phrasal_words_result: list[str] = []
     for token in phrasal_words:
         phrasal_words_result.extend([*token, '_'])
-    del phrasal_words_result[-1]
 
-    return phrasal_words_result
+    return phrasal_words_result[:-1]
