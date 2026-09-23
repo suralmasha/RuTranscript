@@ -1,15 +1,19 @@
-import spacy
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nltk import Tree
-from spacy.tokens import Token
+
+from ru_transcript.exceptions import EmptySyntaxTreeError
+
+from .nlp import get_nlp
+
+if TYPE_CHECKING:
+    from spacy.tokens import Token
 
 
 class SyntaxTree:
-    """SyntaxTree with an NLP model and empty dependency tree."""
-
-    def __init__(self) -> None:
-        """Initialize SyntaxTree."""
-        self.dependency_tree = None
-        self.nlp = spacy.load('ru_core_news_sm')
+    """Build NLTK-compatible dependency trees with the shared spaCy model."""
 
     def to_nltk_tree(self, node: Token) -> Tree | Token:
         """
@@ -23,15 +27,19 @@ class SyntaxTree:
 
         return node
 
-    def make_dependency_tree(self, text: str) -> Tree:
+    def make_dependency_tree(self, text: str) -> Tree | Token:
         """
         Make a dependency tree for the input text.
 
         param text: Original text.
         return: NLTK Tree representing the dependency tree.
         """
-        doc = self.nlp(text)
+        dependency_tree: Tree | Token | None = None
+        doc = get_nlp()(text)
         for sent in doc.sents:
-            self.dependency_tree = self.to_nltk_tree(sent.root)
+            dependency_tree = self.to_nltk_tree(sent.root)
 
-        return self.dependency_tree
+        if dependency_tree is None:
+            raise EmptySyntaxTreeError
+
+        return dependency_tree

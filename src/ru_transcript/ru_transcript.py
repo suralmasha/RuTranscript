@@ -4,7 +4,6 @@ from functools import lru_cache
 
 import epitran
 import nltk
-import spacy
 from nltk.stem.snowball import SnowballStemmer
 
 from ._panphon_encoding import patch_panphon_resource_encoding
@@ -17,13 +16,16 @@ from .consts import (
     RESERVED_STRESS_SYMBOLS,
     RUSSIAN_LANGUAGE,
     SECOND_SILENT,
-    SPACY_DISABLED_PIPELINES,
-    SPACY_RUSSIAN_MODEL,
     STRESS_ACCURACY_THRESHOLD,
     TPS_PLANE_MODE,
 )
 from .data_constants import IRREGULAR_EXCEPTIONS, KNOWN_PHONEMES
-from .exceptions import StressedTextMismatchError, UnknownTranscriptionSymbolError
+from .exceptions import (
+    InvalidStressPlaceError,
+    InvalidStressThresholdError,
+    StressedTextMismatchError,
+    UnknownTranscriptionSymbolError,
+)
 from .tools import (
     SyntaxTree,
     align_stressed_tokens_with_text,
@@ -34,6 +36,7 @@ from .tools import (
     first_jot,
     fix_consonant_in_strong_position,
     fix_jotised,
+    get_nlp,
     get_punctuation_dict,
     labia_velar,
     long_consonants,
@@ -73,7 +76,6 @@ finally:
     nltk.download = _nltk_download
 
 snowball = SnowballStemmer(RUSSIAN_LANGUAGE)
-nlp = spacy.load(SPACY_RUSSIAN_MODEL, disable=SPACY_DISABLED_PIPELINES)
 
 
 @lru_cache(maxsize=1)
@@ -126,6 +128,7 @@ class RuTranscript:
         :param replacement_dict: Custom dictionary for replacing words (for example, {'tts': 'синтез речи'}).
         :param stress_accuracy_threshold: A threshold for the accuracy of stress placement for StressRNN.
         """
+        self._validate_options(stress_place, stress_accuracy_threshold)
         text, stressed_text = self._get_text_and_stressed_text(text, stressed_text, replacement_dict)
         self._pause_dict = get_punctuation_dict(text)
         self._tokens = text_norm_tok(text)
@@ -135,6 +138,7 @@ class RuTranscript:
 
         self._stress_accuracy_threshold = stress_accuracy_threshold
         self._stress_place = stress_place
+        self._is_transcribed = False
 
         self._phrasal_words_indexes = []
         self._letters_list = [[] for _ in range(self._sections_len)]
@@ -144,6 +148,19 @@ class RuTranscript:
         self._phrasal_words = [[] for _ in range(self._sections_len)]
         self._stressed_text = [[] for _ in range(self._sections_len)]
         self._stressed_clitic_indexes = [set() for _ in range(self._sections_len)]
+
+    @staticmethod
+    def _validate_options(stress_place: str, stress_accuracy_threshold: float) -> None:
+        """
+        Validate transcription options.
+
+        :param stress_place: Requested stress marker position.
+        :param stress_accuracy_threshold: Minimum stress prediction accuracy.
+        """
+        if stress_place not in {'after', 'before'}:
+            raise InvalidStressPlaceError
+        if not 0.0 <= stress_accuracy_threshold <= 1.0:
+            raise InvalidStressThresholdError
 
     @staticmethod
     def _validate_stressed_tokens(tokens: list[list[str]], stressed_tokens: list[list[str]]) -> None:
@@ -381,7 +398,7 @@ class RuTranscript:
         # fricative g
         lemmas = [
             doc[0].lemma_ if doc else token
-            for token, doc in zip(self._tokens[section_num], nlp.pipe(self._tokens[section_num]), strict=True)
+            for token, doc in zip(self._tokens[section_num], get_nlp().pipe(self._tokens[section_num]), strict=True)
         ]
         for i, token in enumerate(self._transliterated_tokens[section_num]):
             try:
@@ -424,6 +441,9 @@ class RuTranscript:
 
         return: None. Updates internal token, stressed token, phoneme, and allophone lists in place.
         """
+        if self._is_transcribed:
+            return
+
         for section_num in range(self._sections_len):
             self._tps(section_num)
             # ---- Accenting ----
@@ -467,6 +487,8 @@ class RuTranscript:
             self._allophones_list[section_num] = self._phrasal_words[section_num]
             self._allophones_list[section_num] = labia_velar(self._allophones_list[section_num])
             velarized_lateral(self._allophones_list[section_num])
+
+        self._is_transcribed = True
 
     def _insert_pauses(self, sounds_list: list) -> list:
         """

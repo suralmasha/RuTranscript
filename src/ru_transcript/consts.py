@@ -1,7 +1,7 @@
 RUSSIAN_LANGUAGE = 'russian'
 EPITRAN_RUSSIAN_CYRILLIC = 'rus-Cyrl'
 SPACY_RUSSIAN_MODEL = 'ru_core_news_sm'
-SPACY_DISABLED_PIPELINES = ('tagger', 'morphologizer', 'attribute_ruler')
+# SPACY_DISABLED_PIPELINES = ('tagger', 'morphologizer', 'attribute_ruler')
 TPS_PLANE_MODE = 'plane'
 STRESS_ACCURACY_THRESHOLD = 0.86
 SECOND_SILENT = ('стн', 'стл', 'здн', 'рдн', 'нтск', 'ндск', 'лвств')

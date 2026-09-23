@@ -1,10 +1,15 @@
-import warnings
-from pathlib import Path
+from __future__ import annotations
 
-from stressrnn import StressRNN
+import warnings
+from functools import lru_cache
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ru_transcript.consts import STRESS_ACCURACY_THRESHOLD
 from ru_transcript.data_constants import RU_VOWEL_SYMBOLS
+
+if TYPE_CHECKING:
+    from stressrnn import StressRNN
 
 ROOT_DIR = Path(__file__).resolve().parent
 
@@ -16,7 +21,13 @@ stress_default_dict = {}
 for word in error_words_stresses:
     stress_default_dict[word.replace('+', '').replace('\n', '')] = word.replace('\n', '')
 
-stress_rnn = StressRNN()
+
+@lru_cache(maxsize=1)
+def get_stress_rnn() -> StressRNN:
+    """Load and cache the stress prediction model."""
+    from stressrnn import StressRNN  # noqa: PLC0415
+
+    return StressRNN()
 
 
 def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_THRESHOLD) -> str:
@@ -51,7 +62,7 @@ def place_stress(token: str, stress_accuracy_threshold: float = STRESS_ACCURACY_
         # no vowels, return as is
         return ''.join(token_list)
 
-    stressed_token = stress_rnn.put_stress(token, accuracy_threshold=stress_accuracy_threshold)
+    stressed_token = get_stress_rnn().put_stress(token, accuracy_threshold=stress_accuracy_threshold)
     if '+' not in stressed_token:
         warnings.warn(
             f'Stress was not added to the word "{token}" because it cannot be placed unambiguously. '

@@ -1,13 +1,10 @@
-import spacy
-
 from ru_transcript.data_constants import CAN_BE_LONG, CONSONANT_LETTERS, TS, VOICED_OBSTRUENT_LETTERS, ZH_SH_TS
 from ru_transcript.data_models import FirstPretonicAllophones, PosttonicAllophones
 from ru_transcript.enums import Position
 
+from .nlp import get_nlp
 from .sounds import allophones
 from .utils import get_next_non_symbol, get_voiced_pair, is_strong_position
-
-nlp = spacy.load('ru_core_news_sm', disable=['tagger', 'morphologizer', 'attribute_ruler'])
 
 
 def get_phon(segment: list[str], i: int) -> str:
@@ -214,6 +211,7 @@ def assimilative_palatalization(tokens_section: list[str], section: list[str]) -
     exceptions = {'сосиска', 'злить', 'после', 'ёлка', 'день', 'транскрипция', 'джаз', 'неуклюжий', 'шахтёр'}
     # TODO: Вынести исключения в константы
 
+    nlp = get_nlp()
     token_index = 0
     token = tokens_section[token_index]
     lemma = nlp(token)[0].lemma_
