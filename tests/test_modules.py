@@ -5,6 +5,20 @@ from ru_transcript.tools.stress_tools import place_stress
 
 
 class TestModules(unittest.TestCase):
+    def test_phonemes_are_not_changed_by_allophone_rules(self) -> None:
+        """Check that consonant allophone rules do not modify phonemes."""
+        ru_transcript = RuTranscript('амфора')
+
+        ru_transcript.transcribe()
+
+        self.assertEqual(['a', 'm', 'f', 'o', 'r', 'a'], ru_transcript.get_phonemes())
+        self.assertEqual(['a', 'ɱ', 'f', 'ə', 'r', 'ʌ'], ru_transcript.get_allophones())
+
+    def test_mismatched_stressed_text_is_rejected(self) -> None:
+        """Check that incomplete stressed text is rejected."""
+        with self.assertRaisesRegex(ValueError, 'Text and stressed text must match'):
+            RuTranscript('молоко два', stressed_text='молоко')
+
     def test_stress_one_syllable(self):
         testing_text = 'нос'
         ru_transcript = RuTranscript(testing_text)

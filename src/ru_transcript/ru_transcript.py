@@ -23,7 +23,7 @@ from .consts import (
     TPS_PLANE_MODE,
 )
 from .data_constants import IRREGULAR_EXCEPTIONS, KNOWN_PHONEMES
-from .exceptions import UnknownTranscriptionSymbolError
+from .exceptions import StressedTextMismatchError, UnknownTranscriptionSymbolError
 from .tools import (
     SyntaxTree,
     align_stressed_tokens_with_text,
@@ -131,6 +131,7 @@ class RuTranscript:
         self._tokens = text_norm_tok(text)
         self._sections_len = len(self._tokens)
         self._stressed_tokens = text_norm_tok(stressed_text)
+        self._validate_stressed_tokens(self._tokens, self._stressed_tokens)
 
         self._stress_accuracy_threshold = stress_accuracy_threshold
         self._stress_place = stress_place
@@ -143,6 +144,19 @@ class RuTranscript:
         self._phrasal_words = [[] for _ in range(self._sections_len)]
         self._stressed_text = [[] for _ in range(self._sections_len)]
         self._stressed_clitic_indexes = [set() for _ in range(self._sections_len)]
+
+    @staticmethod
+    def _validate_stressed_tokens(tokens: list[list[str]], stressed_tokens: list[list[str]]) -> None:
+        """
+        Validate that normalized text and stressed text contain the same characters.
+
+        :param tokens: Normalized source text tokens grouped by sections.
+        :param stressed_tokens: Normalized stressed text tokens grouped by sections.
+        """
+        normalized_sections = [''.join(section) for section in tokens]
+        normalized_stressed_sections = [''.join(section).replace('+', '') for section in stressed_tokens]
+        if normalized_sections != normalized_stressed_sections:
+            raise StressedTextMismatchError
 
     @staticmethod
     def _get_text_and_stressed_text(
@@ -436,8 +450,8 @@ class RuTranscript:
             self._lpt_3(section_num)
             self._lpt_4(section_num)
             # ---- Allophones - consonants ----
-            first_jot(self._phonemes_list[section_num])
-            self._allophones_list[section_num] = self._phonemes_list[section_num]
+            self._allophones_list[section_num] = self._phonemes_list[section_num].copy()
+            first_jot(self._allophones_list[section_num])
             nasal_m_n(self._allophones_list[section_num])
             silent_r(self._allophones_list[section_num])
             voiced_ts(self._allophones_list[section_num])
