@@ -1,6 +1,7 @@
 
 package:
 	poetry build
+	$(MAKE) -C resources package
 
 test:
 	poetry run python -m unittest discover -s tests

@@ -23,6 +23,7 @@ from .main_tools import (
     text_norm_tok,
 )
 from .nlp import get_nlp
+from .replacement import load_replacements, replace_text, replace_word
 from .sounds import allophones, epi_symbols
 from .stress_tools import put_stresses, remove_extra_stresses, replace_stress_before
 from .syntax_tree import SyntaxTree
@@ -41,6 +42,7 @@ __all__ = [
     'get_nlp',
     'get_punctuation_dict',
     'labia_velar',
+    'load_replacements',
     'long_consonants',
     'long_ge',
     'merge_phrasal_words',
@@ -49,6 +51,8 @@ __all__ = [
     'put_stresses',
     'remove_extra_stresses',
     'replace_stress_before',
+    'replace_text',
+    'replace_word',
     'silent_r',
     'stunning',
     'text_norm_tok',

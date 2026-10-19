@@ -4,7 +4,7 @@ import textwrap
 import unittest
 
 from ru_transcript.tools.nlp import get_nlp
-from ru_transcript.tools.stress_tools import get_stress_rnn
+from ru_transcript.tools.stress_tools import get_stress_predictor
 
 
 class TestRuntimeModels(unittest.TestCase):
@@ -16,10 +16,10 @@ class TestRuntimeModels(unittest.TestCase):
             """
             import ru_transcript
             from ru_transcript.tools.nlp import get_nlp
-            from ru_transcript.tools.stress_tools import get_stress_rnn
+            from ru_transcript.tools.stress_tools import get_stress_predictor
 
             assert get_nlp.cache_info().currsize == 0
-            assert get_stress_rnn.cache_info().currsize == 0
+            assert get_stress_predictor.cache_info().currsize == 0
             """
         )
 
@@ -36,7 +36,7 @@ class TestRuntimeModels(unittest.TestCase):
     def test_models_are_shared(self) -> None:
         """Reuse the same spaCy and stress model instances."""
         self.assertIs(get_nlp(), get_nlp())
-        self.assertIs(get_stress_rnn(), get_stress_rnn())
+        self.assertIs(get_stress_predictor(), get_stress_predictor())
 
 
 if __name__ == '__main__':

@@ -6,12 +6,13 @@ on:
       tag:
         description: Release tag to publish
         required: true
-        default: v2.1.0
+        default: v2.2.0
   release:
     types: [published]
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
@@ -31,6 +32,12 @@ jobs:
           python -m pip install poetry==2.2.1
           test "v$(poetry version -s)" = "$RELEASE_TAG"
           poetry build
+
+      - name: Test built package
+        run: |
+          python -m venv release-venv
+          release-venv/bin/python -m pip install dist/*.whl
+          release-venv/bin/python -c "from ru_transcript import RuTranscript; value = RuTranscript('Синтез речи'); value.transcribe(); assert value.get_stressed_text() == 'си+нтэз ре+чи'"
 
       - uses: actions/upload-artifact@v7
         with:

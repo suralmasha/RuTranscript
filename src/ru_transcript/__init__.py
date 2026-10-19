@@ -3,7 +3,7 @@ import warnings
 warnings.filterwarnings(
     'ignore',
     category=SyntaxWarning,
-    module=r'^(panphon|jamo|tps)(\.|$)',
+    module=r'^(panphon|jamo)(\.|$)',
 )
 
 from .ru_transcript import RuTranscript  # noqa: E402

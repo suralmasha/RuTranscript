@@ -20,24 +20,24 @@ The library is intended for speech technology, linguistic analysis, and pronunci
 ## Requirements
 
 - Python 3.11 or 3.12
-- Git, because some dependencies are installed from Git repositories
 - Poetry for development and package building
-
-The package is not currently published to a package registry.
 
 ## Installation
 
-Install the latest version from GitHub:
+Install the package from PyPI:
 
 ```shell
-python -m pip install "git+https://github.com/suralmasha/RuTranscript.git"
+python -m pip install RuTranscript
 ```
 
 For Poetry projects:
 
 ```shell
-poetry add "git+https://github.com/suralmasha/RuTranscript.git"
+poetry add RuTranscript
 ```
+
+The required linguistic models and dictionaries are installed automatically through the separately versioned
+`rutranscript-resources` package. No Git client or additional model download is required.
 
 ## Quick start
 
@@ -161,7 +161,7 @@ Format the code and apply safe Ruff fixes:
 make ruff
 ```
 
-Build the wheel and source distribution in `dist/`:
+Build wheel and source distributions for both packages:
 
 ```shell
 make package
@@ -182,3 +182,6 @@ If you use RuTranscript in research, cite the paper and link to this repository:
 ## License
 
 RuTranscript is distributed under the [MIT License](LICENSE).
+
+The separately distributed linguistic resources retain their upstream licenses and attribution. See the
+[`rutranscript-resources` notices](resources/THIRD_PARTY_NOTICES.md) for details.

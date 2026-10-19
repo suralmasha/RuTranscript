@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-09-22
+
+### Added
+
+- A separately versioned package containing the linguistic models and dictionaries required at runtime.
+- A release smoke test that installs and exercises the built distributions before publication.
+
+### Changed
+
+- Replaced direct Git and URL dependencies with packages installable through PyPI.
+- Replaced TPS runtime code with a minimal internal dictionary adapter.
+- Replaced the StressRNN runtime package with a minimal ONNX adapter while preserving its model and dictionary.
+- Replaced `num2t4ru` with the PyPI package `num2words`.
+
 ## [2.1.0] - 2026-09-22
 
 ### Added
@@ -33,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Updated the project to Python 3.12 and refreshed dependencies.
 - Adapted transcription and allophone processing to the updated linguistic dependencies.
 
+[2.2.0]: https://github.com/suralmasha/RuTranscript/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/suralmasha/RuTranscript/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/suralmasha/RuTranscript/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/suralmasha/RuTranscript/compare/v1.0.0...v2.0.0

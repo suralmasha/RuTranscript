@@ -2,7 +2,7 @@ import re
 from functools import lru_cache
 
 import nltk
-from num2t4ru import num2text
+from num2words import num2words
 
 from ru_transcript.data_constants import JOTISED_LETTERS
 
@@ -62,7 +62,7 @@ def get_punctuation_dict(text: str) -> dict[int, str]:
 
 @lru_cache(maxsize=512)
 def _num2text_words(word: str) -> tuple[str, ...]:
-    return tuple(num2text(int(word)).split())
+    return tuple(num2words(int(word), lang='ru').split())
 
 
 def custom_num2text(tokens: list[list[str]]) -> list[list[str]]:
