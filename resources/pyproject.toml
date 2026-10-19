@@ -5,7 +5,10 @@ build-backend = 'poetry.core.masonry.api'
 [tool.poetry]
 package-mode = true
 packages = [{ include = 'rutranscript_resources', from = 'src' }]
-include = [{ path = 'src/rutranscript_resources/data', format = ['sdist', 'wheel'] }]
+include = [
+    { path = 'src/rutranscript_resources/data', format = ['sdist', 'wheel'] },
+    { path = 'THIRD_PARTY_NOTICES.md', format = ['sdist', 'wheel'] },
+]
 
 [project]
 name = 'rutranscript-resources'

@@ -6,7 +6,7 @@ on:
       tag:
         description: Release tag to publish
         required: true
-        default: v2.1.0
+        default: v2.2.0
   release:
     types: [published]
 

@@ -28,10 +28,7 @@ redistribute the StressRNN Python package.
 - Resources: `yo.dict`, `e.dict`
 - Source project: <https://github.com/sovaai/sova-tts-tps/tree/v1.2.0>
 - Download host used by TPS: <http://dataset.sova.ai/SOVA-TTS/tps_data/>
-- Upstream project license: Apache-2.0
-- License clarification: <https://github.com/sovaai/sova-tts-tps/issues/3>
+- License: Apache-2.0
+- Included license: `licenses/Apache-2.0.txt`
 - SHA-256 `yo.dict`: `fe83ef9a7725b912f66fc7e7021c8e43408022d0af494fd8cb29241933d5e365`
 - SHA-256 `e.dict`: `a532bd7ba1dcf1fefb5c0ca1baceb44719dc62fcfceafeb8c55ee2f0154bafa4`
-
-The dictionary files are included without modification for compatibility testing. Do not publish this package until the
-upstream maintainers confirm redistribution terms.
